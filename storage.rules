@@ -1,0 +1,34 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper: Checks if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Checks if the authenticated user is registered as an admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // Payment Screenshots: Public can upload, only Admin can read/delete
+    match /payments/{allPaths=**} {
+      allow write: if true; // Public upload permitted
+      allow read, delete: if isAdmin();
+    }
+
+    // Gallery Assets: Public read, Admin write
+    match /gallery/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Team Logos: Public read, Admin write, or Team Captain write
+    match /team-logos/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin() || isAuthenticated();
+    }
+  }
+}

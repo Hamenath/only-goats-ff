@@ -1,0 +1,76 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Checks if the user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper: Checks if the authenticated user is registered as an admin
+    function isAdmin() {
+      return isAuthenticated() && 
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Admins Collection: Managed by deployment/super-admin; Admin can read self
+    match /admins/{adminId} {
+      allow read: if isAuthenticated() && (request.auth.uid == adminId || isAdmin());
+      allow write: if false; // Disallowed via client SDK; managed securely via backend admin APIs
+    }
+
+    // Tournament Settings: Public read, Admin write
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Registrations: Public create, Admin read/write/delete
+    match /registrations/{regId} {
+      allow create: if true; // Public teams can submit registrations
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Unique Constraints: Helper for transactions (prevent duplicates)
+    match /unique_constraints/{constraintId} {
+      allow create, read: if true; // Public must read/write constraints during transactions
+      allow update, delete: if isAdmin();
+    }
+
+    // Leaderboard: Public read, Admin write
+    match /leaderboard/{entryId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Matches / Schedule: Public read, Admin write
+    match /schedule/{matchId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Announcements: Public read, Admin write
+    match /announcements/{announcementId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Gallery: Public read, Admin write
+    match /gallery/{imageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Audit Logs: Private, Admin read only
+    match /audit_logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false; // Created via backend admin APIs only
+    }
+
+    // Contact messages: Public create, Admin read/write
+    match /contact_messages/{messageId} {
+      allow create: if true;
+      allow read, write: if isAdmin();
+    }
+  }
+}
