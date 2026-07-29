@@ -95,7 +95,7 @@ export function HeroSection() {
           pointerEvents: "none",
         }}
       >
-        <source src="https://www.dropbox.com/scl/fi/f0qvwnei0gd86s81rbzhe/hero-background-video.mp4?rlkey=veq3lh54pi1vjjun5w55b4mbz&st=4wxjt3nh&raw=1" type="video/mp4" />
+        <source src="/hero-background-video.mp4" type="video/mp4" />
       </video>
 
       {/* Dimming Overlay */}

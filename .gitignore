@@ -27,5 +27,3 @@ Thumbs.db
 logs/
 *.log
 
-# Large media assets
-**/hero-background-video.mp4
