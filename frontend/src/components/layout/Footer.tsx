@@ -15,7 +15,7 @@ const QUICK_LINKS = [
 
 const SOCIAL = [
   { href: "https://discord.gg/pPTSdw8JW", label: "Discord", color: "#5865F2" },
-  { href: "https://instagram.com/", label: "Instagram", color: "#E1306C" },
+  { href: "https://www.instagram.com/only_goats_esp/", label: "Instagram", color: "#E1306C" },
   { href: "https://chat.whatsapp.com/FeeiKNO0jeBCa0LKOa8iMZ?s=sh&p=a&mlu=4&amv=2", label: "WhatsApp", color: "#25D366" },
   { href: "mailto:contact@onlygoats-ff.com", label: "Email", color: "#e50914" },
 ];
