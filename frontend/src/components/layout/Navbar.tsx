@@ -16,7 +16,7 @@ const MENU_ITEMS = [
 
 const SOCIAL_ITEMS = [
   { label: "Discord", link: "https://discord.gg/pPTSdw8JW" },
-  { label: "Instagram", link: "https://instagram.com/" },
+  { label: "Instagram", link: "https://www.instagram.com/only_goats_esp/" },
   { label: "WhatsApp", link: "https://chat.whatsapp.com/FeeiKNO0jeBCa0LKOa8iMZ?s=sh&p=a&mlu=4&amv=2" },
 ];
 
