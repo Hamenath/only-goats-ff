@@ -1,0 +1,1 @@
+// Cloudinary library configuration placeholder
