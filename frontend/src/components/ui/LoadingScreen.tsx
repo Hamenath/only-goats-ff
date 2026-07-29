@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { useAppStore } from "@/store/useAppStore";
+import Logo from "./Logo";
 
 export function LoadingScreen() {
   const ref = useRef<HTMLDivElement>(null);
@@ -44,19 +45,8 @@ export function LoadingScreen() {
       aria-hidden="true"
     >
       <div ref={logoRef} style={{ textAlign: "center", opacity: 0 }}>
-        <div
-          style={{
-            width: 64,
-            height: 64,
-            background: "#e50914",
-            borderRadius: 16,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            margin: "0 auto 16px",
-          }}
-        >
-          <span style={{ color: "#fff", fontSize: 28, fontWeight: 800, fontFamily: "Space Grotesk, sans-serif" }}>OG</span>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+          <Logo size={64} showText={false} variant="light" />
         </div>
         <p style={{ color: "rgba(255,255,255,0.5)", fontSize: 12, letterSpacing: "0.15em", textTransform: "uppercase", fontFamily: "Inter, sans-serif" }}>
           Loading Tournament

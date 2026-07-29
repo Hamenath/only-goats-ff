@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ExternalLink, Mail } from "lucide-react";
+import Logo from "../ui/Logo";
 
 const QUICK_LINKS = [
   { href: "/tournament", label: "Tournament" },
@@ -40,19 +41,8 @@ export function Footer() {
         >
           {/* Brand */}
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
-              <div
-                style={{
-                  width: 44, height: 44, background: "#e50914", borderRadius: 12,
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                }}
-              >
-                <span style={{ color: "#fff", fontSize: 18, fontWeight: 800, fontFamily: "Space Grotesk, sans-serif" }}>OG</span>
-              </div>
-              <div>
-                <div style={{ fontFamily: "Space Grotesk, sans-serif", fontWeight: 800, fontSize: 16, color: "#111" }}>Only Goats FF</div>
-                <div style={{ fontSize: 11, color: "#999", letterSpacing: "0.08em", textTransform: "uppercase" }}>Tournament Series</div>
-              </div>
+            <div style={{ marginBottom: 20 }}>
+              <Logo size={44} showText={true} />
             </div>
             <p style={{ fontSize: 14, color: "#666", lineHeight: 1.7, maxWidth: 300 }}>
               The most elite Free Fire tournament. Battle against the best squads, survive, and claim your place as the champion.
@@ -136,7 +126,7 @@ export function Footer() {
         {/* Bottom */}
         <div style={{ borderTop: "1px solid #eaeaea", paddingTop: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <p style={{ fontSize: 13, color: "#999" }}>
-            © {new Date().getFullYear()} Only Goats FF. All rights reserved.
+            © {new Date().getFullYear()} Only Goats FF. All rights reserved. <span style={{ color: "#666" }}>• Created by <strong style={{ color: "#111" }}>VPK</strong>, <strong style={{ color: "#111" }}>Krish Jr</strong> & <strong style={{ color: "#111" }}>Editor AK</strong></span>
           </p>
           <div style={{ display: "flex", gap: 20 }}>
             {["Privacy Policy", "Terms of Service"].map((item) => (

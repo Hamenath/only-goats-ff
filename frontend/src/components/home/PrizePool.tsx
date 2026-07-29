@@ -2,7 +2,8 @@
 
 import { useRef, useEffect } from "react";
 import Link from "next/link";
-import { Trophy, Medal, Star, Zap } from "lucide-react";
+import Image from "next/image";
+import { Trophy, Medal, Zap } from "lucide-react";
 import gsap from "gsap";
 import { useInView } from "react-intersection-observer";
 
@@ -11,9 +12,10 @@ const PRIZES = [
     rank: 1,
     title: "Champion",
     icon: Trophy,
-    amount: "₹1000",
-    description: "Winner takes all",
+    amount: "₹600",
+    description: "1st Place Winner · Paid via UPI",
     badge: "🥇",
+    image: "/trophy-cup.png",
     gradient: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
     shadow: "0 20px 60px rgba(255,200,0,0.25)",
     size: "large",
@@ -22,31 +24,22 @@ const PRIZES = [
     rank: 2,
     title: "Runner-up",
     icon: Medal,
-    amount: "Coming Soon",
-    description: "Future update",
+    amount: "₹300",
+    description: "2nd Place Finisher",
     badge: "🥈",
+    image: "/runner-up-cup.png",
     gradient: "linear-gradient(135deg, #E8E8E8 0%, #B0B0B0 100%)",
     shadow: "0 16px 40px rgba(150,150,150,0.2)",
     size: "medium",
   },
   {
     rank: 3,
-    title: "MVP",
-    icon: Star,
-    amount: "Coming Soon",
-    description: "Best overall player",
-    badge: "⭐",
-    gradient: "linear-gradient(135deg, #FFB347 0%, #CD7F32 100%)",
-    shadow: "0 16px 40px rgba(200,120,50,0.2)",
-    size: "medium",
-  },
-  {
-    rank: 4,
     title: "Most Kills",
     icon: Zap,
-    amount: "Coming Soon",
+    amount: "₹100",
     description: "Highest kill count",
     badge: "💀",
+    image: "/most-kills-icon.png",
     gradient: "linear-gradient(135deg, #FF6B6B 0%, #e50914 100%)",
     shadow: "0 16px 40px rgba(229,9,20,0.2)",
     size: "medium",
@@ -94,7 +87,7 @@ export function PrizePool() {
             Prize Pool
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 480, margin: "0 auto" }}>
-            Prove your skill and take home the prize. More prizes will be added as registration grows.
+            Prove your skill and take home the prize. ₹1000 Total Prize Pool.
           </p>
         </div>
 
@@ -123,7 +116,16 @@ export function PrizePool() {
               onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(-6px) scale(1.01)"; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)"; }}
             >
-              <div style={{ fontSize: 64, marginBottom: 16, lineHeight: 1 }}>🏆</div>
+              <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
+                <Image
+                  src={PRIZES[0].image!}
+                  alt="Gold Trophy Cup"
+                  width={110}
+                  height={110}
+                  style={{ objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))" }}
+                  priority
+                />
+              </div>
               <div
                 style={{
                   fontSize: 11,
@@ -134,7 +136,7 @@ export function PrizePool() {
                   marginBottom: 8,
                 }}
               >
-                Champion
+                Champion (1st Place)
               </div>
               <div
                 style={{
@@ -147,10 +149,10 @@ export function PrizePool() {
                   textShadow: "0 2px 16px rgba(0,0,0,0.2)",
                 }}
               >
-                ₹1000
+                {PRIZES[0].amount}
               </div>
               <p style={{ fontSize: 14, color: "rgba(0,0,0,0.6)", marginTop: 12, fontWeight: 500 }}>
-                Winner takes all · Paid via UPI
+                {PRIZES[0].description}
               </p>
             </div>
           </div>
@@ -159,8 +161,10 @@ export function PrizePool() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
-              gap: 16,
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: 20,
+              maxWidth: 640,
+              margin: "0 auto",
             }}
           >
             {PRIZES.slice(1).map((prize, i) => (
@@ -175,25 +179,38 @@ export function PrizePool() {
                     padding: "32px 24px",
                     textAlign: "center",
                     border: "1px solid #eaeaea",
+                    background: "#ffffff",
                   }}
                 >
-                  <div style={{ fontSize: 40, marginBottom: 16 }}>{prize.badge}</div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#999", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 16, height: 80, alignItems: "center" }}>
+                    {prize.image ? (
+                      <Image
+                        src={prize.image}
+                        alt={prize.title}
+                        width={80}
+                        height={80}
+                        style={{ objectFit: "contain", filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.12))" }}
+                      />
+                    ) : (
+                      <span style={{ fontSize: 40 }}>{prize.badge}</span>
+                    )}
+                  </div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#e50914", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
                     {prize.title}
                   </div>
                   <div
                     style={{
                       fontFamily: "Space Grotesk, sans-serif",
-                      fontSize: 24,
+                      fontSize: 32,
                       fontWeight: 800,
-                      color: "#ccc",
+                      color: "#111",
                       letterSpacing: "-0.02em",
                       marginBottom: 8,
                     }}
                   >
                     {prize.amount}
                   </div>
-                  <p style={{ fontSize: 12, color: "#bbb" }}>{prize.description}</p>
+                  <p style={{ fontSize: 13, color: "#666", fontWeight: 500 }}>{prize.description}</p>
                 </div>
               </div>
             ))}
@@ -209,3 +226,5 @@ export function PrizePool() {
     </section>
   );
 }
+
+export default PrizePool;
