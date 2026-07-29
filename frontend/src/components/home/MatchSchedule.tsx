@@ -12,7 +12,7 @@ interface Match {
   match: string;
   status: "upcoming" | "live" | "completed";
   stage: string;
-  teams?: { t1: string; t2: string };
+  teams?: { t1: string; t2?: string };
   streamUrl?: string;
 }
 

@@ -14,7 +14,7 @@ import confetti from "canvas-confetti";
 // Zod schema
 const playerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
-  uid: z.string().min(6, "UID must be at least 6 characters").max(20, "UID too long"),
+  uid: z.string().min(8, "UID must be 8 to 11 characters").max(11, "UID must be 8 to 11 characters"),
   gameName: z.string().min(2, "Game name required"),
 });
 
@@ -24,7 +24,9 @@ const formSchema = z.object({
   players: z.array(playerSchema).length(3, "Exactly 3 additional players required"),
   substitute: z.object({
     name: z.string().optional(),
-    uid: z.string().optional(),
+    uid: z.string().refine((val) => !val || (val.trim().length >= 8 && val.trim().length <= 11), {
+      message: "Substitute UID must be 8 to 11 characters",
+    }).optional(),
     gameName: z.string().optional(),
   }),
   phone: z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian phone number"),
@@ -445,6 +447,7 @@ export function RegisterForm() {
                   label="UID"
                   placeholder=""
                   {...register("substitute.uid")}
+                  error={errors.substitute?.uid?.message}
                   value={watchedValues.substitute?.uid ?? ""}
                 />
               </div>
@@ -468,71 +471,146 @@ export function RegisterForm() {
               Pay the entry fee via UPI, then upload your digital receipt.
             </p>
 
-            {/* Premium Billing Box */}
-            <div style={{ background: "rgba(229,9,20,0.02)", border: "1px solid rgba(229,9,20,0.1)", borderRadius: 16, padding: "20px 24px", marginBottom: 28 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div>
-                  <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>UPI ADDRESS</p>
-                  <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 800, color: "#e50914" }}>yourupi@upi</p>
-                </div>
-                <div style={{ textAlign: "right" }}>
-                  <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>AMOUNT DUE</p>
-                  <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 24, fontWeight: 800, color: "#111" }}>₹100</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Drag & Drop Receipt Box */}
-            <div style={{ marginBottom: 24 }}>
-              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                Payment Receipt Image *
-              </label>
-
+            {/* Payment Grid: Left (QR Code), Center (UPI Address), Right (Payment Receipt Upload) */}
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                gap: 20,
+                alignItems: "stretch",
+                marginBottom: 28,
+              }}
+            >
+              {/* Left Column: QR Code */}
               <div
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={handleDrop}
                 style={{
+                  background: "rgba(229,9,20,0.02)",
+                  border: "1px solid rgba(229,9,20,0.1)",
+                  borderRadius: 16,
+                  padding: "20px 16px",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: 12,
-                  padding: "48px 24px",
-                  border: `2px dashed ${fileError ? "#e50914" : isDragActive ? "#111" : paymentFile ? "#111" : "#eaeaea"}`,
-                  borderRadius: 16,
-                  cursor: "pointer",
-                  background: paymentFile ? "rgba(17,17,17,0.01)" : isDragActive ? "rgba(17,17,17,0.02)" : "#fafafa",
-                  transition: "all 0.2s ease",
+                  textAlign: "center",
                 }}
               >
-                <input
-                  id="payment-screenshot-input"
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={handleFileChange}
-                />
-                <label htmlFor="payment-screenshot-input" style={{ width: "100%", height: "100%", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  {paymentFile ? (
-                    <>
-                      <Check size={28} style={{ color: "#111", marginBottom: 12 }} />
-                      <p style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>{paymentFile.name}</p>
-                      <p style={{ fontSize: 11, color: "#999", marginTop: 4 }}>File ready · Click or drag to replace</p>
-                    </>
-                  ) : (
-                    <>
-                      <Upload size={28} style={{ color: "#999", marginBottom: 12 }} />
-                      <p style={{ fontSize: 14, fontWeight: 700, color: "#666" }}>Drag & Drop Payment receipt here</p>
-                      <p style={{ fontSize: 11, color: "#bbb", marginTop: 4 }}>Or click to open file explorer (PNG, JPG, Max 5MB)</p>
-                    </>
-                  )}
-                </label>
+                <p style={{ fontSize: 11, color: "#666", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
+                  SCAN QR CODE TO PAY
+                </p>
+                <div style={{
+                  background: "#fff",
+                  padding: 10,
+                  borderRadius: 14,
+                  border: "1px solid rgba(0,0,0,0.08)",
+                  boxShadow: "0 4px 16px rgba(0,0,0,0.04)",
+                  display: "inline-block"
+                }}>
+                  <img
+                    src="/bhai-qr.jpeg"
+                    alt="Hamenath B UPI QR Code"
+                    style={{
+                      width: "100%",
+                      maxWidth: 170,
+                      height: "auto",
+                      borderRadius: 8,
+                      display: "block"
+                    }}
+                  />
+                </div>
+                <span style={{ fontSize: 11, color: "#888", marginTop: 8, fontWeight: 500 }}>
+                  Scan using any UPI app
+                </span>
               </div>
-              {fileError && (
-                <p style={{ fontSize: 11, color: "#e50914", marginTop: 6, fontWeight: 600 }}>{fileError}</p>
-              )}
+
+              {/* Center Column: UPI Address & Amount */}
+              <div
+                style={{
+                  background: "rgba(229,9,20,0.02)",
+                  border: "1px solid rgba(229,9,20,0.1)",
+                  borderRadius: 16,
+                  padding: "24px 20px",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
+                    UPI ADDRESS
+                  </p>
+                  <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 17, fontWeight: 800, color: "#e50914", wordBreak: "break-all" }}>
+                    hamenathmurali@oksbi
+                  </p>
+                </div>
+
+                <div style={{ width: "80%", height: 1, borderTop: "1px dashed rgba(229,9,20,0.15)", margin: "8px 0 16px 0" }} />
+
+                <div>
+                  <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
+                    AMOUNT DUE
+                  </p>
+                  <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800, color: "#111" }}>
+                    ₹100
+                  </p>
+                </div>
+              </div>
+
+              {/* Right Column: Payment Receipt Image Upload */}
+              <div style={{ display: "flex", flexDirection: "column" }}>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                  Payment Receipt Image *
+                </label>
+                <div
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={handleDrop}
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 12,
+                    padding: "24px 16px",
+                    minHeight: 200,
+                    border: `2px dashed ${fileError ? "#e50914" : isDragActive ? "#111" : paymentFile ? "#111" : "#eaeaea"}`,
+                    borderRadius: 16,
+                    cursor: "pointer",
+                    background: paymentFile ? "rgba(17,17,17,0.01)" : isDragActive ? "rgba(17,17,17,0.02)" : "#fafafa",
+                    transition: "all 0.2s ease",
+                  }}
+                >
+                  <input
+                    id="payment-screenshot-input"
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={handleFileChange}
+                  />
+                  <label htmlFor="payment-screenshot-input" style={{ width: "100%", height: "100%", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+                    {paymentFile ? (
+                      <>
+                        <Check size={28} style={{ color: "#111", marginBottom: 12 }} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#111", wordBreak: "break-all" }}>{paymentFile.name}</p>
+                        <p style={{ fontSize: 11, color: "#999", marginTop: 4 }}>File ready · Click or drag to replace</p>
+                      </>
+                    ) : (
+                      <>
+                        <Upload size={28} style={{ color: "#999", marginBottom: 12 }} />
+                        <p style={{ fontSize: 13, fontWeight: 700, color: "#666" }}>Drag & Drop Payment receipt here</p>
+                        <p style={{ fontSize: 11, color: "#bbb", marginTop: 4 }}>Or click to open file explorer (PNG, JPG, Max 5MB)</p>
+                      </>
+                    )}
+                  </label>
+                </div>
+                {fileError && (
+                  <p style={{ fontSize: 11, color: "#e50914", marginTop: 6, fontWeight: 600 }}>{fileError}</p>
+                )}
+              </div>
             </div>
 
             <InputField

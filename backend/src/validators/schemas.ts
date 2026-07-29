@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const playerSchema = z.object({
   name: z.string().min(2),
-  uid: z.string().min(6).max(20),
+  uid: z.string().min(8).max(11),
   gameName: z.string().min(2),
 });
 
@@ -12,7 +12,7 @@ export const registrationSchema = z.object({
   players: z.array(playerSchema).length(3),
   substitute: z.object({
     name: z.string().optional(),
-    uid: z.string().optional(),
+    uid: z.string().refine((val) => !val || (val.trim().length >= 8 && val.trim().length <= 11)).optional(),
     gameName: z.string().optional(),
   }).optional(),
   phone: z.string().regex(/^[6-9]\d{9}$/),
