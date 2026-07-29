@@ -15,9 +15,9 @@ const MENU_ITEMS = [
 ];
 
 const SOCIAL_ITEMS = [
-  { label: "Discord", link: "https://discord.gg/" },
+  { label: "Discord", link: "https://discord.gg/pPTSdw8JW" },
   { label: "Instagram", link: "https://instagram.com/" },
-  { label: "WhatsApp", link: "https://wa.me/" },
+  { label: "WhatsApp", link: "https://chat.whatsapp.com/FeeiKNO0jeBCa0LKOa8iMZ?s=sh&p=a&mlu=4&amv=2" },
 ];
 
 export function Navbar() {
