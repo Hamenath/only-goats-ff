@@ -21,9 +21,7 @@ export function HeroSection() {
   const ctaRef = useRef<HTMLDivElement>(null);
   const imageContainerRef = useRef<HTMLDivElement>(null);
 
-  const shapeRef1 = useRef<HTMLDivElement>(null);
-  const shapeRef2 = useRef<HTMLDivElement>(null);
-  const shapeRef3 = useRef<HTMLDivElement>(null);
+
 
   const { registrationCount, settings, setRegistrationCount, setSettings } = useAppStore();
   const isFull = registrationCount >= settings.registrationLimit;
@@ -58,9 +56,7 @@ export function HeroSection() {
       .fromTo(statsRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, "-=0.3")
       .fromTo(ctaRef.current, { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.5, ease: "power3.out" }, "-=0.3");
 
-    gsap.to(shapeRef1.current, { y: -24, rotation: 8, duration: 6, ease: "sine.inOut", yoyo: true, repeat: -1 });
-    gsap.to(shapeRef2.current, { y: -16, rotation: -6, duration: 7, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 0.8 });
-    gsap.to(shapeRef3.current, { y: -20, scale: 1.05, duration: 5, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 1.4 });
+
   }, []);
 
   const progress = Math.min((registrationCount / settings.registrationLimit) * 100, 100);
@@ -116,31 +112,7 @@ export function HeroSection() {
           pointerEvents: "none",
         }}
       />
-      {/* Background shapes */}
-      <div ref={shapeRef1} aria-hidden="true" style={{
-        position: "absolute", right: "5%", top: "10%",
-        width: 380, height: 380,
-        borderRadius: "40% 60% 55% 45% / 45% 40% 60% 55%",
-        background: "linear-gradient(135deg, rgba(229,9,20,0.05) 0%, rgba(229,9,20,0.01) 100%)",
-        border: "1px solid rgba(229,9,20,0.06)",
-        backdropFilter: "blur(40px)",
-        pointerEvents: "none",
-      }} />
-      <div ref={shapeRef2} aria-hidden="true" style={{
-        position: "absolute", right: "45%", bottom: "5%",
-        width: 180, height: 180,
-        borderRadius: "60% 40% 50% 50% / 50% 60% 40% 50%",
-        background: "rgba(17,17,17,0.02)",
-        border: "1px solid rgba(17,17,17,0.04)",
-        pointerEvents: "none",
-      }} />
-      <div ref={shapeRef3} aria-hidden="true" style={{
-        position: "absolute", left: "2%", top: "25%",
-        width: 100, height: 100, borderRadius: "50%",
-        background: "rgba(229,9,20,0.03)",
-        border: "1px solid rgba(229,9,20,0.06)",
-        pointerEvents: "none",
-      }} />
+
 
       <div className="container-custom" style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", justifyContent: "center", textAlign: "center" }}>
         <div style={{ maxWidth: 800, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
