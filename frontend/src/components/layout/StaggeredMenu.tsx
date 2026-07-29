@@ -75,6 +75,20 @@ export const StaggeredMenu = ({
   const busyRef = useRef(false);
   const itemEntranceTweenRef = useRef<gsap.core.Tween | null>(null);
 
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 20) {
+        setScrolled(true);
+      } else {
+        setScrolled(false);
+      }
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   useLayoutEffect(() => {
     const ctx = gsap.context(() => {
       const panel = panelRef.current;
@@ -386,7 +400,7 @@ export const StaggeredMenu = ({
 
   return (
     <div
-      className={(className ? className + ' ' : '') + 'staggered-menu-wrapper' + (isFixed ? ' fixed-wrapper' : '')}
+      className={(className ? className + ' ' : '') + 'staggered-menu-wrapper' + (isFixed ? ' fixed-wrapper' : '') + (scrolled ? ' is-scrolled' : '')}
       style={accentColor ? { ['--sm-accent' as any]: accentColor } : undefined}
       data-position={position}
       data-open={open || undefined}
@@ -405,7 +419,7 @@ export const StaggeredMenu = ({
       <header className="staggered-menu-header" aria-label="Main navigation header">
         {/* Brand Logo */}
         <Link href="/" style={{ textDecoration: 'none' }} onClick={closeMenu}>
-          <Logo size={48} showText={true} />
+          <Logo size={48} showText={true} variant={scrolled ? "dark" : "light"} />
         </Link>
 
         {/* Toggle Button */}
@@ -418,15 +432,15 @@ export const StaggeredMenu = ({
           onClick={toggleMenu}
           type="button"
           style={{
-            border: '1px solid rgba(17,17,17,0.08)',
-            background: 'rgba(255,255,255,0.8)',
+            border: scrolled ? '1px solid rgba(17,17,17,0.08)' : '1px solid rgba(255,255,255,0.2)',
+            background: scrolled ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.4)',
             backdropFilter: 'blur(10px)',
             borderRadius: 14,
             padding: '10px 18px',
             fontSize: 13,
             fontWeight: 700,
             fontFamily: 'Space Grotesk, sans-serif',
-            color: '#111'
+            color: scrolled ? '#111' : '#fff'
           }}
         >
           <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true" style={{ width: 44 }}>

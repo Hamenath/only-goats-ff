@@ -618,3 +618,11 @@ html, body {
   }
 }
 
+/* Dark timer colors in Hero Section */
+.dark-hero-timer .countdown-digit {
+  color: #ffffff !important;
+}
+.dark-hero-timer .countdown-label {
+  color: rgba(255, 255, 255, 0.6) !important;
+}
+
