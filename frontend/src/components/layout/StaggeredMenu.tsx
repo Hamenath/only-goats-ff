@@ -56,6 +56,7 @@ export const StaggeredMenu = ({
 }: StaggeredMenuProps) => {
   const [open, setOpen] = useState(false);
   const openRef = useRef(false);
+  const [displayActive, setDisplayActive] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const preLayersRef = useRef<HTMLDivElement>(null);
   const preLayerElsRef = useRef<HTMLDivElement[]>([]);
@@ -275,10 +276,11 @@ export const StaggeredMenu = ({
         const socialLinks = Array.from(panel.querySelectorAll('.sm-socials-link'));
         if (socialTitle) gsap.set(socialTitle, { opacity: 0 });
         if (socialLinks.length) gsap.set(socialLinks, { y: 25, opacity: 0 });
+        setDisplayActive(false);
         busyRef.current = false;
       }
     });
-  }, [position]);
+  }, [position, setDisplayActive]);
 
   const animateIcon = useCallback((opening: boolean) => {
     const icon = iconRef.current;
@@ -355,6 +357,7 @@ export const StaggeredMenu = ({
     openRef.current = target;
     setOpen(target);
     if (target) {
+      setDisplayActive(true);
       onMenuOpen?.();
       playOpen();
     } else {
@@ -403,7 +406,7 @@ export const StaggeredMenu = ({
       className={(className ? className + ' ' : '') + 'staggered-menu-wrapper' + (isFixed ? ' fixed-wrapper' : '') + (scrolled ? ' is-scrolled' : '')}
       style={accentColor ? { ['--sm-accent' as any]: accentColor } : undefined}
       data-position={position}
-      data-open={open || undefined}
+      data-open={displayActive || undefined}
     >
       <div ref={preLayersRef} className="sm-prelayers" aria-hidden="true">
         {(() => {

@@ -174,15 +174,15 @@ export function HeroSection() {
           {/* CTAs */}
           <div ref={ctaRef} style={{ opacity: 0, display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 48, justifyContent: "center" }}>
             {settings.registrationEnabled && !isFull ? (
-              <Link href="/register" className="btn-accent" style={{ fontSize: 15, padding: "14px 28px" }}>
+              <Link href="/register" className="btn-liquid-glass-accent">
                 Register Team <ArrowRight size={18} />
               </Link>
             ) : (
-              <button disabled className="btn-accent" style={{ fontSize: 15, padding: "14px 28px", opacity: 0.5, cursor: "not-allowed" }}>
+              <button disabled className="btn-liquid-glass-accent" style={{ opacity: 0.5, cursor: "not-allowed" }}>
                 Registration Closed
               </button>
             )}
-            <Link href="/rules" className="btn-ghost" style={{ fontSize: 15, padding: "14px 28px", color: "#fff", borderColor: "rgba(255, 255, 255, 0.3)" }}>
+            <Link href="/rules" className="btn-liquid-glass-ghost">
               <Shield size={18} /> Tournament Rules
             </Link>
           </div>
