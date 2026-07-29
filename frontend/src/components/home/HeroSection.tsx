@@ -29,20 +29,24 @@ export function HeroSection() {
   useEffect(() => {
     try {
       const unsub = onSnapshot(doc(db, "settings", "tournament"), (snap) => {
-        if (snap.exists()) setSettings(snap.data() as Parameters<typeof setSettings>[0]);
+        if (snap.exists()) {
+          const data = snap.data();
+          setSettings({
+            tournamentDate: data.countdownDate || data.tournamentDate,
+            registrationLimit: data.maxTeams || data.registrationLimit,
+            registrationEnabled: data.registrationOpen !== undefined ? data.registrationOpen : data.registrationEnabled,
+            prizePool: data.prizePool,
+            entryFee: data.entryFee,
+            reEntry: data.reEntryFee || data.reEntry,
+          });
+          if (data.registeredTeams !== undefined) {
+            setRegistrationCount(data.registeredTeams);
+          }
+        }
       });
       return () => unsub();
     } catch { /* use defaults */ }
-  }, [setSettings]);
-
-  useEffect(() => {
-    try {
-      const unsub = onSnapshot(doc(db, "settings", "registrationCount"), (snap) => {
-        if (snap.exists()) setRegistrationCount(snap.data().count ?? 0);
-      });
-      return () => unsub();
-    } catch { /* use defaults */ }
-  }, [setRegistrationCount]);
+  }, [setSettings, setRegistrationCount]);
 
   useEffect(() => {
     const tl = gsap.timeline({ delay: 2.2 });
