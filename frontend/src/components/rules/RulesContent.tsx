@@ -20,7 +20,6 @@ const RULES = [
       { q: "What happens if a player disconnects?", a: "Disconnections are not the organizer's responsibility. Teams must be ready at match time. A 5-minute grace period will be given after which the match proceeds." },
       { q: "Which map is played?", a: "All matches are played on Bermuda (Classic). Both qualifier matches and CS League rounds use Bermuda." },
       { q: "What room settings are used?", a: "Classic mode, Bermuda map, TPP, squad. Custom rooms will be created by organizers and room ID/password shared 15 minutes before match time." },
-      { q: "What is the kill limit per player?", a: "There is no kill cap. All kills count toward the team's total kill points." },
     ],
   },
   {

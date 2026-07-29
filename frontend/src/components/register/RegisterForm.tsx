@@ -8,7 +8,7 @@ import { db, storage } from "@/lib/firebase";
 import { collection, addDoc, serverTimestamp, doc, getDoc, setDoc, increment } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
-import { Check, Upload, ChevronRight, User, Users, CreditCard, Loader2, ArrowLeft } from "lucide-react";
+import { Check, Upload, ChevronRight, User, Users, CreditCard, Loader2, ArrowLeft, MessageCircle } from "lucide-react";
 import confetti from "canvas-confetti";
 
 // Zod schema
@@ -271,7 +271,7 @@ export function RegisterForm() {
           Your slot is reserved. Payment is under verification.
         </p>
 
-        <div className="glass-card" style={{ maxWidth: 360, margin: "0 auto 32px", padding: "24px 28px", textAlign: "left", border: "1px solid #111" }}>
+        <div className="glass-card" style={{ maxWidth: 360, margin: "0 auto 24px", padding: "24px 28px", textAlign: "left", border: "1px solid #111" }}>
           <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>
             YOUR SQUAD ID
           </p>
@@ -282,6 +282,33 @@ export function RegisterForm() {
             Room invite and verification status will reference this ID.
           </p>
         </div>
+
+        <div style={{ marginBottom: 24 }}>
+          <a
+            href="https://chat.whatsapp.com/FeeiKNO0jeBCa0LKOa8iMZ?s=sh&p=a&mlu=4&amv=2"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 10,
+              padding: "14px 28px",
+              borderRadius: 14,
+              background: "#25D366",
+              color: "#fff",
+              fontWeight: 700,
+              fontSize: 15,
+              textDecoration: "none",
+              boxShadow: "0 8px 24px rgba(37,211,102,0.3)",
+              transition: "transform 0.2s ease",
+            }}
+          >
+            <MessageCircle size={20} />
+            <span>Join Official WhatsApp Group</span>
+          </a>
+        </div>
+
         <p style={{ fontSize: 13, color: "#888", maxWidth: 400, margin: "0 auto", lineHeight: 1.6 }}>
           A confirmation WhatsApp will be sent within 24 hours to your captain.
         </p>

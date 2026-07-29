@@ -16,14 +16,14 @@ interface LeaderboardEntry {
 }
 
 const DEMO: LeaderboardEntry[] = [
-  { id: "1", rank: 1, teamName: "Team Alpha", kills: 48, points: 120, wins: 3, placement: "1st" },
-  { id: "2", rank: 2, teamName: "Storm Squad", kills: 39, points: 98, wins: 2, placement: "2nd" },
-  { id: "3", rank: 3, teamName: "Phantom Fury", kills: 35, points: 87, wins: 1, placement: "3rd" },
-  { id: "4", rank: 4, teamName: "Iron Wolves", kills: 31, points: 79, wins: 1, placement: "4th" },
-  { id: "5", rank: 5, teamName: "Black Ops", kills: 28, points: 71, wins: 0, placement: "5th" },
-  { id: "6", rank: 6, teamName: "Titans", kills: 25, points: 64, wins: 0, placement: "6th" },
-  { id: "7", rank: 7, teamName: "Shadow Crew", kills: 22, points: 58, wins: 0, placement: "7th" },
-  { id: "8", rank: 8, teamName: "Hunters", kills: 19, points: 50, wins: 0, placement: "8th" },
+  { id: "1", rank: 1, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "2", rank: 2, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "3", rank: 3, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "4", rank: 4, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "5", rank: 5, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "6", rank: 6, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "7", rank: 7, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+  { id: "8", rank: 8, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
 ];
 
 const PODIUM_CONFIG = [

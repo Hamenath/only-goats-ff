@@ -19,7 +19,7 @@ function InstagramIcon({ size = 24 }: { size?: number }) {
 const SOCIALS = [
   { name: "Discord", handle: "Join our server", icon: Send, href: "https://discord.gg/your-invite", color: "#5865F2", bg: "rgba(88,101,242,0.08)", border: "rgba(88,101,242,0.15)", desc: "Join 500+ members in our community server. Get match updates and announcements." },
   { name: "Instagram", handle: "@onlygoats.ff", icon: InstagramIcon, href: "https://instagram.com/onlygoats.ff", color: "#E1306C", bg: "rgba(225,48,108,0.08)", border: "rgba(225,48,108,0.15)", desc: "Follow for highlights, match clips, and tournament updates." },
-  { name: "WhatsApp", handle: "Join Tournament Group", icon: MessageCircle, href: "https://chat.whatsapp.com/your-group", color: "#25D366", bg: "rgba(37,211,102,0.08)", border: "rgba(37,211,102,0.15)", desc: "Get room IDs, match times, and direct support via WhatsApp." },
+  { name: "WhatsApp", handle: "Join Tournament Group", icon: MessageCircle, href: "https://chat.whatsapp.com/FeeiKNO0jeBCa0LKOa8iMZ?s=sh&p=a&mlu=4&amv=2", color: "#25D366", bg: "rgba(37,211,102,0.08)", border: "rgba(37,211,102,0.15)", desc: "Get room IDs, match times, and direct support via WhatsApp." },
   { name: "Email", handle: "contact@onlygoats-ff.com", icon: Mail, href: "mailto:contact@onlygoats-ff.com", color: "#e50914", bg: "rgba(229,9,20,0.08)", border: "rgba(229,9,20,0.15)", desc: "For formal queries, sponsorships, and business inquiries." },
 ];
 
