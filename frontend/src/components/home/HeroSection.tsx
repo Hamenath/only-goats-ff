@@ -98,6 +98,21 @@ export function HeroSection() {
         <source src="/hero-background-video.mp4" type="video/mp4" />
       </video>
 
+      {/* Dimming Overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(11, 11, 11, 0.78)", // Dark dimmed overlay
+          backdropFilter: "blur(2px)", // Subtle premium blur
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      />
+
 
       <div className="container-custom" style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", justifyContent: "center", textAlign: "center" }}>
         <div style={{ maxWidth: 800, width: "100%", display: "flex", flexDirection: "column", alignItems: "center" }}>
