@@ -24,7 +24,7 @@ const DEMO_MATCHES: Match[] = [
     match: "Qualifier Match 1 — Bermuda",
     status: "upcoming",
     stage: "Stage 1",
-    teams: { t1: "SQUAD 01", t2: "SQUAD 12" }
+    teams: { t1: "12 SQUADS" }
   },
   {
     id: "2",
@@ -33,7 +33,7 @@ const DEMO_MATCHES: Match[] = [
     match: "Qualifier Match 2 — Bermuda",
     status: "upcoming",
     stage: "Stage 1",
-    teams: { t1: "SQUAD 13", t2: "SQUAD 24" }
+    teams: { t1: "12 SQUADS" }
   },
   {
     id: "3",
@@ -42,7 +42,7 @@ const DEMO_MATCHES: Match[] = [
     match: "CS League — Round Robin",
     status: "upcoming",
     stage: "League Stage",
-    teams: { t1: "TOP 12 SEEDS", t2: "LEAGUE ROUNDS" }
+    teams: { t1: "TOP 6 BY 2 BERMUDA" }
   },
   {
     id: "4",
@@ -51,7 +51,7 @@ const DEMO_MATCHES: Match[] = [
     match: "Semi Finals Knockouts",
     status: "upcoming",
     stage: "Semi Finals",
-    teams: { t1: "SEMI FINALIST A", t2: "SEMI FINALIST B" }
+    teams: { t1: "TOP 4" }
   },
   {
     id: "5",
@@ -60,7 +60,7 @@ const DEMO_MATCHES: Match[] = [
     match: "Grand Finals Showdown",
     status: "upcoming",
     stage: "Grand Finals",
-    teams: { t1: "FINALIST 1", t2: "FINALIST 2" }
+    teams: { t1: "TOP 2" }
   },
 ];
 
@@ -244,37 +244,49 @@ export function MatchSchedule() {
                       </h3>
                     </div>
 
-                    {/* VCT Vs Card Matchup */}
+                    {/* Centered Matchup Badge Container */}
                     <div style={{
                       display: "flex",
                       alignItems: "center",
+                      justifyContent: "center",
                       gap: 20,
                       background: "#fafafa",
                       border: "1px solid #eaeaea",
-                      padding: "12px 24px",
+                      padding: "12px 28px",
                       borderRadius: 16,
+                      minWidth: 180,
+                      margin: "0 auto",
+                      textAlign: "center",
                     }}>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#111", fontFamily: "Space Grotesk, sans-serif" }}>
-                        {match.teams?.t1 || "TBD SQUAD"}
-                      </span>
-                      <div style={{
-                        width: 32,
-                        height: 32,
-                        borderRadius: "50%",
-                        background: isLive ? "#e50914" : "#111",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        fontSize: 10,
-                        fontWeight: 800,
-                        color: "#fff",
-                        fontFamily: "Space Grotesk, sans-serif",
-                      }}>
-                        VS
-                      </div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: "#111", fontFamily: "Space Grotesk, sans-serif" }}>
-                        {match.teams?.t2 || "TBD SQUAD"}
-                      </span>
+                      {match.teams?.t2 ? (
+                        <>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#111", fontFamily: "Space Grotesk, sans-serif" }}>
+                            {match.teams.t1}
+                          </span>
+                          <div style={{
+                            width: 32,
+                            height: 32,
+                            borderRadius: "50%",
+                            background: isLive ? "#e50914" : "#111",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 10,
+                            fontWeight: 800,
+                            color: "#fff",
+                            fontFamily: "Space Grotesk, sans-serif",
+                          }}>
+                            VS
+                          </div>
+                          <span style={{ fontSize: 13, fontWeight: 700, color: "#111", fontFamily: "Space Grotesk, sans-serif" }}>
+                            {match.teams.t2}
+                          </span>
+                        </>
+                      ) : (
+                        <span style={{ fontSize: 13, fontWeight: 800, color: "#111", fontFamily: "Space Grotesk, sans-serif", letterSpacing: "0.02em", textAlign: "center" }}>
+                          {match.teams?.t1 || "12 SQUADS"}
+                        </span>
+                      )}
                     </div>
 
                     {/* Action & Status */}

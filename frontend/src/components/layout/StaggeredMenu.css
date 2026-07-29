@@ -266,7 +266,7 @@
   position: relative;
   color: #111;
   font-weight: 800;
-  font-size: 2.25rem;
+  font-size: clamp(1.4rem, 5.5vw, 2.25rem);
   cursor: pointer;
   line-height: 1.1;
   letter-spacing: -0.03em;
@@ -317,3 +317,19 @@
     right: 0;
   }
 }
+
+@media (max-width: 480px) {
+  .staggered-menu-panel {
+    padding: 6.5rem 1.5rem 2rem 1.5rem;
+  }
+  .staggered-menu-header {
+    padding: 1rem 1.25rem;
+  }
+  .sm-panel-list[data-numbering] .sm-panel-item {
+    margin-left: 1.8rem;
+  }
+  .sm-panel-list[data-numbering] .sm-panel-item::after {
+    left: -1.7em;
+  }
+}
+

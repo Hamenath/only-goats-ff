@@ -66,32 +66,9 @@ export function HeroSection() {
 
   const progress = Math.min((registrationCount / settings.registrationLimit) * 100, 100);
 
-  // Mouse tilt effect for illustration card
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const card = imageContainerRef.current;
-    if (!card) return;
-    const rect = card.getBoundingClientRect();
-    const x = e.clientX - rect.left - rect.width / 2;
-    const y = e.clientY - rect.top - rect.height / 2;
-    gsap.to(card, {
-      rotateY: x * 0.05,
-      rotateX: -y * 0.05,
-      transformPerspective: 1000,
-      duration: 0.3,
-      ease: "power2.out"
-    });
-  };
-
-  const handleMouseLeave = () => {
-    const card = imageContainerRef.current;
-    if (!card) return;
-    gsap.to(card, {
-      rotateY: 0,
-      rotateX: 0,
-      duration: 0.5,
-      ease: "power2.out"
-    });
-  };
+  // Disabled cursor tilt effect
+  const handleMouseMove = () => {};
+  const handleMouseLeave = () => {};
 
   return (
     <section
@@ -277,15 +254,16 @@ export function HeroSection() {
               <div style={{ position: "relative", zIndex: 1, width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <Image
                   src="/esports-hero.png"
-                  alt="Esports Trophy Championship Illustration"
-                  width={380}
-                  height={380}
+                  alt="Only Goats Championship Trophy"
+                  width={420}
+                  height={420}
                   priority
                   style={{
-                    objectFit: "contain",
-                    maxHeight: "100%",
-                    maxWidth: "100%",
-                    filter: "drop-shadow(0 12px 24px rgba(0, 0, 0, 0.15))",
+                    objectFit: "cover",
+                    width: "100%",
+                    height: "100%",
+                    borderRadius: 20,
+                    boxShadow: "0 16px 36px rgba(0, 0, 0, 0.2)",
                   }}
                 />
               </div>

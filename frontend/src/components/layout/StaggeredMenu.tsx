@@ -3,6 +3,7 @@
 import React, { useCallback, useLayoutEffect, useRef, useState, useEffect } from 'react';
 import { gsap } from 'gsap';
 import Link from 'next/link';
+import Logo from '../ui/Logo';
 import './StaggeredMenu.css';
 
 export interface StaggeredMenuItem {
@@ -403,21 +404,8 @@ export const StaggeredMenu = ({
       </div>
       <header className="staggered-menu-header" aria-label="Main navigation header">
         {/* Brand Logo */}
-        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }} onClick={closeMenu}>
-          <div
-            style={{
-              width: 38, height: 38, background: '#e50914', borderRadius: 10,
-              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0
-            }}
-          >
-            <span style={{ color: '#fff', fontSize: 16, fontWeight: 800, fontFamily: 'Space Grotesk, sans-serif' }}>OG</span>
-          </div>
-          <div>
-            <div style={{ fontFamily: 'Space Grotesk, sans-serif', fontWeight: 800, fontSize: 15, color: '#111', letterSpacing: '-0.02em' }}>
-              Only Goats FF
-            </div>
-            <div style={{ fontSize: 9, color: '#999', letterSpacing: '0.08em', textTransform: 'uppercase', fontWeight: 700 }}>Tournament Series</div>
-          </div>
+        <Link href="/" style={{ textDecoration: 'none' }} onClick={closeMenu}>
+          <Logo size={38} showText={true} />
         </Link>
 
         {/* Toggle Button */}
