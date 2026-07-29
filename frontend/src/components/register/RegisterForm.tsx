@@ -204,10 +204,20 @@ export function RegisterForm() {
     try {
       const teamId = `OG-${Date.now().toString(36).toUpperCase()}`;
 
-      // Upload file
-      const storageRef = ref(storage, `payments/${teamId}-${paymentFile.name}`);
-      await uploadBytes(storageRef, paymentFile);
-      const screenshotUrl = await getDownloadURL(storageRef);
+      // Upload file to Cloudinary via secure serverless API route
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", paymentFile);
+      
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: uploadFormData,
+      });
+      
+      const uploadResult = await uploadRes.json();
+      if (!uploadRes.ok || uploadResult.error) {
+        throw new Error(uploadResult.error || "Failed to upload payment screenshot");
+      }
+      const screenshotUrl = uploadResult.url;
 
       // Save registration
       await addDoc(collection(db, "registrations"), {
