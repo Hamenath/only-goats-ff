@@ -1,12 +1,21 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "@/components/Providers";
-import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { Toaster } from "react-hot-toast";
 import { CustomCursor } from "@/components/ui/CustomCursor";
 import { LoadingScreen } from "@/components/ui/LoadingScreen";
 import { MouseGlow } from "@/components/ui/MouseGlow";
-import { Toaster } from "react-hot-toast";
+
+// Helper client components to conditionally render public components
+import { HeadersConditional } from "../components/ui/HeadersConditional";
+
+function NavbarWrapper() {
+  return <HeadersConditional type="navbar" />;
+}
+
+function FooterWrapper() {
+  return <HeadersConditional type="footer" />;
+}
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://onlygoats-ff.com"),
@@ -121,9 +130,9 @@ export default function RootLayout({
           <LoadingScreen />
           <CustomCursor />
           <MouseGlow />
-          <Navbar />
+          <NavbarWrapper />
           <main>{children}</main>
-          <Footer />
+          <FooterWrapper />
           <Toaster
             position="top-right"
             toastOptions={{
