@@ -83,6 +83,40 @@ export function HeroSection() {
         paddingBottom: 80,
       }}
     >
+      {/* Background Video */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      >
+        <source src="/hero-background-video.mp4" type="video/mp4" />
+      </video>
+
+      {/* Dimming Overlay */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          background: "rgba(255, 255, 255, 0.82)", // Dimmed light theme overlay
+          backdropFilter: "blur(2px)", // Subtle premium blur
+          zIndex: 0,
+          pointerEvents: "none",
+        }}
+      />
       {/* Background shapes */}
       <div ref={shapeRef1} aria-hidden="true" style={{
         position: "absolute", right: "5%", top: "10%",

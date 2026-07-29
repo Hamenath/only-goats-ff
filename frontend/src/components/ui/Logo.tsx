@@ -24,14 +24,12 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <div className={`flex items-center gap-3 select-none ${className}`}>
       <div
-        className="relative flex items-center justify-center overflow-hidden shadow-lg transition-transform hover:scale-105"
+        className="relative flex items-center justify-center overflow-hidden transition-transform hover:scale-105"
         style={{
           width: size,
           height: size,
           borderRadius: Math.round(size * 0.28),
-          background: "linear-gradient(135deg, #111111 0%, #1c1917 100%)",
-          border: "1.5px solid rgba(217, 119, 6, 0.4)",
-          boxShadow: "0 6px 16px rgba(0, 0, 0, 0.25)",
+          background: "transparent",
         }}
       >
         <Image
@@ -39,7 +37,8 @@ export const Logo: React.FC<LogoProps> = ({
           alt="Only Goats Emblem Logo"
           width={size}
           height={size}
-          className="w-full h-full object-cover"
+          className="w-full h-full"
+          style={{ objectFit: "contain" }}
           priority
         />
       </div>
