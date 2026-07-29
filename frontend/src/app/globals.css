@@ -684,3 +684,28 @@ html, body {
   transform: translateY(0);
 }
 
+/* Mobile Responsive Form Grid Utility */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+@media (min-width: 640px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Responsive Table & Container Tweaks */
+@media (max-width: 640px) {
+  .container-custom {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+  .glass-card {
+    padding: 20px 16px !important;
+  }
+}
+
+

@@ -377,7 +377,7 @@ export function RegisterForm() {
               error={errors.teamName?.message}
               value={watchedValues.teamName ?? ""}
             />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="form-grid-2">
               <InputField
                 label="Captain Name *"
                 placeholder=""
@@ -400,7 +400,7 @@ export function RegisterForm() {
               error={errors.captain?.gameName?.message}
               value={watchedValues.captain?.gameName ?? ""}
             />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div className="form-grid-2">
               <InputField
                 label="Phone Number *"
                 placeholder=""
@@ -432,7 +432,7 @@ export function RegisterForm() {
                 <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 13, fontWeight: 800, color: "#e50914", marginBottom: 16, letterSpacing: "0.05em" }}>
                   PLAYER 0{i + 2}
                 </p>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div className="form-grid-2">
                   <InputField
                     label="Full Name *"
                     placeholder=""
@@ -463,7 +463,7 @@ export function RegisterForm() {
               <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 13, fontWeight: 800, color: "#999", marginBottom: 16, letterSpacing: "0.05em" }}>
                 SUBSTITUTE PLAYER (OPTIONAL)
               </p>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              <div className="form-grid-2">
                 <InputField
                   label="Full Name"
                   placeholder=""
