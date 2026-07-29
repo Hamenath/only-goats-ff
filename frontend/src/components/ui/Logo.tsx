@@ -10,6 +10,7 @@ interface LogoProps {
   textSub?: string;
   className?: string;
   variant?: "light" | "dark";
+  onClick?: () => void;
 }
 
 export const Logo: React.FC<LogoProps> = ({
@@ -18,6 +19,7 @@ export const Logo: React.FC<LogoProps> = ({
   textSub = "Tournament Series",
   className = "",
   variant = "dark",
+  onClick,
 }) => {
   const textColor = variant === "light" ? "#ffffff" : "#111111";
   const subColor = variant === "light" ? "rgba(255,255,255,0.6)" : "#999999";
@@ -25,6 +27,7 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <Link
       href="/"
+      onClick={onClick}
       aria-label="Go to Only Goats FF homepage"
       className={`flex items-center gap-3 select-none ${className}`}
       style={{ textDecoration: "none", display: "inline-flex", cursor: "pointer" }}

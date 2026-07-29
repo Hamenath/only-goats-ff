@@ -421,9 +421,7 @@ export const StaggeredMenu = ({
       </div>
       <header className="staggered-menu-header" aria-label="Main navigation header">
         {/* Brand Logo */}
-        <Link href="/" style={{ textDecoration: 'none' }} onClick={closeMenu}>
-          <Logo size={48} showText={true} variant={scrolled ? "dark" : "light"} />
-        </Link>
+        <Logo size={48} showText={true} variant={scrolled ? "dark" : "light"} onClick={closeMenu} />
 
         {/* Toggle Button */}
         <button

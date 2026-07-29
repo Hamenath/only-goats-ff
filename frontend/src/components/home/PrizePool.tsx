@@ -122,7 +122,7 @@ export function PrizePool() {
                   alt="Gold Trophy Cup"
                   width={110}
                   height={110}
-                  style={{ objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))" }}
+                  style={{ objectFit: "contain", filter: "drop-shadow(0 10px 20px rgba(0,0,0,0.15))", width: "auto", height: "auto" }}
                   priority
                 />
               </div>
@@ -189,7 +189,7 @@ export function PrizePool() {
                         alt={prize.title}
                         width={80}
                         height={80}
-                        style={{ objectFit: "contain", filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.12))" }}
+                        style={{ objectFit: "contain", filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.12))", width: "auto", height: "auto" }}
                       />
                     ) : (
                       <span style={{ fontSize: 40 }}>{prize.badge}</span>
