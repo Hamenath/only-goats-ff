@@ -82,25 +82,22 @@ export function HeroSection() {
         paddingBottom: 80,
       }}
     >
-      {/* Background Video */}
-      <video
-        autoPlay
-        loop
-        muted
-        playsInline
+      {/* Background Image */}
+      <div
         style={{
           position: "absolute",
           top: 0,
           left: 0,
           width: "100%",
           height: "100%",
-          objectFit: "cover",
+          backgroundImage: "url('/hero-bg-clean.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center top",
+          backgroundRepeat: "no-repeat",
           zIndex: 0,
           pointerEvents: "none",
         }}
-      >
-        <source src="/hero-background-video.mp4" type="video/mp4" />
-      </video>
+      />
 
       {/* Dimming Overlay */}
       <div
