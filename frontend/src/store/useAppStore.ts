@@ -23,7 +23,7 @@ interface AppState {
 export const useAppStore = create<AppState>((set) => ({
   registrationCount: 0,
   settings: {
-    tournamentDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    tournamentDate: "2026-08-08T22:00:00+05:30",
     registrationLimit: 24,
     registrationEnabled: true,
     prizePool: 1000,
