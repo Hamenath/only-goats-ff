@@ -152,15 +152,15 @@ export function HeroSection() {
             </div>
 
             {/* Heading */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 24 }}>
+            <div style={{ display: "flex", flexDirection: "row", flexWrap: "wrap", gap: "10px 16px", marginBottom: 24, alignItems: "baseline" }}>
               <div style={{ overflow: "hidden" }}>
-                <div ref={heading1Ref} className="hero-heading" style={{ opacity: 0, color: "#111", fontSize: "clamp(48px, 6.5vw, 84px)" }}>BATTLE.</div>
+                <div ref={heading1Ref} className="hero-heading" style={{ opacity: 0, color: "#111", fontSize: "clamp(28px, 3.8vw, 48px)" }}>BATTLE.</div>
               </div>
               <div style={{ overflow: "hidden" }}>
-                <div ref={heading2Ref} className="hero-heading" style={{ opacity: 0, color: "#111", fontSize: "clamp(48px, 6.5vw, 84px)" }}>SURVIVE.</div>
+                <div ref={heading2Ref} className="hero-heading" style={{ opacity: 0, color: "#111", fontSize: "clamp(28px, 3.8vw, 48px)" }}>SURVIVE.</div>
               </div>
               <div style={{ overflow: "hidden" }}>
-                <div ref={heading3Ref} className="hero-heading" style={{ opacity: 0, color: "transparent", WebkitTextStroke: "2px #111", fontSize: "clamp(48px, 6.5vw, 84px)" }}>
+                <div ref={heading3Ref} className="hero-heading" style={{ opacity: 0, color: "transparent", WebkitTextStroke: "2px #111", fontSize: "clamp(28px, 3.8vw, 48px)" }}>
                   CHAMPION.
                 </div>
               </div>
@@ -338,7 +338,25 @@ export function HeroSection() {
       <style>{`
         @media (min-width: 1024px) {
           .hero-grid {
+            grid-template-columns: 1.15fr 0.85fr !important;
+            gap: 40px !important;
+          }
+          .hero-illustration-wrapper .glass-card {
+            max-width: 380px !important;
+          }
+        }
+        @media (min-width: 1280px) {
+          .hero-grid {
             grid-template-columns: 7fr 5fr !important;
+            gap: 64px !important;
+          }
+          .hero-illustration-wrapper .glass-card {
+            max-width: 420px !important;
+          }
+        }
+        @media (min-width: 1440px) {
+          .hero-illustration-wrapper .glass-card {
+            max-width: 460px !important;
           }
         }
         @media (max-width: 1023px) {
