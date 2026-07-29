@@ -227,9 +227,6 @@ export function MatchSchedule() {
                         <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#999", fontSize: 12 }}>
                           <Calendar size={13} />
                           <span>{match.date}</span>
-                          <span style={{ color: "#ddd" }}>|</span>
-                          <Clock size={13} />
-                          <span>{match.time}</span>
                         </div>
                       </div>
 

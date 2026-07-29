@@ -7,17 +7,17 @@
   --color-accent-hover: #ff3b30;
   --color-text: #111111;
   --color-text-secondary: #666666;
-  --color-border: #eaeaea;
-  --radius: 22px;
-  --radius-sm: 12px;
-  --radius-lg: 32px;
+  --color-border: rgba(0, 0, 0, 0.08);
+  --radius: 24px;
+  --radius-sm: 14px;
+  --radius-lg: 36px;
   --font-heading: "Iceland", sans-serif;
   --font-body: "Quantico", sans-serif;
-  --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 4px 24px rgba(0,0,0,0.06);
-  --shadow-card-hover: 0 8px 40px rgba(0,0,0,0.12);
-  --glass-bg: rgba(255,255,255,0.7);
-  --glass-border: rgba(255,255,255,0.9);
-  --glass-backdrop: blur(24px);
+  --shadow-card: inset 0 1.5px 0 0 rgba(255, 255, 255, 0.7), 0 8px 32px rgba(0, 0, 0, 0.04), 0 2px 8px rgba(0, 0, 0, 0.02);
+  --shadow-card-hover: inset 0 2px 0 0 rgba(255, 255, 255, 0.9), 0 20px 48px rgba(0, 0, 0, 0.09), 0 0 32px rgba(229, 9, 20, 0.08);
+  --glass-bg: rgba(255, 255, 255, 0.65);
+  --glass-border: rgba(255, 255, 255, 0.7);
+  --glass-backdrop: blur(28px) saturate(190%);
 }
 
 .iceland-regular {
@@ -89,7 +89,7 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--color-text);
 }
 
-/* Glass card utility */
+/* Liquid Glass Card Utility */
 .glass-card {
   background: var(--glass-bg);
   backdrop-filter: var(--glass-backdrop);
@@ -97,14 +97,43 @@ h1, h2, h3, h4, h5, h6 {
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-card);
+  position: relative;
+  overflow: hidden;
 }
 
 .glass-card-hover {
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .glass-card-hover:hover {
   box-shadow: var(--shadow-card-hover);
-  transform: translateY(-2px);
+  transform: translateY(-4px) scale(1.008);
+  border-color: rgba(229, 9, 20, 0.25);
+}
+
+/* Liquid Input Styling */
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  background: rgba(255, 255, 255, 0.75) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02), 0 2px 8px rgba(0, 0, 0, 0.01) !important;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+input[type="text"]:focus,
+input[type="tel"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+textarea:focus,
+select:focus {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: var(--color-accent) !important;
+  box-shadow: 0 0 0 4px rgba(229, 9, 20, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.8) !important;
 }
 
 /* Accent text */
@@ -124,11 +153,12 @@ h1, h2, h3, h4, h5, h6 {
   z-index: 0;
 }
 
-/* Gradient mesh */
+/* Liquid Gradient Mesh Background */
 .gradient-mesh {
   background:
-    radial-gradient(ellipse 80% 60% at 20% -10%, rgba(229,9,20,0.04) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 80% 110%, rgba(229,9,20,0.03) 0%, transparent 60%),
+    radial-gradient(ellipse 90% 70% at 20% -10%, rgba(229,9,20,0.07) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 60% at 80% 110%, rgba(229,9,20,0.05) 0%, transparent 65%),
+    radial-gradient(circle at 50% 50%, rgba(255,255,255,0.8) 0%, transparent 100%),
     #ffffff;
 }
 
@@ -191,89 +221,96 @@ h1, h2, h3, h4, h5, h6 {
   50% { opacity: 0.7; }
 }
 
-/* Primary Button */
+/* Liquid Primary Button */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 14px 32px;
-  background: var(--color-text);
+  background: linear-gradient(135deg, #222222 0%, #111111 100%);
   color: white;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 24px rgba(17, 17, 17, 0.2);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
   text-decoration: none;
-  letter-spacing: -0.01em;
 }
 
 .btn-primary:hover {
-  background: #222;
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(17,17,17,0.25);
+  transform: translateY(-2px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 12px 32px rgba(17, 17, 17, 0.35);
+  border-color: rgba(255, 255, 255, 0.3);
 }
 
 .btn-primary:active { transform: translateY(0); }
 
-/* Accent Button */
+/* Liquid Accent Button */
 .btn-accent {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 14px 32px;
-  background: var(--color-accent);
+  background: linear-gradient(135deg, #ff1a25 0%, #d00711 100%);
   color: white;
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.35), 0 8px 28px rgba(229, 9, 20, 0.35);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   overflow: hidden;
   text-decoration: none;
-  letter-spacing: -0.01em;
 }
 
 .btn-accent:hover {
-  background: var(--color-accent-hover);
-  transform: translateY(-1px);
-  box-shadow: 0 8px 24px rgba(229,9,20,0.3);
+  transform: translateY(-2px);
+  background: linear-gradient(135deg, #ff333d 0%, #e50914 100%);
+  box-shadow: inset 0 1.5px 0 rgba(255, 255, 255, 0.5), 0 14px 40px rgba(229, 9, 20, 0.5);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
-/* Ghost Button */
+/* Liquid Ghost Button */
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   padding: 14px 32px;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.5);
   color: var(--color-text);
-  border: 1.5px solid var(--color-border);
-  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 4px 16px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 14px;
   font-family: var(--font-body);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
-  letter-spacing: -0.01em;
 }
 
 .btn-ghost:hover {
-  border-color: var(--color-text);
-  background: var(--color-text);
-  color: white;
-  transform: translateY(-1px);
+  border-color: rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 8px 24px rgba(0, 0, 0, 0.06);
+  transform: translateY(-2px);
 }
 
 /* Ripple effect */
