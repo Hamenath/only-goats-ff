@@ -8,12 +8,13 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import {
   collection, onSnapshot, orderBy, query,
-  doc, updateDoc, deleteDoc, getDoc, setDoc
+  doc, updateDoc, deleteDoc, getDoc, setDoc, addDoc
 } from "firebase/firestore";
 import toast from "react-hot-toast";
 import {
   LogOut, Users, Check, X, Trash2, Download,
-  Search, Settings, Activity, Eye, ShieldCheck
+  Search, Settings, Activity, Eye, ShieldCheck,
+  Calendar, Bell, Plus
 } from "lucide-react";
 
 interface Registration {
@@ -41,8 +42,35 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
-  const [activeTab, setActiveTab] = useState<"registrations" | "settings">("registrations");
-  const [settings, setSettings] = useState({ tournamentDate: "", registrationEnabled: true, registrationLimit: 24 });
+  const [activeTab, setActiveTab] = useState<"registrations" | "settings" | "announcements" | "schedule">("registrations");
+  
+  // Settings State matching Phase 5 Schema
+  const [settings, setSettings] = useState({
+    countdownDate: "",
+    registrationOpen: true,
+    maxTeams: 24,
+    prizePool: 1000,
+    entryFee: 100,
+    reEntryFee: 40,
+    registeredTeams: 0
+  });
+
+  // Announcements State (Phase 14)
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [annTitle, setAnnTitle] = useState("");
+  const [annDesc, setAnnDesc] = useState("");
+  const [annPriority, setAnnPriority] = useState("high");
+
+  // Match Schedule State (Phase 11 & Phase 13)
+  const [matches, setMatches] = useState<any[]>([]);
+  const [matchDate, setMatchDate] = useState("");
+  const [matchTime, setMatchTime] = useState("");
+  const [matchName, setMatchName] = useState("");
+  const [matchStage, setMatchStage] = useState("Stage 1");
+  const [matchStatus, setMatchStatus] = useState<"upcoming" | "live" | "completed">("upcoming");
+  const [matchT1, setMatchT1] = useState("12 SQUADS");
+  const [matchT2, setMatchT2] = useState("");
+  const [matchStreamUrl, setMatchStreamUrl] = useState("");
 
   // Auth guard
   useEffect(() => {
@@ -52,7 +80,7 @@ export default function AdminDashboard() {
     return () => unsub();
   }, [router]);
 
-  // Registrations
+  // Registrations Realtime List
   useEffect(() => {
     const q = query(collection(db, "registrations"), orderBy("createdAt", "desc"));
     const unsub = onSnapshot(q, (snap) => {
@@ -62,10 +90,39 @@ export default function AdminDashboard() {
     return () => unsub();
   }, []);
 
-  // Settings
+  // Settings Realtime Listener
   useEffect(() => {
     const unsub = onSnapshot(doc(db, "settings", "tournament"), (snap) => {
-      if (snap.exists()) setSettings(snap.data() as typeof settings);
+      if (snap.exists()) {
+        const data = snap.data();
+        setSettings({
+          countdownDate: data.countdownDate || "",
+          registrationOpen: data.registrationOpen !== undefined ? data.registrationOpen : true,
+          maxTeams: data.maxTeams !== undefined ? data.maxTeams : 24,
+          prizePool: data.prizePool !== undefined ? data.prizePool : 1000,
+          entryFee: data.entryFee !== undefined ? data.entryFee : 100,
+          reEntryFee: data.reEntryFee !== undefined ? data.reEntryFee : 40,
+          registeredTeams: data.registeredTeams !== undefined ? data.registeredTeams : 0
+        });
+      }
+    });
+    return () => unsub();
+  }, []);
+
+  // Announcements Realtime Listener
+  useEffect(() => {
+    const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
+    const unsub = onSnapshot(q, (snap) => {
+      setAnnouncements(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+    return () => unsub();
+  }, []);
+
+  // Matches Schedule Realtime Listener
+  useEffect(() => {
+    const q = query(collection(db, "schedule"), orderBy("date"));
+    const unsub = onSnapshot(q, (snap) => {
+      setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
     return () => unsub();
   }, []);
@@ -95,6 +152,80 @@ export default function AdminDashboard() {
       toast.success("Settings saved!");
     } catch {
       toast.error("Failed to save settings");
+    }
+  };
+
+  const handleAddAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!annTitle.trim() || !annDesc.trim()) return;
+    try {
+      await addDoc(collection(db, "announcements"), {
+        title: annTitle,
+        description: annDesc,
+        priority: annPriority,
+        createdAt: new Date().toISOString()
+      });
+      setAnnTitle("");
+      setAnnDesc("");
+      toast.success("Announcement posted!");
+    } catch {
+      toast.error("Failed to post announcement");
+    }
+  };
+
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!confirm("Delete this announcement?")) return;
+    try {
+      await deleteDoc(doc(db, "announcements", id));
+      toast.success("Announcement deleted");
+    } catch {
+      toast.error("Failed to delete announcement");
+    }
+  };
+
+  const handleAddMatch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!matchDate.trim() || !matchTime.trim() || !matchName.trim()) return;
+    try {
+      await addDoc(collection(db, "schedule"), {
+        date: matchDate,
+        time: matchTime,
+        match: matchName,
+        stage: matchStage,
+        status: matchStatus,
+        teams: {
+          t1: matchT1,
+          t2: matchT2 || undefined
+        },
+        streamUrl: matchStreamUrl || undefined
+      });
+      setMatchDate("");
+      setMatchTime("");
+      setMatchName("");
+      setMatchT2("");
+      setMatchStreamUrl("");
+      toast.success("Match scheduled!");
+    } catch {
+      toast.error("Failed to schedule match");
+    }
+  };
+
+  const handleUpdateMatchStatus = async (id: string, status: "upcoming" | "live" | "completed") => {
+    try {
+      await updateDoc(doc(db, "schedule", id), { status });
+      toast.success(`Match updated to ${status}`);
+    } catch {
+      toast.error("Failed to update match status");
+    }
+  };
+
+  const handleDeleteMatch = async (id: string) => {
+    if (!confirm("Delete this scheduled match?")) return;
+    try {
+      await deleteDoc(doc(db, "schedule", id));
+      toast.success("Match deleted");
+    } catch {
+      toast.error("Failed to delete match");
     }
   };
 
@@ -169,11 +300,16 @@ export default function AdminDashboard() {
         </div>
 
         {/* Tabs selector */}
-        <div style={{ display: "flex", gap: 8, marginBottom: 32, borderBottom: "1px solid #eaeaea" }}>
-          {[{ id: "registrations", label: "Registrations List", icon: Users }, { id: "settings", label: "General Settings", icon: Settings }].map(({ id, label, icon: Icon }) => (
+        <div style={{ display: "flex", gap: 8, marginBottom: 32, borderBottom: "1px solid #eaeaea", flexWrap: "wrap" }}>
+          {[
+            { id: "registrations", label: "Registrations List", icon: Users },
+            { id: "settings", label: "General Settings", icon: Settings },
+            { id: "announcements", label: "Announcements", icon: Bell },
+            { id: "schedule", label: "Match Schedule", icon: Calendar }
+          ].map(({ id, label, icon: Icon }) => (
             <button
               key={id}
-              onClick={() => setActiveTab(id as typeof activeTab)}
+              onClick={() => setActiveTab(id as any)}
               style={{
                 padding: "14px 20px",
                 background: "none",
@@ -345,44 +481,73 @@ export default function AdminDashboard() {
             <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 20, fontWeight: 700, marginBottom: 28, color: "#111" }}>Tournament Configuration</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Tournament Date & Time</label>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Tournament Date & Time (Countdown)</label>
                 <input
                   type="datetime-local"
-                  value={settings.tournamentDate?.replace("Z", "") || ""}
-                  onChange={(e) => setSettings((s) => ({ ...s, tournamentDate: e.target.value }))}
+                  value={settings.countdownDate?.replace("Z", "") || ""}
+                  onChange={(e) => setSettings((s) => ({ ...s, countdownDate: e.target.value }))}
                   style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #eaeaea", borderRadius: 12, fontSize: 14, fontFamily: "Inter, sans-serif", outline: "none" }}
                 />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Registration Team Limit</label>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Max Teams</label>
                 <input
                   type="number"
-                  value={settings.registrationLimit}
-                  onChange={(e) => setSettings((s) => ({ ...s, registrationLimit: Number(e.target.value) }))}
+                  value={settings.maxTeams}
+                  onChange={(e) => setSettings((s) => ({ ...s, maxTeams: Number(e.target.value) }))}
                   style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #eaeaea", borderRadius: 12, fontSize: 14, fontFamily: "Inter, sans-serif", outline: "none" }}
                 />
               </div>
+              <div>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Prize Pool (₹)</label>
+                <input
+                  type="number"
+                  value={settings.prizePool}
+                  onChange={(e) => setSettings((s) => ({ ...s, prizePool: Number(e.target.value) }))}
+                  style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #eaeaea", borderRadius: 12, fontSize: 14, fontFamily: "Inter, sans-serif", outline: "none" }}
+                />
+              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Entry Fee (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.entryFee}
+                    onChange={(e) => setSettings((s) => ({ ...s, entryFee: Number(e.target.value) }))}
+                    style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #eaeaea", borderRadius: 12, fontSize: 14, fontFamily: "Inter, sans-serif", outline: "none" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.04em", textTransform: "uppercase" }}>Re-Entry Fee (₹)</label>
+                  <input
+                    type="number"
+                    value={settings.reEntryFee}
+                    onChange={(e) => setSettings((s) => ({ ...s, reEntryFee: Number(e.target.value) }))}
+                    style={{ width: "100%", padding: "12px 14px", border: "1.5px solid #eaeaea", borderRadius: 12, fontSize: 14, fontFamily: "Inter, sans-serif", outline: "none" }}
+                  />
+                </div>
+              </div>
               <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "18px 20px", border: "1.5px solid #eaeaea", borderRadius: 14, background: "#fafafa" }}>
                 <div>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>Lobby Submissions Status</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#111" }}>Registration Open Status</p>
                   <p style={{ fontSize: 12, color: "#888" }}>Allow users to submit registration form</p>
                 </div>
                 <label style={{ position: "relative", display: "inline-block", width: 48, height: 26, cursor: "pointer" }}>
                   <input
                     type="checkbox"
-                    checked={settings.registrationEnabled}
-                    onChange={(e) => setSettings((s) => ({ ...s, registrationEnabled: e.target.checked }))}
+                    checked={settings.registrationOpen}
+                    onChange={(e) => setSettings((s) => ({ ...s, registrationOpen: e.target.checked }))}
                     style={{ opacity: 0, width: 0, height: 0 }}
                   />
                   <span style={{
                     position: "absolute", inset: 0, borderRadius: 100,
-                    background: settings.registrationEnabled ? "#e50914" : "#eaeaea",
+                    background: settings.registrationOpen ? "#e50914" : "#eaeaea",
                     transition: "background 0.2s",
                   }} />
                   <span style={{
                     position: "absolute",
                     width: 20, height: 20, borderRadius: "50%", background: "#fff",
-                    top: 3, left: settings.registrationEnabled ? 25 : 3,
+                    top: 3, left: settings.registrationOpen ? 25 : 3,
                     transition: "left 0.2s",
                     boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
                   }} />
@@ -391,6 +556,227 @@ export default function AdminDashboard() {
               <button onClick={handleSaveSettings} className="btn-accent" style={{ width: "100%", justifyContent: "center", padding: "14px 24px", borderRadius: 12 }}>
                 Save Settings
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Announcements Tab */}
+        {activeTab === "announcements" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32 }}>
+            {/* Create form */}
+            <div className="glass-card" style={{ padding: 32, background: "#fff", border: "1px solid #eaeaea", borderRadius: 20, height: "fit-content" }}>
+              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Post Announcement</h2>
+              <form onSubmit={handleAddAnnouncement} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Title</label>
+                  <input
+                    type="text"
+                    value={annTitle}
+                    onChange={(e) => setAnnTitle(e.target.value)}
+                    placeholder="e.g. Registration Open"
+                    required
+                    style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Description</label>
+                  <textarea
+                    value={annDesc}
+                    onChange={(e) => setAnnDesc(e.target.value)}
+                    placeholder="e.g. 24 Teams Only"
+                    required
+                    rows={4}
+                    style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13, resize: "none" }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Priority</label>
+                  <select
+                    value={annPriority}
+                    onChange={(e) => setAnnPriority(e.target.value)}
+                    style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                  </select>
+                </div>
+                <button type="submit" className="btn-accent" style={{ justifyContent: "center", padding: "12px", borderRadius: 10 }}>
+                  <Plus size={16} /> Post announcement
+                </button>
+              </form>
+            </div>
+
+            {/* List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 700 }}>Active Announcements</h2>
+              {announcements.length === 0 ? (
+                <p style={{ fontSize: 13, color: "#999" }}>No announcements posted yet.</p>
+              ) : (
+                announcements.map((ann) => (
+                  <div key={ann.id} className="glass-card" style={{ padding: 24, background: "#fff", border: "1px solid #eaeaea", borderRadius: 16, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16 }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                        <span style={{
+                          fontSize: 9, fontWeight: 800, textTransform: "uppercase", padding: "2px 8px", borderRadius: 4,
+                          background: ann.priority === "high" ? "rgba(229,9,20,0.08)" : ann.priority === "medium" ? "rgba(255,170,0,0.08)" : "#f0f0f0",
+                          color: ann.priority === "high" ? "#e50914" : ann.priority === "medium" ? "#cc8800" : "#666"
+                        }}>{ann.priority} priority</span>
+                        <span style={{ fontSize: 11, color: "#999" }}>{ann.createdAt ? new Date(ann.createdAt).toLocaleDateString() : ""}</span>
+                      </div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111", marginBottom: 4 }}>{ann.title}</h3>
+                      <p style={{ fontSize: 13, color: "#666" }}>{ann.description}</p>
+                    </div>
+                    <button onClick={() => handleDeleteAnnouncement(ann.id)} style={{ background: "none", border: "none", color: "#e50914", cursor: "pointer", padding: 4 }}>
+                      <Trash2 size={16} />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Match Schedule Tab */}
+        {activeTab === "schedule" && (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 32 }}>
+            {/* Create form */}
+            <div className="glass-card" style={{ padding: 32, background: "#fff", border: "1px solid #eaeaea", borderRadius: 20, height: "fit-content" }}>
+              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 700, marginBottom: 20 }}>Schedule New Match</h2>
+              <form onSubmit={handleAddMatch} style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Date (e.g. 15 Aug)</label>
+                    <input
+                      type="text"
+                      value={matchDate}
+                      onChange={(e) => setMatchDate(e.target.value)}
+                      placeholder="Date text"
+                      required
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Time (e.g. 7:00 PM)</label>
+                    <input
+                      type="text"
+                      value={matchTime}
+                      onChange={(e) => setMatchTime(e.target.value)}
+                      placeholder="Time text"
+                      required
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Match Name</label>
+                  <input
+                    type="text"
+                    value={matchName}
+                    onChange={(e) => setMatchName(e.target.value)}
+                    placeholder="e.g. Qualifier Match 1 — Bermuda"
+                    required
+                    style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                  />
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Stage (e.g. Stage 1)</label>
+                    <input
+                      type="text"
+                      value={matchStage}
+                      onChange={(e) => setMatchStage(e.target.value)}
+                      placeholder="Stage"
+                      required
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Status</label>
+                    <select
+                      value={matchStatus}
+                      onChange={(e) => setMatchStatus(e.target.value as any)}
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                    >
+                      <option value="upcoming">Upcoming</option>
+                      <option value="live">🔴 Live</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Team 1 (Default: 12 SQUADS)</label>
+                    <input
+                      type="text"
+                      value={matchT1}
+                      onChange={(e) => setMatchT1(e.target.value)}
+                      required
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Team 2 (Optional for VS matchups)</label>
+                    <input
+                      type="text"
+                      value={matchT2}
+                      onChange={(e) => setMatchT2(e.target.value)}
+                      placeholder="Leave blank for lobbies"
+                      style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 6 }}>Stream Link (Optional)</label>
+                  <input
+                    type="url"
+                    value={matchStreamUrl}
+                    onChange={(e) => setMatchStreamUrl(e.target.value)}
+                    placeholder="https://youtube.com/live/..."
+                    style={{ width: "100%", padding: "10px 12px", border: "1.5px solid #eaeaea", borderRadius: 10, fontSize: 13 }}
+                  />
+                </div>
+                <button type="submit" className="btn-accent" style={{ justifyContent: "center", padding: "12px", borderRadius: 10 }}>
+                  <Plus size={16} /> Add Match
+                </button>
+              </form>
+            </div>
+
+            {/* List */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+              <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 18, fontWeight: 700 }}>Scheduled Matches</h2>
+              {matches.length === 0 ? (
+                <p style={{ fontSize: 13, color: "#999" }}>No matches scheduled yet.</p>
+              ) : (
+                matches.map((match) => (
+                  <div key={match.id} className="glass-card" style={{ padding: 24, background: "#fff", border: "1px solid #eaeaea", borderRadius: 16, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16 }}>
+                    <div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                        <span style={{ fontSize: 10, fontWeight: 800, background: "#f0f0f0", padding: "2px 8px", borderRadius: 4 }}>{match.stage}</span>
+                        <span style={{ fontSize: 11, color: "#999" }}>{match.date} | {match.time}</span>
+                      </div>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, color: "#111", marginBottom: 4 }}>{match.match}</h3>
+                      <p style={{ fontSize: 12, color: "#666" }}>
+                        {match.teams?.t2 ? `${match.teams.t1} VS ${match.teams.t2}` : match.teams?.t1 || "12 SQUADS"}
+                      </p>
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <select
+                        value={match.status}
+                        onChange={(e) => handleUpdateMatchStatus(match.id, e.target.value as any)}
+                        style={{ padding: "6px 10px", fontSize: 11, fontWeight: 700, borderRadius: 8, border: "1px solid #eaeaea", background: "#fafafa" }}
+                      >
+                        <option value="upcoming">Upcoming</option>
+                        <option value="live">🔴 Live</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                      <button onClick={() => handleDeleteMatch(match.id)} style={{ background: "none", border: "none", color: "#e50914", cursor: "pointer", padding: 4 }}>
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

@@ -6,17 +6,17 @@ import { useInView } from "react-intersection-observer";
 import { Zap, DollarSign, RefreshCw, Map, Users, Activity } from "lucide-react";
 import { useAppStore } from "@/store/useAppStore";
 
-const STATS = [
-  { icon: DollarSign, label: "Prize Pool", value: 1000, prefix: "₹", color: "#e50914", description: "Winner takes home" },
-  { icon: Zap, label: "Entry Fee", value: 100, prefix: "₹", color: "#111", description: "Per squad" },
-  { icon: RefreshCw, label: "Re-Entry Fee", value: 40, prefix: "₹", color: "#111", description: "Second chance" },
-  { icon: Map, label: "Maps", value: 2, prefix: "", suffix: "x", color: "#111", description: "Bermuda rounds" },
-  { icon: Users, label: "League Teams", value: 16, prefix: "", color: "#111", description: "CS League stage" },
-];
-
 export function LiveStats() {
   const { ref, inView } = useInView({ threshold: 0.2, triggerOnce: true });
   const { registrationCount, settings } = useAppStore();
+
+  const STATS = [
+    { icon: DollarSign, label: "Prize Pool", value: settings.prizePool, prefix: "₹", color: "#e50914", description: "Winner takes home" },
+    { icon: Zap, label: "Entry Fee", value: settings.entryFee, prefix: "₹", color: "#111", description: "Per squad" },
+    { icon: RefreshCw, label: "Re-Entry Fee", value: settings.reEntry, prefix: "₹", color: "#111", description: "Second chance" },
+    { icon: Map, label: "Maps", value: 2, prefix: "", suffix: "x", color: "#111", description: "Bermuda rounds" },
+    { icon: Users, label: "League Teams", value: 16, prefix: "", color: "#111", description: "CS League stage" },
+  ];
 
   return (
     <section style={{ padding: "100px 0", background: "#fafafa", borderTop: "1px solid #eaeaea", borderBottom: "1px solid #eaeaea" }}>
