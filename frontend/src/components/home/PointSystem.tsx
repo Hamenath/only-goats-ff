@@ -4,15 +4,15 @@ import { Trophy, Swords, ShieldCheck, Zap } from "lucide-react";
 
 export function PointSystem() {
   const placements = [
-    { place: "1st (Booyah!)", points: 12, highlight: true },
-    { place: "2nd Place", points: 10, highlight: false },
-    { place: "3rd Place", points: 8, highlight: false },
-    { place: "4th Place", points: 6, highlight: false },
-    { place: "5th Place", points: 5, highlight: false },
-    { place: "6th Place", points: 4, highlight: false },
-    { place: "7th Place", points: 3, highlight: false },
-    { place: "8th Place", points: 2, highlight: false },
-    { place: "9th–12th Place", points: 1, highlight: false },
+    { place: "1st (Booyah!)", points: 0, highlight: true },
+    { place: "2nd Place", points: 0, highlight: false },
+    { place: "3rd Place", points: 0, highlight: false },
+    { place: "4th Place", points: 0, highlight: false },
+    { place: "5th Place", points: 0, highlight: false },
+    { place: "6th Place", points: 0, highlight: false },
+    { place: "7th Place", points: 0, highlight: false },
+    { place: "8th Place", points: 0, highlight: false },
+    { place: "9th–12th Place", points: 0, highlight: false },
     { place: "13th+ Place", points: 0, highlight: false },
   ];
 
