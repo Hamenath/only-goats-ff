@@ -2,6 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface LogoProps {
   size?: number;
@@ -22,7 +23,12 @@ export const Logo: React.FC<LogoProps> = ({
   const subColor = variant === "light" ? "rgba(255,255,255,0.6)" : "#999999";
 
   return (
-    <div className={`flex items-center gap-3 select-none ${className}`}>
+    <Link
+      href="/"
+      aria-label="Go to Only Goats FF homepage"
+      className={`flex items-center gap-3 select-none ${className}`}
+      style={{ textDecoration: "none", display: "inline-flex", cursor: "pointer" }}
+    >
       <div
         className="relative flex items-center justify-center overflow-hidden transition-transform hover:scale-105"
         style={{
@@ -33,7 +39,7 @@ export const Logo: React.FC<LogoProps> = ({
         }}
       >
         <Image
-          src="/logo.jpeg"
+          src="/logo.jpg"
           alt="Only Goats Emblem Logo"
           width={size}
           height={size}
@@ -72,7 +78,7 @@ export const Logo: React.FC<LogoProps> = ({
           )}
         </div>
       )}
-    </div>
+    </Link>
   );
 };
 

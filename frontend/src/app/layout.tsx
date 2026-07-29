@@ -10,6 +10,14 @@ import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://onlygoats-ff.com"),
+  icons: {
+    icon: [
+      { url: "/logo.jpg", type: "image/jpeg" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    shortcut: "/logo.jpg",
+    apple: "/logo.jpg",
+  },
   title: {
     default: "Only Goats FF — Free Fire Tournament",
     template: "%s | Only Goats FF",
