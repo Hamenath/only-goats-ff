@@ -472,119 +472,113 @@ export function RegisterForm() {
             </p>
 
             {/* Payment Grid: Left (QR Code), Center (UPI Address), Right (Payment Receipt Upload) */}
+            {/* 1. Top Row: UPI Address & Amount Due */}
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-                gap: 20,
-                alignItems: "stretch",
-                marginBottom: 28,
+                background: "rgba(229,9,20,0.02)",
+                border: "1px solid rgba(229,9,20,0.12)",
+                borderRadius: 18,
+                padding: "20px 24px",
+                marginBottom: 20,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexWrap: "wrap",
+                gap: 16,
               }}
             >
-              {/* Left Column: QR Code */}
-              <div
-                style={{
-                  background: "rgba(229,9,20,0.02)",
-                  border: "1px solid rgba(229,9,20,0.1)",
-                  borderRadius: 16,
-                  padding: "20px 16px",
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textAlign: "center",
-                }}
-              >
-                <p style={{ fontSize: 11, color: "#666", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
-                  SCAN QR CODE TO PAY
+              <div style={{ flex: 1, minWidth: 200, textAlign: "left" }}>
+                <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                  UPI ADDRESS
                 </p>
-                <div style={{
-                  background: "#fff",
-                  padding: 10,
-                  borderRadius: 14,
-                  border: "1px solid rgba(0,0,0,0.08)",
-                  boxShadow: "0 4px 16px rgba(0,0,0,0.04)",
-                  display: "inline-block"
-                }}>
-                  <img
-                    src="/bhai-qr.jpeg"
-                    alt="Hamenath B UPI QR Code"
-                    style={{
-                      width: "100%",
-                      maxWidth: 170,
-                      height: "auto",
-                      borderRadius: 8,
-                      display: "block"
-                    }}
-                  />
-                </div>
-                <span style={{ fontSize: 11, color: "#888", marginTop: 8, fontWeight: 500 }}>
-                  Scan using any UPI app
-                </span>
+                <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 17, fontWeight: 800, color: "#e50914", wordBreak: "break-all" }}>
+                  hamenathmurali@oksbi
+                </p>
               </div>
 
-              {/* Center Column: UPI Address & Amount */}
+              <div style={{ width: 1, height: 44, borderLeft: "1px dashed rgba(229,9,20,0.2)" }} />
+
+              <div style={{ minWidth: 100, textAlign: "right" }}>
+                <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>
+                  AMOUNT DUE
+                </p>
+                <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 32, fontWeight: 800, color: "#111" }}>
+                  ₹100
+                </p>
+              </div>
+            </div>
+
+            {/* 2. Middle Row: Dedicated Large QR Code Card */}
+            <div
+              style={{
+                background: "#ffffff",
+                border: "1px solid #eaeaea",
+                borderRadius: 20,
+                padding: "24px 28px",
+                marginBottom: 24,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                flexDirection: "column",
+                textAlign: "center",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.02)",
+              }}
+            >
+              <p style={{ fontSize: 11, color: "#e50914", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>
+                SCAN QR CODE TO PAY
+              </p>
+              <div style={{
+                background: "#fff",
+                padding: 12,
+                borderRadius: 18,
+                border: "1px solid rgba(0,0,0,0.08)",
+                boxShadow: "0 8px 30px rgba(0,0,0,0.06)",
+                marginBottom: 14,
+                display: "inline-block",
+              }}>
+                <img
+                  src="/bhai-qr.jpeg"
+                  alt="Hamenath B UPI QR Code"
+                  style={{
+                    width: 220,
+                    height: "auto",
+                    borderRadius: 10,
+                    display: "block",
+                  }}
+                />
+              </div>
+              <p style={{ fontSize: 13, color: "#666", fontWeight: 500 }}>
+                Scan using Google Pay, PhonePe, Paytm or any UPI app
+              </p>
+            </div>
+
+            {/* Payment Receipt Image Upload */}
+            <div style={{ marginBottom: 28 }}>
+              <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                Payment Receipt Image *
+              </label>
               <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={handleDrop}
                 style={{
-                  background: "rgba(229,9,20,0.02)",
-                  border: "1px solid rgba(229,9,20,0.1)",
-                  borderRadius: 16,
-                  padding: "24px 20px",
                   display: "flex",
                   flexDirection: "column",
                   alignItems: "center",
                   justifyContent: "center",
-                  textAlign: "center",
+                  gap: 12,
+                  padding: "28px 16px",
+                  minHeight: 180,
+                  border: `2px dashed ${fileError ? "#e50914" : isDragActive ? "#111" : paymentFile ? "#111" : "#eaeaea"}`,
+                  borderRadius: 16,
+                  cursor: "pointer",
+                  background: paymentFile ? "rgba(17,17,17,0.01)" : isDragActive ? "rgba(17,17,17,0.02)" : "#fafafa",
+                  transition: "all 0.2s ease",
                 }}
+                onClick={() => document.getElementById("file-upload-input")?.click()}
               >
-                <div style={{ marginBottom: 16 }}>
-                  <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
-                    UPI ADDRESS
-                  </p>
-                  <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 17, fontWeight: 800, color: "#e50914", wordBreak: "break-all" }}>
-                    hamenathmurali@oksbi
-                  </p>
-                </div>
-
-                <div style={{ width: "80%", height: 1, borderTop: "1px dashed rgba(229,9,20,0.15)", margin: "8px 0 16px 0" }} />
-
-                <div>
-                  <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 4 }}>
-                    AMOUNT DUE
-                  </p>
-                  <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800, color: "#111" }}>
-                    ₹100
-                  </p>
-                </div>
-              </div>
-
-              {/* Right Column: Payment Receipt Image Upload */}
-              <div style={{ display: "flex", flexDirection: "column" }}>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 800, color: "#555", marginBottom: 8, letterSpacing: "0.05em", textTransform: "uppercase" }}>
-                  Payment Receipt Image *
-                </label>
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={handleDrop}
-                  style={{
-                    flex: 1,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 12,
-                    padding: "24px 16px",
-                    minHeight: 200,
-                    border: `2px dashed ${fileError ? "#e50914" : isDragActive ? "#111" : paymentFile ? "#111" : "#eaeaea"}`,
-                    borderRadius: 16,
-                    cursor: "pointer",
-                    background: paymentFile ? "rgba(17,17,17,0.01)" : isDragActive ? "rgba(17,17,17,0.02)" : "#fafafa",
-                    transition: "all 0.2s ease",
-                  }}
-                >
-                  <input
+                <input
                     id="payment-screenshot-input"
                     type="file"
                     accept="image/*"
@@ -611,7 +605,6 @@ export function RegisterForm() {
                   <p style={{ fontSize: 11, color: "#e50914", marginTop: 6, fontWeight: 600 }}>{fileError}</p>
                 )}
               </div>
-            </div>
 
             <InputField
               label="UPI Transaction ID *"
