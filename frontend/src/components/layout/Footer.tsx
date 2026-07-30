@@ -152,7 +152,7 @@ export function Footer() {
         {/* Bottom */}
         <div style={{ borderTop: "1px solid #eaeaea", paddingTop: 32, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
           <p style={{ fontSize: 13, color: "#999" }}>
-            © {new Date().getFullYear()} Only Goats FF. All rights reserved. <span style={{ color: "#666" }}>• Developed by <strong style={{ color: "#111" }}>EDITOR AK</strong> , <strong style={{ color: "#111" }}>VPK</strong> , <strong style={{ color: "#111" }}>KRISH JR</strong></span>
+            © {new Date().getFullYear()} Only Goats FF. All rights reserved.
           </p>
           <div style={{ display: "flex", gap: 20 }}>
             {["Privacy Policy", "Terms of Service"].map((item) => (
