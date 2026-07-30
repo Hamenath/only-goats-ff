@@ -381,11 +381,36 @@ export function MatchSchedule() {
 
   useEffect(() => {
     try {
-      const q = query(collection(db, "matches"), orderBy("createdAt", "desc"));
+      const q = query(collection(db, "matches"), orderBy("createdAt", "asc"));
       const unsub = onSnapshot(q, (snap) => {
+        const STAGE_ORDER: Record<string, number> = {
+          "qualifier 1": 1,
+          "qualifier 2": 2,
+          "round 2": 3,
+          "semi final": 4,
+          "grand final": 5,
+        };
+
+        const getRank = (item: MatchItem) => {
+          const text = `${item.name || ""} ${item.round || ""}`.toLowerCase();
+          for (const [k, r] of Object.entries(STAGE_ORDER)) {
+            if (text.includes(k)) return r;
+          }
+          return 99;
+        };
+
         const list: MatchItem[] = snap.docs
           .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() } as MatchItem))
-          .filter((m) => m.isPublished !== false && !m.isArchived);
+          .filter((m) => m.isPublished !== false && !m.isArchived)
+          .sort((a, b) => {
+            const rA = getRank(a);
+            const rB = getRank(b);
+            if (rA !== rB) return rA - rB;
+            const tA = a.matchTime || a.matchStartTime || "";
+            const tB = b.matchTime || b.matchStartTime || "";
+            if (tA && tB) return tA.localeCompare(tB);
+            return (a.name || "").localeCompare(b.name || "");
+          });
         setMatches(list);
         setLoading(false);
       });

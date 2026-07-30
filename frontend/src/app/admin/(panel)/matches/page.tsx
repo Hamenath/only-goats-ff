@@ -204,7 +204,31 @@ export default function MatchesPage() {
 
     const qMatches = query(collection(db, "matches"), orderBy("createdAt", "asc"));
     const unsubMatches = onSnapshot(qMatches, (snap) => {
-      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() } as MatchItem));
+      const STAGE_ORDER: Record<string, number> = {
+        "qualifier 1": 1,
+        "qualifier 2": 2,
+        "round 2": 3,
+        "semi final": 4,
+        "grand final": 5,
+      };
+
+      const getRank = (item: MatchItem) => {
+        const text = `${item.name || ""} ${item.round || ""}`.toLowerCase();
+        for (const [k, r] of Object.entries(STAGE_ORDER)) {
+          if (text.includes(k)) return r;
+        }
+        return 99;
+      };
+
+      const data = snap.docs
+        .map((d) => ({ id: d.id, ...d.data() } as MatchItem))
+        .sort((a, b) => {
+          const rA = getRank(a);
+          const rB = getRank(b);
+          if (rA !== rB) return rA - rB;
+          return (a.name || "").localeCompare(b.name || "");
+        });
+
       setMatches(data);
       setLoading(false);
     });
