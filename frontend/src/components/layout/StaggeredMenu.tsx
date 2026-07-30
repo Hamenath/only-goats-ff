@@ -433,25 +433,25 @@ export const StaggeredMenu = ({
           onClick={toggleMenu}
           type="button"
           style={{
-            border: open ? '1px solid rgba(229,9,20,0.4)' : scrolled ? '1px solid rgba(17,17,17,0.12)' : '1px solid rgba(255,255,255,0.25)',
+            border: open ? '1.5px solid rgba(229,9,20,0.6)' : scrolled ? '1.5px solid rgba(17,17,17,0.18)' : '1.5px solid rgba(255,255,255,0.4)',
             background: open
-              ? 'rgba(255, 255, 255, 0.2)'
+              ? 'rgba(255, 255, 255, 0.25)'
               : scrolled
-              ? 'rgba(255, 255, 255, 0.45)'
-              : 'rgba(255, 255, 255, 0.12)',
-            backdropFilter: 'blur(16px)',
-            WebkitBackdropFilter: 'blur(16px)',
-            borderRadius: 20,
-            padding: '10px 20px',
+              ? 'rgba(255, 255, 255, 0.65)'
+              : 'rgba(255, 255, 255, 0.18)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            borderRadius: 24,
+            padding: '12px 24px',
             fontSize: 13,
-            fontWeight: 800,
+            fontWeight: 900,
             fontFamily: 'Space Grotesk, sans-serif',
             color: open ? '#e50914' : scrolled ? '#111111' : '#ffffff',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.4)',
+            boxShadow: '0 10px 32px rgba(0, 0, 0, 0.12), inset 0 1px 1.5px rgba(255, 255, 255, 0.6)',
             transition: 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
           }}
         >
-          <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true" style={{ width: 44 }}>
+          <span ref={textWrapRef} className="sm-toggle-textWrap" aria-hidden="true" style={{ width: 62 }}>
             <span ref={textInnerRef} className="sm-toggle-textInner">
               {textLines.map((l, i) => (
                 <span className="sm-toggle-line" key={i}>
