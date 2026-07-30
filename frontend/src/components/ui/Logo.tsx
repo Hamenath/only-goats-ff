@@ -24,11 +24,18 @@ export const Logo: React.FC<LogoProps> = ({
   const textColor = variant === "red" ? "#e50914" : variant === "light" ? "#ffffff" : "#111111";
   const subColor = variant === "red" ? "rgba(229,9,20,0.85)" : variant === "light" ? "rgba(255,255,255,0.6)" : "#666666";
 
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (onClick) onClick();
+    if (typeof window !== "undefined" && window.location.pathname === "/") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
   return (
     <Link
       href="/"
-      onClick={onClick}
-      aria-label="Go to Only Goats FF homepage"
+      onClick={handleClick}
+      aria-label="Go to Only Goats FF homepage Hero Section"
       className={`flex items-center gap-3 select-none ${className}`}
       style={{ textDecoration: "none", display: "inline-flex", cursor: "pointer" }}
     >
