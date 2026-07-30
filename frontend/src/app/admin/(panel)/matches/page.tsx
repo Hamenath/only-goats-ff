@@ -49,6 +49,7 @@ import {
   ArrowRight,
   Zap,
   Check,
+  Flame,
 } from "lucide-react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -60,6 +61,7 @@ interface MatchItem {
   name: string;
   map: string;
   round: string;
+  stageType?: "BR" | "CS";
   pool?: "A" | "B";
   matchTime: string;
   matchStartTime?: string;
@@ -84,6 +86,7 @@ const DEFAULT_FORM: Omit<MatchItem, "id"> = {
   name: "Qualifier 1",
   map: "Bermuda",
   round: "Qualifier 1",
+  stageType: "BR",
   pool: "A",
   matchTime: "",
   matchStartTime: "",
@@ -102,43 +105,34 @@ const DEFAULT_FORM: Omit<MatchItem, "id"> = {
   description: "Official Tournament Stage Match.",
 };
 
-interface PairForm {
+interface BRStageForm {
   matchTime: string;
   map: string;
   maxSquads: number;
   rules: string;
-
   // Qualifier 1 (Pool A)
   q1RoomId: string;
   q1Password: string;
   q1StreamUrl: string;
   q1WhatsappUrl: string;
-  q1BannerUrl: string;
-
   // Qualifier 2 (Pool B)
   q2RoomId: string;
   q2Password: string;
   q2StreamUrl: string;
   q2WhatsappUrl: string;
-  q2BannerUrl: string;
 }
 
-const DEFAULT_PAIR_FORM: PairForm = {
-  matchTime: "",
-  map: "Bermuda",
-  maxSquads: 12,
-  rules: "1. No Roof. 2. No Spray. 3. No Emote. 4. Face to Face Fight Only.",
-  q1RoomId: "",
-  q1Password: "",
-  q1StreamUrl: "",
-  q1WhatsappUrl: "",
-  q1BannerUrl: "",
-  q2RoomId: "",
-  q2Password: "",
-  q2StreamUrl: "",
-  q2WhatsappUrl: "",
-  q2BannerUrl: "",
-};
+interface CSStageForm {
+  roundName: "Round 2" | "Semi Final" | "Grand Final";
+  matchTime: string;
+  map: string;
+  maxSquads: number;
+  roomId: string;
+  roomPassword: string;
+  streamUrl: string;
+  whatsappUrl: string;
+  rules: string;
+}
 
 export default function MatchesPage() {
   const [matches, setMatches] = useState<MatchItem[]>([]);
@@ -146,20 +140,45 @@ export default function MatchesPage() {
   const [activeTournament, setActiveTournament] = useState<Tournament | null>(null);
   const [teamCount, setTeamCount] = useState(0);
 
-  // Modal State
+  // Modal Configure State
   const [configMatch, setConfigMatch] = useState<MatchItem | null>(null);
   const [form, setForm] = useState<Omit<MatchItem, "id">>(DEFAULT_FORM);
 
-  // Qualifier Pair Modal State
-  const [showPairModal, setShowPairModal] = useState(false);
-  const [pairForm, setPairForm] = useState<PairForm>(DEFAULT_PAIR_FORM);
-  const [creatingPair, setCreatingPair] = useState(false);
+  // Stage Creation Modal State
+  const [showStageModal, setShowStageModal] = useState(false);
+  const [stageTypeSelection, setStageTypeSelection] = useState<"BR" | "CS">("BR");
+  const [creatingStage, setCreatingStage] = useState(false);
 
-  const [uploadingBanner, setUploadingBanner] = useState(false);
-  const [showPasswordMap, setShowPasswordMap] = useState<Record<string, boolean>>({});
-  const [generatingStages, setGeneratingStages] = useState(false);
+  // BR Form State
+  const [brForm, setBrForm] = useState<BRStageForm>({
+    matchTime: "",
+    map: "Bermuda",
+    maxSquads: 12,
+    rules: "1. No Roof. 2. No Spray. 3. No Emote. 4. Face to Face Fight Only.",
+    q1RoomId: "",
+    q1Password: "",
+    q1StreamUrl: "",
+    q1WhatsappUrl: "",
+    q2RoomId: "",
+    q2Password: "",
+    q2StreamUrl: "",
+    q2WhatsappUrl: "",
+  });
 
-  // Search & Filter
+  // CS Form State
+  const [csForm, setCsForm] = useState<CSStageForm>({
+    roundName: "Round 2",
+    matchTime: "",
+    map: "Kalahari",
+    maxSquads: 16,
+    roomId: "",
+    roomPassword: "",
+    streamUrl: "",
+    whatsappUrl: "",
+    rules: "Standard Clash Squad Championship Rules Apply.",
+  });
+
+  // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -197,10 +216,15 @@ export default function MatchesPage() {
     };
   }, []);
 
-  // Save Qualifier Pair Handler (Creates BOTH Qualifiers simultaneously in a batch)
-  const handleSaveQualifierPair = async (e: React.FormEvent) => {
+  // BR Stage Completion Status
+  const brMatches = matches.filter((m) => m.stageType === "BR" || m.round.includes("Qualifier"));
+  const brCompletedCount = brMatches.filter((m) => m.status === "completed").length;
+  const isBRStageCompleted = brMatches.length > 0 && brCompletedCount === brMatches.length;
+
+  // Create BR Stage Pair (Qualifier 1 + Qualifier 2)
+  const handleCreateBRStage = async (e: React.FormEvent) => {
     e.preventDefault();
-    setCreatingPair(true);
+    setCreatingStage(true);
     try {
       const batch = writeBatch(db);
       const pad = (n: number) => String(n).padStart(2, "0");
@@ -208,14 +232,12 @@ export default function MatchesPage() {
       let roomReveal = "";
       let regClose = "";
 
-      if (pairForm.matchTime) {
-        const dt = new Date(pairForm.matchTime);
+      if (brForm.matchTime) {
+        const dt = new Date(brForm.matchTime);
         if (!isNaN(dt.getTime())) {
-          // Room Reveal: Start - 10m
           const revealDt = new Date(dt.getTime() - 10 * 60 * 1000);
           roomReveal = `${revealDt.getFullYear()}-${pad(revealDt.getMonth() + 1)}-${pad(revealDt.getDate())}T${pad(revealDt.getHours())}:${pad(revealDt.getMinutes())}`;
 
-          // Reg Close: Start - 2h
           const regCloseDt = new Date(dt.getTime() - 2 * 60 * 60 * 1000);
           regClose = `${regCloseDt.getFullYear()}-${pad(regCloseDt.getMonth() + 1)}-${pad(regCloseDt.getDate())}T${pad(regCloseDt.getHours())}:${pad(regCloseDt.getMinutes())}`;
         }
@@ -226,22 +248,22 @@ export default function MatchesPage() {
       batch.set(q1Ref, {
         name: "Qualifier 1",
         round: "Qualifier 1",
+        stageType: "BR",
         pool: "A",
-        map: pairForm.map,
-        matchTime: pairForm.matchTime,
-        matchStartTime: pairForm.matchTime,
+        map: brForm.map,
+        matchTime: brForm.matchTime,
+        matchStartTime: brForm.matchTime,
         roomRevealTime: roomReveal,
         regCloseTime: regClose,
-        maxSquads: pairForm.maxSquads || 12,
+        maxSquads: brForm.maxSquads || 12,
         status: "upcoming",
         isPublished: true,
-        roomId: pairForm.q1RoomId,
-        roomPassword: pairForm.q1Password,
-        streamUrl: pairForm.q1StreamUrl,
-        whatsappUrl: pairForm.q1WhatsappUrl,
-        bannerUrl: pairForm.q1BannerUrl,
-        rules: pairForm.rules,
-        description: "Qualifier 1 (Pool A) - Top 6 teams advance to Round 2.",
+        roomId: brForm.q1RoomId,
+        roomPassword: brForm.q1Password,
+        streamUrl: brForm.q1StreamUrl,
+        whatsappUrl: brForm.q1WhatsappUrl,
+        rules: brForm.rules,
+        description: "Battle Royale Stage - Qualifier 1 (Pool A)",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -251,103 +273,88 @@ export default function MatchesPage() {
       batch.set(q2Ref, {
         name: "Qualifier 2",
         round: "Qualifier 2",
+        stageType: "BR",
         pool: "B",
-        map: pairForm.map,
-        matchTime: pairForm.matchTime,
-        matchStartTime: pairForm.matchTime,
+        map: brForm.map,
+        matchTime: brForm.matchTime,
+        matchStartTime: brForm.matchTime,
         roomRevealTime: roomReveal,
         regCloseTime: regClose,
-        maxSquads: pairForm.maxSquads || 12,
+        maxSquads: brForm.maxSquads || 12,
         status: "upcoming",
         isPublished: true,
-        roomId: pairForm.q2RoomId,
-        roomPassword: pairForm.q2Password,
-        streamUrl: pairForm.q2StreamUrl,
-        whatsappUrl: pairForm.q2WhatsappUrl,
-        bannerUrl: pairForm.q2BannerUrl,
-        rules: pairForm.rules,
-        description: "Qualifier 2 (Pool B) - Top 6 teams advance to Round 2.",
+        roomId: brForm.q2RoomId,
+        roomPassword: brForm.q2Password,
+        streamUrl: brForm.q2StreamUrl,
+        whatsappUrl: brForm.q2WhatsappUrl,
+        rules: brForm.rules,
+        description: "Battle Royale Stage - Qualifier 2 (Pool B)",
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
       await batch.commit();
-      toast.success("🏆 Qualifier 1 & Qualifier 2 Created Simultaneously! 🔥");
-      setShowPairModal(false);
-      setPairForm(DEFAULT_PAIR_FORM);
+      toast.success("🏆 Battle Royale Qualifiers (Pool A & Pool B) Created! 🔥");
+      setShowStageModal(false);
     } catch {
-      toast.error("Failed to create Qualifier Pair");
+      toast.error("Failed to create Battle Royale Stage");
     } finally {
-      setCreatingPair(false);
+      setCreatingStage(false);
     }
   };
 
-  // Auto Generate Stages Function
-  const handleAutoGenerateStages = async () => {
-    setGeneratingStages(true);
+  // Create CS Stage (Knockout Rounds)
+  const handleCreateCSStage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingStage(true);
     try {
-      const qCount = activeTournament ? activeTournament.qualifierCount || 2 : 2;
-      const tPerQ = activeTournament ? activeTournament.teamsPerQualifier || 12 : 12;
-      const batch = writeBatch(db);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      let roomReveal = "";
+      let regClose = "";
 
-      for (let i = 1; i <= qCount; i++) {
-        const poolLetter = i === 1 ? "A" : i === 2 ? "B" : String.fromCharCode(64 + i);
-        const qRef = doc(collection(db, "matches"));
-        batch.set(qRef, {
-          name: `Qualifier ${i}`,
-          round: `Qualifier ${i}`,
-          pool: poolLetter,
-          map: "Bermuda",
-          maxSquads: tPerQ,
-          status: "upcoming",
-          isPublished: true,
-          rules: activeTournament?.rules || "1. No Roof. 2. No Spray. 3. No Emote. 4. Face to Face Fight Only.",
-          description: `Qualifier Stage ${i} (Pool ${poolLetter}) - Top 6 teams advance to Round 2.`,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        });
+      if (csForm.matchTime) {
+        const dt = new Date(csForm.matchTime);
+        if (!isNaN(dt.getTime())) {
+          const revealDt = new Date(dt.getTime() - 10 * 60 * 1000);
+          roomReveal = `${revealDt.getFullYear()}-${pad(revealDt.getMonth() + 1)}-${pad(revealDt.getDate())}T${pad(revealDt.getHours())}:${pad(revealDt.getMinutes())}`;
+
+          const regCloseDt = new Date(dt.getTime() - 2 * 60 * 60 * 1000);
+          regClose = `${regCloseDt.getFullYear()}-${pad(regCloseDt.getMonth() + 1)}-${pad(regCloseDt.getDate())}T${pad(regCloseDt.getHours())}:${pad(regCloseDt.getMinutes())}`;
+        }
       }
 
-      // Create Round 2 Match
-      const r2Ref = doc(collection(db, "matches"));
-      batch.set(r2Ref, {
-        name: "Round 2 (Semi-Finals)",
-        round: "Round 2",
-        map: "Kalahari",
-        maxSquads: (activeTournament?.teamsQualifiedPerQualifier || 6) * qCount + (activeTournament?.premiumPassSlots || 4),
+      await addDoc(collection(db, "matches"), {
+        name: csForm.roundName,
+        round: csForm.roundName,
+        stageType: "CS",
+        map: csForm.map,
+        matchTime: csForm.matchTime,
+        matchStartTime: csForm.matchTime,
+        roomRevealTime: roomReveal,
+        regCloseTime: regClose,
+        maxSquads: csForm.maxSquads || 16,
         status: "upcoming",
         isPublished: true,
-        rules: activeTournament?.rules || "Standard Clash Squad Championship Rules Apply.",
-        description: "Round 2 Semi-Finals - Top 12 teams advance to Grand Final.",
+        roomId: csForm.roomId,
+        roomPassword: csForm.roomPassword,
+        streamUrl: csForm.streamUrl,
+        whatsappUrl: csForm.whatsappUrl,
+        rules: csForm.rules,
+        description: `Clash Squad Stage - ${csForm.roundName}`,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
 
-      // Create Grand Final Match
-      const gfRef = doc(collection(db, "matches"));
-      batch.set(gfRef, {
-        name: "Grand Final Championship",
-        round: "Grand Final",
-        map: "Purgatory",
-        maxSquads: 12,
-        status: "upcoming",
-        isPublished: true,
-        rules: activeTournament?.rules || "Grand Final Championship Rules Apply.",
-        description: "Official Grand Final Championship Match.",
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      });
-
-      await batch.commit();
-      toast.success("Tournament Stages Automatically Generated! 🚀");
+      toast.success(`⚔️ Clash Squad ${csForm.roundName} Stage Created! 🚀`);
+      setShowStageModal(false);
     } catch {
-      toast.error("Failed to auto-generate tournament stages");
+      toast.error("Failed to create Clash Squad Stage");
     } finally {
-      setGeneratingStages(false);
+      setCreatingStage(false);
     }
   };
 
-  // Smart Automation
+  // Smart Automation: Changing Match Start Time
   const handleMatchTimeChange = (val: string) => {
     let autoReveal = form.roomRevealTime;
     let autoRegClose = form.regCloseTime;
@@ -380,6 +387,7 @@ export default function MatchesPage() {
       name: m.name || "",
       map: m.map || "Bermuda",
       round: m.round || "Qualifier 1",
+      stageType: m.stageType || "BR",
       pool: m.pool || "A",
       matchTime: m.matchTime || m.matchStartTime || "",
       matchStartTime: m.matchStartTime || m.matchTime || "",
@@ -426,18 +434,6 @@ export default function MatchesPage() {
     }
   };
 
-  // Filtered Matches
-  const filteredMatches = matches.filter((m) => {
-    const searchMatch =
-      m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.round.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.map.toLowerCase().includes(searchTerm.toLowerCase());
-
-    if (!searchMatch) return false;
-    if (statusFilter === "all") return true;
-    return m.status === statusFilter;
-  });
-
   const inpStyle: React.CSSProperties = {
     width: "100%",
     padding: "10px 14px",
@@ -450,6 +446,10 @@ export default function MatchesPage() {
     fontFamily: "Inter, sans-serif",
   };
 
+  // Group Matches By Stage Type
+  const brStageMatches = matches.filter((m) => m.stageType === "BR" || m.round.includes("Qualifier"));
+  const csStageMatches = matches.filter((m) => m.stageType === "CS" || !m.round.includes("Qualifier"));
+
   return (
     <div style={{ maxWidth: 1240, margin: "0 auto", fontFamily: "Inter, sans-serif", paddingBottom: 60 }}>
       {/* 1. ENTERPRISE HEADER */}
@@ -457,7 +457,7 @@ export default function MatchesPage() {
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ fontSize: 24, fontWeight: 900, color: "#0F172A", letterSpacing: "-0.02em" }}>
-              ⚔️ Match Management & Automation
+              🏆 Stage-Based Tournament Management
             </h1>
             <span style={{ padding: "4px 10px", borderRadius: 8, background: "#FEF2F2", color: "#DC2626", fontSize: 12, fontWeight: 800 }}>
               {activeTournament ? activeTournament.season : "Season 1"}
@@ -469,251 +469,307 @@ export default function MatchesPage() {
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
-          {/* New Button: Create Qualifier Pair */}
+          {/* Main Replacement Button: ➕ Create Stage */}
           <button
-            onClick={() => setShowPairModal(true)}
+            onClick={() => setShowStageModal(true)}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding: "10px 18px",
+              padding: "10px 20px",
               background: "#DC2626",
               color: "#FFFFFF",
               border: "none",
               borderRadius: 10,
               fontSize: 13,
-              fontWeight: 800,
+              fontWeight: 900,
               cursor: "pointer",
               boxShadow: "0 4px 14px rgba(220, 38, 38, 0.25)",
             }}
           >
-            <Plus size={16} /> ➕ Create Qualifier Pair
+            <Plus size={16} /> ➕ Create Stage
           </button>
-
-          {matches.length === 0 && (
-            <button
-              onClick={handleAutoGenerateStages}
-              disabled={generatingStages}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                padding: "10px 18px",
-                background: "#0F172A",
-                color: "#FFFFFF",
-                border: "none",
-                borderRadius: 10,
-                fontSize: 13,
-                fontWeight: 800,
-                cursor: generatingStages ? "not-allowed" : "pointer",
-              }}
-            >
-              {generatingStages ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Zap size={16} />}
-              <span>Auto-Generate Stages</span>
-            </button>
-          )}
         </div>
       </div>
 
-      {/* 2. SIMULTANEOUS QUALIFIER PAIR CREATION MODAL */}
-      {showPairModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,23,42,0.7)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+      {/* 2. STAGE CREATION MODAL */}
+      {showStageModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,23,42,0.75)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
           <div style={{ background: "#FFFFFF", borderRadius: 24, maxWidth: 760, width: "100%", padding: 32, boxShadow: "0 25px 60px rgba(0,0,0,0.3)", maxHeight: "92vh", overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
               <div>
-                <span style={{ fontSize: 11, fontWeight: 900, color: "#DC2626", textTransform: "uppercase", letterSpacing: "0.04em" }}>SIMULTANEOUS QUALIFIER ENGINE</span>
-                <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0F172A", marginTop: 2 }}>🏆 Create Qualifier Pair (Pool A & Pool B)</h2>
+                <span style={{ fontSize: 11, fontWeight: 900, color: "#DC2626", textTransform: "uppercase" }}>STAGE BUILDER ENGINE</span>
+                <h2 style={{ fontSize: 22, fontWeight: 900, color: "#0F172A", marginTop: 2 }}>➕ Create Tournament Stage</h2>
               </div>
-              <button onClick={() => setShowPairModal(false)} style={{ background: "none", border: "none", color: "#94A3B8", cursor: "pointer", fontSize: 22 }}>✕</button>
+              <button onClick={() => setShowStageModal(false)} style={{ background: "none", border: "none", color: "#94A3B8", cursor: "pointer", fontSize: 22 }}>✕</button>
             </div>
 
-            <form onSubmit={handleSaveQualifierPair} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-              {/* COMMON SHARED SETTINGS */}
-              <div style={{ background: "#F8FAFC", borderRadius: 16, padding: 18, border: "1px solid #E2E8F0" }}>
-                <h4 style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginBottom: 12, display: "flex", alignItems: "center", gap: 6 }}>
-                  ⚙️ Shared Match Settings (Both Qualifiers)
-                </h4>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MATCH START TIME *</label>
-                    <input type="datetime-local" required value={pairForm.matchTime} onChange={(e) => setPairForm((f) => ({ ...f, matchTime: e.target.value }))} style={inpStyle} />
+            {/* STEP 1: CHOOSE STAGE TYPE */}
+            <div style={{ marginBottom: 24 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 800, color: "#0F172A", marginBottom: 10, textTransform: "uppercase" }}>
+                STEP 1: SELECT STAGE TYPE
+              </label>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                <button
+                  type="button"
+                  onClick={() => setStageTypeSelection("BR")}
+                  style={{
+                    padding: 16,
+                    borderRadius: 14,
+                    border: stageTypeSelection === "BR" ? "2px solid #DC2626" : "1.5px solid #E2E8F0",
+                    background: stageTypeSelection === "BR" ? "#FEF2F2" : "#FFFFFF",
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#DC2626", fontWeight: 900, fontSize: 15 }}>
+                    <Flame size={18} /> 🏆 Battle Royale (BR)
                   </div>
+                  <p style={{ fontSize: 12, color: "#64748B", marginTop: 6, lineHeight: 1.4 }}>
+                    Auto-creates Qualifier 1 (Pool A) & Qualifier 2 (Pool B) simultaneous rooms.
+                  </p>
+                </button>
 
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MAP SELECTION *</label>
-                    <select value={pairForm.map} onChange={(e) => setPairForm((f) => ({ ...f, map: e.target.value }))} style={inpStyle}>
-                      <option value="Bermuda">Bermuda</option>
-                      <option value="Kalahari">Kalahari</option>
-                      <option value="Purgatory">Purgatory</option>
-                      <option value="Alpine">Alpine</option>
-                      <option value="Nexterra">Nexterra</option>
-                    </select>
+                <button
+                  type="button"
+                  onClick={() => setStageTypeSelection("CS")}
+                  disabled={!isBRStageCompleted && brMatches.length > 0}
+                  style={{
+                    padding: 16,
+                    borderRadius: 14,
+                    border: stageTypeSelection === "CS" ? "2px solid #0284C7" : "1.5px solid #E2E8F0",
+                    background: stageTypeSelection === "CS" ? "#F0F9FF" : "#FFFFFF",
+                    textAlign: "left",
+                    cursor: (!isBRStageCompleted && brMatches.length > 0) ? "not-allowed" : "pointer",
+                    opacity: (!isBRStageCompleted && brMatches.length > 0) ? 0.5 : 1,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, color: "#0284C7", fontWeight: 900, fontSize: 15 }}>
+                    <Swords size={18} /> ⚔️ Clash Squad (CS)
                   </div>
-
-                  <div>
-                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MAX TEAMS / QUALIFIER</label>
-                    <input type="number" min={2} value={pairForm.maxSquads} onChange={(e) => setPairForm((f) => ({ ...f, maxSquads: parseInt(e.target.value) || 12 }))} style={inpStyle} />
-                  </div>
-                </div>
-              </div>
-
-              {/* INDEPENDENT QUALIFIER ROOMS GRID */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-                {/* QUALIFIER 1 (POOL A) */}
-                <div style={{ background: "#EFF6FF", borderRadius: 16, padding: 18, border: "1.5px solid #BFDBFE" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                    <span style={{ padding: "4px 10px", borderRadius: 6, background: "#2563EB", color: "#FFF", fontSize: 12, fontWeight: 900 }}>POOL A</span>
-                    <h4 style={{ fontSize: 15, fontWeight: 800, color: "#1E3A8A" }}>Qualifier 1 Room</h4>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#1E40AF", marginBottom: 4 }}>ROOM ID</label>
-                      <input type="text" placeholder="Qualifier 1 Room ID" value={pairForm.q1RoomId} onChange={(e) => setPairForm((f) => ({ ...f, q1RoomId: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
-                    </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#1E40AF", marginBottom: 4 }}>ROOM PASSWORD</label>
-                      <input type="text" placeholder="Qualifier 1 Password" value={pairForm.q1Password} onChange={(e) => setPairForm((f) => ({ ...f, q1Password: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
-                    </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#1E40AF", marginBottom: 4 }}>STREAM LINK (OPTIONAL)</label>
-                      <input type="url" placeholder="https://youtube.com/live/..." value={pairForm.q1StreamUrl} onChange={(e) => setPairForm((f) => ({ ...f, q1StreamUrl: e.target.value }))} style={inpStyle} />
-                    </div>
-                  </div>
-                </div>
-
-                {/* QUALIFIER 2 (POOL B) */}
-                <div style={{ background: "#FDF4FF", borderRadius: 16, padding: 18, border: "1.5px solid #F0ABFC" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
-                    <span style={{ padding: "4px 10px", borderRadius: 6, background: "#9333EA", color: "#FFF", fontSize: 12, fontWeight: 900 }}>POOL B</span>
-                    <h4 style={{ fontSize: 15, fontWeight: 800, color: "#581C87" }}>Qualifier 2 Room</h4>
-                  </div>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#6B21A8", marginBottom: 4 }}>ROOM ID</label>
-                      <input type="text" placeholder="Qualifier 2 Room ID" value={pairForm.q2RoomId} onChange={(e) => setPairForm((f) => ({ ...f, q2RoomId: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
-                    </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#6B21A8", marginBottom: 4 }}>ROOM PASSWORD</label>
-                      <input type="text" placeholder="Qualifier 2 Password" value={pairForm.q2Password} onChange={(e) => setPairForm((f) => ({ ...f, q2Password: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
-                    </div>
-
-                    <div>
-                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#6B21A8", marginBottom: 4 }}>STREAM LINK (OPTIONAL)</label>
-                      <input type="url" placeholder="https://youtube.com/live/..." value={pairForm.q2StreamUrl} onChange={(e) => setPairForm((f) => ({ ...f, q2StreamUrl: e.target.value }))} style={inpStyle} />
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 10 }}>
-                <button type="button" onClick={() => setShowPairModal(false)} style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "#F1F5F9", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
-                <button type="submit" disabled={creatingPair} style={{ padding: "10px 26px", borderRadius: 10, border: "none", background: "#DC2626", color: "#FFF", fontSize: 14, fontWeight: 900, cursor: "pointer", boxShadow: "0 4px 14px rgba(220,38,38,0.25)", display: "flex", alignItems: "center", gap: 8 }}>
-                  {creatingPair ? <Loader2 size={16} style={{ animation: "spin 1s linear infinite" }} /> : <Zap size={16} />}
-                  <span>{creatingPair ? "Creating Both Qualifiers..." : "Save both Qualifiers"}</span>
+                  <p style={{ fontSize: 12, color: "#64748B", marginTop: 6, lineHeight: 1.4 }}>
+                    Knockout rounds (Round 2, Semi-Final, Grand Final). Unlocks upon BR completion.
+                  </p>
                 </button>
               </div>
-            </form>
+            </div>
+
+            {/* STEP 2: BR STAGE FORM */}
+            {stageTypeSelection === "BR" && (
+              <form onSubmit={handleCreateBRStage} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <div style={{ background: "#F8FAFC", borderRadius: 16, padding: 18, border: "1px solid #E2E8F0" }}>
+                  <h4 style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginBottom: 12 }}>
+                    ⚙️ Shared BR Match Settings (Both Qualifiers)
+                  </h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MATCH START TIME *</label>
+                      <input type="datetime-local" required value={brForm.matchTime} onChange={(e) => setBrForm((f) => ({ ...f, matchTime: e.target.value }))} style={inpStyle} />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MAP SELECTION *</label>
+                      <select value={brForm.map} onChange={(e) => setBrForm((f) => ({ ...f, map: e.target.value }))} style={inpStyle}>
+                        <option value="Bermuda">Bermuda</option>
+                        <option value="Kalahari">Kalahari</option>
+                        <option value="Purgatory">Purgatory</option>
+                        <option value="Alpine">Alpine</option>
+                        <option value="Nexterra">Nexterra</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MAX TEAMS / QUALIFIER</label>
+                      <input type="number" min={2} value={brForm.maxSquads} onChange={(e) => setBrForm((f) => ({ ...f, maxSquads: parseInt(e.target.value) || 12 }))} style={inpStyle} />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                  {/* Pool A Room */}
+                  <div style={{ background: "#EFF6FF", borderRadius: 14, padding: 16, border: "1px solid #BFDBFE" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                      <span style={{ padding: "3px 8px", borderRadius: 6, background: "#2563EB", color: "#FFF", fontSize: 11, fontWeight: 900 }}>POOL A</span>
+                      <strong style={{ fontSize: 14, color: "#1E3A8A" }}>Qualifier 1 Room</strong>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <input type="text" placeholder="Room ID" value={brForm.q1RoomId} onChange={(e) => setBrForm((f) => ({ ...f, q1RoomId: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                      <input type="text" placeholder="Room Password" value={brForm.q1Password} onChange={(e) => setBrForm((f) => ({ ...f, q1Password: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                    </div>
+                  </div>
+
+                  {/* Pool B Room */}
+                  <div style={{ background: "#FDF4FF", borderRadius: 14, padding: 16, border: "1px solid #F0ABFC" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 10 }}>
+                      <span style={{ padding: "3px 8px", borderRadius: 6, background: "#9333EA", color: "#FFF", fontSize: 11, fontWeight: 900 }}>POOL B</span>
+                      <strong style={{ fontSize: 14, color: "#581C87" }}>Qualifier 2 Room</strong>
+                    </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                      <input type="text" placeholder="Room ID" value={brForm.q2RoomId} onChange={(e) => setBrForm((f) => ({ ...f, q2RoomId: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                      <input type="text" placeholder="Room Password" value={brForm.q2Password} onChange={(e) => setBrForm((f) => ({ ...f, q2Password: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 10 }}>
+                  <button type="button" onClick={() => setShowStageModal(false)} style={{ padding: "10px 18px", borderRadius: 8, border: "none", background: "#F1F5F9", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                  <button type="submit" disabled={creatingStage} style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#DC2626", color: "#FFF", fontSize: 14, fontWeight: 900, cursor: "pointer", boxShadow: "0 4px 12px rgba(220,38,38,0.25)" }}>
+                    {creatingStage ? "Creating BR Stage..." : "🏆 Create BR Stage Pair"}
+                  </button>
+                </div>
+              </form>
+            )}
+
+            {/* STEP 2: CS STAGE FORM */}
+            {stageTypeSelection === "CS" && (
+              <form onSubmit={handleCreateCSStage} style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                <div style={{ background: "#F0F9FF", borderRadius: 16, padding: 18, border: "1px solid #BAE6FD" }}>
+                  <h4 style={{ fontSize: 13, fontWeight: 800, color: "#0369A1", marginBottom: 12 }}>
+                    ⚔️ Clash Squad Stage Details
+                  </h4>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 14 }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0369A1", marginBottom: 6 }}>ROUND NAME *</label>
+                      <select value={csForm.roundName} onChange={(e) => setCsForm((f) => ({ ...f, roundName: e.target.value as any }))} style={inpStyle}>
+                        <option value="Round 2">Round 2</option>
+                        <option value="Semi Final">Semi Final</option>
+                        <option value="Grand Final">Grand Final</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0369A1", marginBottom: 6 }}>MATCH START TIME *</label>
+                      <input type="datetime-local" required value={csForm.matchTime} onChange={(e) => setCsForm((f) => ({ ...f, matchTime: e.target.value }))} style={inpStyle} />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0369A1", marginBottom: 6 }}>MAP *</label>
+                      <select value={csForm.map} onChange={(e) => setCsForm((f) => ({ ...f, map: e.target.value }))} style={inpStyle}>
+                        <option value="Kalahari">Kalahari</option>
+                        <option value="Bermuda">Bermuda</option>
+                        <option value="Purgatory">Purgatory</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, background: "#F8FAFC", padding: 14, borderRadius: 12, border: "1px solid #E2E8F0" }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>ROOM ID</label>
+                    <input type="text" placeholder="CS Room ID" value={csForm.roomId} onChange={(e) => setCsForm((f) => ({ ...f, roomId: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 4 }}>ROOM PASSWORD</label>
+                    <input type="text" placeholder="CS Password" value={csForm.roomPassword} onChange={(e) => setCsForm((f) => ({ ...f, roomPassword: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", marginTop: 10 }}>
+                  <button type="button" onClick={() => setShowStageModal(false)} style={{ padding: "10px 18px", borderRadius: 8, border: "none", background: "#F1F5F9", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Cancel</button>
+                  <button type="submit" disabled={creatingStage} style={{ padding: "10px 24px", borderRadius: 8, border: "none", background: "#0284C7", color: "#FFF", fontSize: 14, fontWeight: 900, cursor: "pointer" }}>
+                    {creatingStage ? "Creating CS Stage..." : "⚔️ Create CS Stage Match"}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}
 
-      {/* 3. LINKED QUALIFIER PAIR CARD & STAGE LIST */}
-      <div style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: 14, padding: "14px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A" }}>
-          ⚔️ Stage Matches ({filteredMatches.length})
-        </h3>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ ...inpStyle, width: 140 }}>
-          <option value="all">All Statuses</option>
-          <option value="upcoming">Upcoming</option>
-          <option value="live">🔴 Live</option>
-          <option value="completed">Completed</option>
-        </select>
-      </div>
-
-      {/* STAGE CARDS GRID */}
-      {loading ? (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: 16 }}>
-          {[...Array(4)].map((_, i) => <div key={i} style={{ height: 220, borderRadius: 16, background: "#F1F5F9" }} />)}
-        </div>
-      ) : filteredMatches.length === 0 ? (
-        <div style={{ textAlign: "center", padding: "60px 0", background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0" }}>
-          <Swords size={36} style={{ color: "#94A3B8", marginBottom: 12 }} />
-          <p style={{ fontSize: 15, fontWeight: 700, color: "#334155" }}>No stage matches found</p>
-        </div>
-      ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
-          {filteredMatches.map((m) => (
-            <div key={m.id} style={{ background: "#FFFFFF", borderRadius: 16, border: "1.5px solid #E2E8F0", padding: 20, boxShadow: "0 4px 14px rgba(0,0,0,0.03)" }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                <div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ fontSize: 11, fontWeight: 800, color: "#DC2626", textTransform: "uppercase" }}>{m.round}</span>
-                    {m.pool && (
-                      <span style={{ padding: "2px 6px", borderRadius: 4, background: m.pool === "A" ? "#EFF6FF" : "#FDF4FF", color: m.pool === "A" ? "#2563EB" : "#9333EA", fontSize: 10, fontWeight: 900 }}>
-                        POOL {m.pool}
-                      </span>
-                    )}
-                  </div>
-                  <h3 style={{ fontSize: 17, fontWeight: 900, color: "#0F172A", marginTop: 2 }}>{m.name}</h3>
-                </div>
-                <StatusBadge status={m.status || "upcoming"} pulse={m.status === "live"} />
+      {/* 3. STAGE CARDS CONTAINER (GROUPED BY STAGE TYPE) */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
+        {/* GROUP A: 🏆 BATTLE ROYALE STAGE (BR) */}
+        <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1.5px solid #E2E8F0", padding: 24, boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, borderBottom: "1px solid #F1F5F9", paddingBottom: 14 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Flame size={20} style={{ color: "#DC2626" }} />
+                <h2 style={{ fontSize: 18, fontWeight: 900, color: "#0F172A" }}>🏆 Stage 1: Battle Royale Qualifiers (BR)</h2>
               </div>
-
-              {/* Room ID & Pass Display */}
-              <div style={{ background: "#F8FAFC", borderRadius: 12, padding: 12, marginBottom: 16, border: "1px solid #F1F5F9" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>ROOM ID</span>
-                    <div style={{ fontSize: 14, fontWeight: 800, fontFamily: "monospace", color: "#0F172A" }}>{m.roomId || "Not Set"}</div>
-                  </div>
-                  <div>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>PASSWORD</span>
-                    <div style={{ fontSize: 14, fontWeight: 800, fontFamily: "monospace", color: "#0F172A" }}>{m.roomPassword || "Not Set"}</div>
-                  </div>
-                </div>
-
-                {m.matchTime && (
-                  <div style={{ fontSize: 11, color: "#64748B", marginTop: 8, paddingTop: 8, borderTop: "1px dashed #E2E8F0" }}>
-                    🕒 Start: <strong>{new Date(m.matchTime).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" })}</strong>
-                  </div>
-                )}
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <button
-                  onClick={() => openConfig(m)}
-                  style={{
-                    flex: 1,
-                    padding: "9px 14px",
-                    borderRadius: 10,
-                    background: "#0F172A",
-                    color: "#FFFFFF",
-                    border: "none",
-                    fontSize: 13,
-                    fontWeight: 800,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 6,
-                  }}
-                >
-                  <Edit2 size={14} /> ⚙️ Configure Match
-                </button>
-
-                <button onClick={() => setConfirmDeleteId(m.id)} title="Delete Stage" style={{ marginLeft: 8, width: 34, height: 34, borderRadius: 10, border: "none", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <Trash2 size={14} />
-                </button>
-              </div>
+              <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                Simultaneous Qualifier 1 (Pool A) & Qualifier 2 (Pool B). Top 6 teams advance to Round 2.
+              </p>
             </div>
-          ))}
+            <span style={{ padding: "6px 12px", borderRadius: 8, background: "#FEF2F2", color: "#DC2626", fontSize: 12, fontWeight: 800, border: "1px solid #FECACA" }}>
+              Progress: {brMatches.length > 0 ? Math.round((brCompletedCount / brMatches.length) * 100) : 0}%
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
+            {brStageMatches.length === 0 ? (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: 32, color: "#94A3B8", fontSize: 13, background: "#F8FAFC", borderRadius: 12 }}>
+                No Battle Royale stages created yet. Click <strong>➕ Create Stage</strong> above.
+              </div>
+            ) : (
+              brStageMatches.map((m) => (
+                <div key={m.id} style={{ background: "#F8FAFC", borderRadius: 14, border: "1px solid #E2E8F0", padding: 18 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                    <div>
+                      <span style={{ fontSize: 10, fontWeight: 900, padding: "2px 6px", borderRadius: 4, background: m.pool === "A" ? "#EFF6FF" : "#FDF4FF", color: m.pool === "A" ? "#2563EB" : "#9333EA" }}>
+                        POOL {m.pool || "A"}
+                      </span>
+                      <h4 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", marginTop: 4 }}>{m.name}</h4>
+                    </div>
+                    <StatusBadge status={m.status || "upcoming"} pulse={m.status === "live"} />
+                  </div>
+
+                  <div style={{ fontSize: 12, color: "#64748B", marginBottom: 12 }}>
+                    Room: <strong>{m.roomId || "Secret"}</strong> • Pass: <strong>{m.roomPassword || "Secret"}</strong>
+                  </div>
+
+                  <button onClick={() => openConfig(m)} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: "#0F172A", color: "#FFF", border: "none", fontSize: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <Edit2 size={13} /> Configure Room
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
         </div>
-      )}
+
+        {/* GROUP B: ⚔️ CLASH SQUAD STAGE (CS) */}
+        <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1.5px solid #E2E8F0", padding: 24, boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, borderBottom: "1px solid #F1F5F9", paddingBottom: 14 }}>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <Swords size={20} style={{ color: "#0284C7" }} />
+                <h2 style={{ fontSize: 18, fontWeight: 900, color: "#0F172A" }}>⚔️ Stage 2: Clash Squad Knockouts (CS)</h2>
+              </div>
+              <p style={{ fontSize: 12, color: "#64748B", marginTop: 4 }}>
+                Round 2, Semi-Finals & Grand Final Championship. Unlocks automatically when BR completes.
+              </p>
+            </div>
+            <span style={{ padding: "6px 12px", borderRadius: 8, background: isBRStageCompleted ? "#DCFCE7" : "#F1F5F9", color: isBRStageCompleted ? "#16A34A" : "#64748B", fontSize: 12, fontWeight: 800 }}>
+              {isBRStageCompleted ? "🔓 Unlocked & Ready" : "🔒 Waiting for BR Completion"}
+            </span>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
+            {csStageMatches.length === 0 ? (
+              <div style={{ gridColumn: "1 / -1", textAlign: "center", padding: 32, color: "#94A3B8", fontSize: 13, background: "#F8FAFC", borderRadius: 12 }}>
+                No Clash Squad knockout stages created yet.
+              </div>
+            ) : (
+              csStageMatches.map((m) => (
+                <div key={m.id} style={{ background: "#F8FAFC", borderRadius: 14, border: "1px solid #E2E8F0", padding: 18 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                    <h4 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A" }}>{m.name}</h4>
+                    <StatusBadge status={m.status || "upcoming"} pulse={m.status === "live"} />
+                  </div>
+
+                  <div style={{ fontSize: 12, color: "#64748B", marginBottom: 12 }}>
+                    Room: <strong>{m.roomId || "Secret"}</strong> • Pass: <strong>{m.roomPassword || "Secret"}</strong>
+                  </div>
+
+                  <button onClick={() => openConfig(m)} style={{ width: "100%", padding: "8px 12px", borderRadius: 8, background: "#0F172A", color: "#FFF", border: "none", fontSize: 12, fontWeight: 800, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                    <Edit2 size={13} /> Configure Room
+                  </button>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* STREAMLINED MATCH CONFIGURATION MODAL */}
       {configMatch && (
@@ -756,11 +812,6 @@ export default function MatchesPage() {
                   <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0F172A", marginBottom: 6 }}>ROOM PASSWORD</label>
                   <input type="text" placeholder="e.g. 123" value={form.roomPassword} onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
                 </div>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>LIVE STREAM URL</label>
-                <input type="url" placeholder="https://youtube.com/live/..." value={form.streamUrl} onChange={(e) => setForm((f) => ({ ...f, streamUrl: e.target.value }))} style={inpStyle} />
               </div>
 
               <div style={{ display: "flex", gap: 12, justifyContent: "flex-end", marginTop: 14 }}>
