@@ -3,139 +3,80 @@
 import { useEffect, useState } from "react";
 import { db } from "@/lib/firebase";
 import { collection, onSnapshot, orderBy, query } from "firebase/firestore";
-import { Calendar, Clock, Swords, Shield, Eye, Flame, Map } from "lucide-react";
+import { Calendar, Clock, Swords, Shield, Eye, Flame, Map, Copy, Radio, MessageSquare, AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
-interface Match {
+export interface MatchItem {
   id: string;
-  date: string;
-  time: string;
-  match: string;
-  status: "upcoming" | "live" | "completed";
-  stage: string;
-  teams?: { t1: string; t2?: string };
+  name: string;
+  map: string;
+  round: string;
+  matchTime: string;
+  regCloseTime?: string;
+  maxSquads?: number;
+  status: "upcoming" | "live" | "completed" | "cancelled";
+  isPublished?: boolean;
+  isArchived?: boolean;
+  bannerUrl?: string;
+  roomId?: string;
+  roomPassword?: string;
   streamUrl?: string;
+  whatsappUrl?: string;
+  rules?: string;
+  description?: string;
 }
-
-const DEMO_MATCHES: Match[] = [
-  {
-    id: "1",
-    date: "TBD",
-    time: "7:00 PM",
-    match: "Qualifier Match 1 — Bermuda",
-    status: "upcoming",
-    stage: "Stage 1",
-    teams: { t1: "12 SQUADS" }
-  },
-  {
-    id: "2",
-    date: "TBD",
-    time: "8:00 PM",
-    match: "Qualifier Match 2 — Bermuda",
-    status: "upcoming",
-    stage: "Stage 1",
-    teams: { t1: "12 SQUADS" }
-  },
-  {
-    id: "3",
-    date: "TBD",
-    time: "7:00 PM",
-    match: "CS League — Round Robin",
-    status: "upcoming",
-    stage: "League Stage",
-    teams: { t1: "TOP 6 BY 2 BERMUDA" }
-  },
-  {
-    id: "4",
-    date: "TBD",
-    time: "8:00 PM",
-    match: "Semi Finals Knockouts",
-    status: "upcoming",
-    stage: "Semi Finals",
-    teams: { t1: "TOP 4" }
-  },
-  {
-    id: "5",
-    date: "TBD",
-    time: "7:30 PM",
-    match: "Grand Finals Showdown",
-    status: "upcoming",
-    stage: "Grand Finals",
-    teams: { t1: "TOP 2" }
-  },
-];
 
 const STATUS_STYLES = {
   live: {
     bg: "rgba(229,9,20,0.06)",
     color: "#e50914",
     border: "rgba(229,9,20,0.18)",
-    label: "LIVE MATCH",
-    glow: "rgba(229,9,20,0.4)"
+    label: "🔴 LIVE NOW",
+    glow: "rgba(229,9,20,0.4)",
   },
   upcoming: {
     bg: "rgba(17,17,17,0.03)",
     color: "#444",
     border: "rgba(17,17,17,0.06)",
     label: "SCHEDULED",
-    glow: "transparent"
+    glow: "transparent",
   },
   completed: {
     bg: "rgba(34,197,94,0.06)",
     color: "#16a34a",
     border: "rgba(34,197,94,0.15)",
     label: "COMPLETED",
-    glow: "transparent"
+    glow: "transparent",
+  },
+  cancelled: {
+    bg: "rgba(239,68,68,0.06)",
+    color: "#dc2626",
+    border: "rgba(239,68,68,0.15)",
+    label: "CANCELLED",
+    glow: "transparent",
   },
 };
 
 export function MatchSchedule() {
-  const [matches, setMatches] = useState<Match[]>(DEMO_MATCHES);
+  const [matches, setMatches] = useState<MatchItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<"all" | "upcoming" | "live" | "completed">("all");
+  const [showRoomIdMap, setShowRoomIdMap] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     try {
-      const unsub = onSnapshot(collection(db, "matches"), (snap) => {
-        if (!snap.empty) {
-          const list: Match[] = snap.docs.map((docSnap) => {
-            const d = docSnap.data();
-            let dateStr = d.date || "Aug 8";
-            let timeStr = d.time || "11:00 PM";
-
-            if (d.matchTime) {
-              try {
-                const dateObj = new Date(d.matchTime);
-                if (!isNaN(dateObj.getTime())) {
-                  dateStr = dateObj.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
-                  timeStr = dateObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
-                }
-              } catch {}
-            }
-
-            return {
-              id: docSnap.id,
-              date: dateStr,
-              time: timeStr,
-              match: d.name ? `${d.name} (${d.map || "Bermuda"})` : (d.match || "Custom Match"),
-              status: (d.status as any) || "upcoming",
-              stage: d.round || d.stage || "Qualifier Stage",
-              teams: d.teams || { t1: "12 SQUADS" },
-              streamUrl: d.streamUrl,
-            };
-          });
-          setMatches(list);
-        } else {
-          // Fallback to schedule collection or demo matches
-          const unsubSchedule = onSnapshot(collection(db, "schedule"), (schedSnap) => {
-            if (!schedSnap.empty) {
-              setMatches(schedSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Match)));
-            }
-          });
-          return () => unsubSchedule();
-        }
+      const q = query(collection(db, "matches"), orderBy("createdAt", "desc"));
+      const unsub = onSnapshot(q, (snap) => {
+        const list: MatchItem[] = snap.docs
+          .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() } as MatchItem))
+          .filter((m) => m.isPublished !== false && !m.isArchived);
+        setMatches(list);
+        setLoading(false);
       });
       return () => unsub();
     } catch (e) {
-      console.error("Failed to load live matches:", e);
+      console.error("Failed to fetch live matches:", e);
+      setLoading(false);
     }
   }, []);
 
@@ -145,50 +86,55 @@ export function MatchSchedule() {
   });
 
   return (
-    <section style={{ padding: "120px 0", background: "#fff", position: "relative" }}>
+    <section style={{ padding: "80px 0", background: "#ffffff" }}>
       <div className="container-custom">
         {/* Section Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: 32, marginBottom: 64 }}>
-          <div>
-            <p className="section-tag" style={{ marginBottom: 12 }}>Schedule</p>
-            <h2
-              style={{
-                fontFamily: "Space Grotesk, sans-serif",
-                fontSize: "clamp(36px, 4vw, 56px)",
-                fontWeight: 800,
-                color: "#111",
-                letterSpacing: "-0.03em",
-                marginBottom: 8,
-              }}
-            >
-              Match Schedule
-            </h2>
-            <p style={{ fontSize: 16, color: "#666" }}>Follow match brackets and streams in realtime.</p>
-          </div>
+        <div style={{ textAlign: "center", marginBottom: 48 }}>
+          <span className="badge badge-accent" style={{ marginBottom: 16 }}>
+            ⚔️ Tournament Match Schedule
+          </span>
+          <h2
+            style={{
+              fontFamily: "Space Grotesk, sans-serif",
+              fontSize: "clamp(28px, 4vw, 44px)",
+              fontWeight: 800,
+              color: "#111",
+              letterSpacing: "-0.03em",
+              marginBottom: 12,
+            }}
+          >
+            Live Match Schedule & Room Details
+          </h2>
+          <p style={{ fontSize: 16, color: "#666", maxWidth: 540, margin: "0 auto", lineHeight: 1.6 }}>
+            Real-time match status updates. Room ID and passwords are automatically published to registered players when matches go live.
+          </p>
 
-          {/* Interactive Filters */}
-          <div style={{
-            display: "flex",
-            background: "#fafafa",
-            border: "1px solid #eaeaea",
-            borderRadius: 14,
-            padding: 4,
-            gap: 2,
-          }}>
-            {(["all", "live", "upcoming", "completed"] as const).map((filter) => (
+          {/* Filter Tabs */}
+          <div
+            style={{
+              display: "inline-flex",
+              gap: 8,
+              marginTop: 24,
+              background: "#f5f5f5",
+              padding: 6,
+              borderRadius: 14,
+              border: "1px solid #eaeaea",
+            }}
+          >
+            {(["all", "upcoming", "live", "completed"] as const).map((filter) => (
               <button
                 key={filter}
                 onClick={() => setActiveFilter(filter)}
                 style={{
                   padding: "8px 18px",
                   borderRadius: 10,
-                  fontSize: 13,
-                  fontWeight: 600,
-                  textTransform: "capitalize",
-                  cursor: "pointer",
                   border: "none",
-                  background: activeFilter === filter ? "#111" : "transparent",
-                  color: activeFilter === filter ? "#fff" : "#666",
+                  background: activeFilter === filter ? "#e50914" : "transparent",
+                  color: activeFilter === filter ? "#ffffff" : "#666",
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: "pointer",
+                  textTransform: "capitalize",
                   transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                 }}
               >
@@ -198,166 +144,257 @@ export function MatchSchedule() {
           </div>
         </div>
 
-        {/* Schedule List */}
-        {filteredMatches.length === 0 ? (
-          <div style={{
-            textAlign: "center",
-            padding: "80px 0",
-            border: "2px dashed #eaeaea",
-            borderRadius: 22,
-            background: "#fafafa",
-          }}>
-            <Calendar size={36} style={{ color: "#bbb", marginBottom: 16 }} />
-            <h3 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 20, fontWeight: 700, color: "#111", marginBottom: 6 }}>
-              No Matches Found
+        {/* Loading State */}
+        {loading ? (
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 24 }}>
+            {[...Array(3)].map((_, i) => (
+              <div key={i} style={{ height: 220, borderRadius: 20, background: "#f5f5f5" }} />
+            ))}
+          </div>
+        ) : filteredMatches.length === 0 ? (
+          /* Empty State */
+          <div
+            style={{
+              textAlign: "center",
+              padding: "60px 20px",
+              background: "#fafafa",
+              borderRadius: 24,
+              border: "1px dashed #eaeaea",
+              maxWidth: 500,
+              margin: "0 auto",
+            }}
+          >
+            <Swords size={40} style={{ color: "#ccc", marginBottom: 14 }} />
+            <h3 style={{ fontSize: 18, fontWeight: 700, color: "#111", marginBottom: 6 }}>
+              No matches found
             </h3>
-            <p style={{ fontSize: 14, color: "#999" }}>
-              No matches match the selected filter status. Check back later!
+            <p style={{ fontSize: 14, color: "#666" }}>
+              Check back soon! Tournament matches will be published here in real-time.
             </p>
           </div>
         ) : (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
-            {filteredMatches.map((match) => {
-              const s = STATUS_STYLES[match.status];
-              const isLive = match.status === "live";
+          /* Matches List */
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 24 }}>
+            {filteredMatches.map((m) => {
+              const statusStyle = STATUS_STYLES[m.status] || STATUS_STYLES.upcoming;
+              const isLive = m.status === "live";
+
+              let dateDisplay = "TBD";
+              let timeDisplay = "TBD";
+
+              if (m.matchTime) {
+                try {
+                  const dObj = new Date(m.matchTime);
+                  if (!isNaN(dObj.getTime())) {
+                    dateDisplay = dObj.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+                    timeDisplay = dObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+                  }
+                } catch {}
+              }
 
               return (
                 <div
-                  key={match.id}
-                  className="glass-card"
+                  key={m.id}
                   style={{
-                    padding: "32px 36px",
-                    border: isLive ? "1px solid rgba(229,9,20,0.3)" : "1px solid #eaeaea",
-                    background: isLive ? "rgba(229,9,20,0.01)" : "rgba(255,255,255,0.75)",
-                    position: "relative",
-                    borderRadius: 22,
-                    boxShadow: isLive ? "0 12px 32px rgba(229,9,20,0.06)" : "0 4px 16px rgba(0,0,0,0.02)",
-                    transition: "transform 0.2s, box-shadow 0.2s",
+                    background: "#ffffff",
+                    borderRadius: 20,
+                    border: `1.5px solid ${isLive ? "#e50914" : "#eaeaea"}`,
+                    overflow: "hidden",
+                    boxShadow: isLive
+                      ? "0 10px 30px rgba(229, 9, 20, 0.12)"
+                      : "0 4px 20px rgba(0, 0, 0, 0.03)",
+                    transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                   }}
                 >
-                  <div style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    gap: 24,
-                  }}>
-                    {/* Stage & Details */}
-                    <div>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                        <span style={{
-                          fontSize: 10,
-                          fontWeight: 800,
-                          letterSpacing: "0.08em",
-                          textTransform: "uppercase",
-                          color: isLive ? "#e50914" : "#111",
-                          background: isLive ? "rgba(229,9,20,0.08)" : "#f0f0f0",
-                          padding: "3px 10px",
-                          borderRadius: 6,
-                        }}>
-                          {match.stage}
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#999", fontSize: 12 }}>
-                          <Calendar size={13} />
-                          <span>{match.date}</span>
-                        </div>
-                      </div>
-
-                      <h3 style={{
-                        fontFamily: "Space Grotesk, sans-serif",
-                        fontSize: 20,
-                        fontWeight: 700,
-                        color: "#111",
-                        letterSpacing: "-0.01em",
-                      }}>
-                        {match.match}
-                      </h3>
+                  {/* Banner Image */}
+                  {m.bannerUrl && (
+                    <div style={{ height: 140, width: "100%", overflow: "hidden", background: "#111" }}>
+                      <img src={m.bannerUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                     </div>
+                  )}
 
-                    {/* Centered Matchup Badge Container */}
-                    <div style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 20,
-                      background: "#fafafa",
-                      border: "1px solid #eaeaea",
-                      padding: "12px 28px",
-                      borderRadius: 16,
-                      minWidth: 180,
-                      margin: "0 auto",
-                      textAlign: "center",
-                    }}>
-                      {match.teams?.t2 ? (
-                        <>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#111", fontFamily: "Space Grotesk, sans-serif" }}>
-                            {match.teams.t1}
-                          </span>
-                          <div style={{
-                            width: 32,
-                            height: 32,
-                            borderRadius: "50%",
-                            background: isLive ? "#e50914" : "#111",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            fontSize: 10,
-                            fontWeight: 800,
-                            color: "#fff",
-                            fontFamily: "Space Grotesk, sans-serif",
-                          }}>
-                            VS
-                          </div>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#111", fontFamily: "Space Grotesk, sans-serif" }}>
-                            {match.teams.t2}
-                          </span>
-                        </>
-                      ) : (
-                        <span style={{ fontSize: 13, fontWeight: 800, color: "#111", fontFamily: "Space Grotesk, sans-serif", letterSpacing: "0.02em", textAlign: "center" }}>
-                          {match.teams?.t1 || "12 SQUADS"}
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Action & Status */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                      <div
+                  <div style={{ padding: 24 }}>
+                    {/* Header: Stage & Status */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                      <span
                         style={{
-                          padding: "6px 14px",
-                          borderRadius: 100,
-                          background: s.bg,
-                          color: s.color,
-                          border: `1px solid ${s.border}`,
-                          fontSize: 11,
-                          fontWeight: 800,
-                          letterSpacing: "0.05em",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 6,
-                          animation: isLive ? "pulse-badge 2s infinite" : "none",
+                          fontSize: 12,
+                          fontWeight: 700,
+                          color: "#666",
+                          letterSpacing: "0.04em",
+                          textTransform: "uppercase",
                         }}
                       >
-                        {isLive && <Flame size={12} />}
-                        <span>{s.label}</span>
-                      </div>
+                        {m.round} • {m.map}
+                      </span>
 
-                      {isLive && (
+                      <span
+                        style={{
+                          padding: "5px 12px",
+                          borderRadius: 20,
+                          background: statusStyle.bg,
+                          color: statusStyle.color,
+                          border: `1px solid ${statusStyle.border}`,
+                          fontSize: 11,
+                          fontWeight: 800,
+                          letterSpacing: "0.04em",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                        }}
+                      >
+                        {isLive && (
+                          <span
+                            style={{
+                              width: 6,
+                              height: 6,
+                              borderRadius: "50%",
+                              background: "#e50914",
+                              boxShadow: "0 0 8px #e50914",
+                              animation: "pulse 1.5s infinite",
+                            }}
+                          />
+                        )}
+                        {statusStyle.label}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3
+                      style={{
+                        fontFamily: "Space Grotesk, sans-serif",
+                        fontSize: 20,
+                        fontWeight: 800,
+                        color: "#111",
+                        letterSpacing: "-0.02em",
+                        marginBottom: 12,
+                      }}
+                    >
+                      {m.name}
+                    </h3>
+
+                    {/* Date & Time info */}
+                    <div style={{ display: "flex", gap: 16, marginBottom: 16, fontSize: 13, color: "#555" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <Calendar size={14} style={{ color: "#e50914" }} />
+                        <span>{dateDisplay}</span>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                        <Clock size={14} style={{ color: "#e50914" }} />
+                        <span>{timeDisplay}</span>
+                      </div>
+                    </div>
+
+                    {/* LIVE ROOM DETAILS BOX (Automated Room ID & Password Display) */}
+                    {isLive && (
+                      <div
+                        style={{
+                          background: "#fff1f2",
+                          border: "1.5px solid #fecdd3",
+                          borderRadius: 14,
+                          padding: 14,
+                          marginBottom: 18,
+                        }}
+                      >
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+                          <Radio size={16} style={{ color: "#e50914" }} />
+                          <span style={{ fontSize: 12, fontWeight: 800, color: "#9f1239", textTransform: "uppercase" }}>
+                            Live Room Credentials
+                          </span>
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                          <div style={{ background: "#ffffff", padding: "8px 12px", borderRadius: 10, border: "1px solid #ffe4e6" }}>
+                            <span style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#9f1239", textTransform: "uppercase" }}>
+                              Room ID
+                            </span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+                              <strong style={{ fontSize: 14, fontFamily: "monospace", color: "#111" }}>
+                                {m.roomId || "Shared in Lobby"}
+                              </strong>
+                              {m.roomId && (
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(m.roomId!);
+                                    toast.success("Room ID Copied!");
+                                  }}
+                                  style={{ background: "none", border: "none", color: "#e50914", cursor: "pointer" }}
+                                >
+                                  <Copy size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+
+                          <div style={{ background: "#ffffff", padding: "8px 12px", borderRadius: 10, border: "1px solid #ffe4e6" }}>
+                            <span style={{ display: "block", fontSize: 10, fontWeight: 700, color: "#9f1239", textTransform: "uppercase" }}>
+                              Password
+                            </span>
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 2 }}>
+                              <strong style={{ fontSize: 14, fontFamily: "monospace", color: "#111" }}>
+                                {m.roomPassword || "Shared in Lobby"}
+                              </strong>
+                              {m.roomPassword && (
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(m.roomPassword!);
+                                    toast.success("Room Password Copied!");
+                                  }}
+                                  style={{ background: "none", border: "none", color: "#e50914", cursor: "pointer" }}
+                                >
+                                  <Copy size={13} />
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* External Action Links (Stream & WhatsApp) */}
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                      {m.streamUrl && (
                         <a
-                          href={match.streamUrl || "https://youtube.com"}
+                          href={m.streamUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="btn-accent"
                           style={{
-                            padding: "10px 18px",
-                            fontSize: 12,
-                            borderRadius: 10,
                             display: "inline-flex",
                             alignItems: "center",
                             gap: 6,
+                            padding: "9px 16px",
+                            background: "#e50914",
+                            color: "#ffffff",
+                            borderRadius: 10,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            textDecoration: "none",
+                            boxShadow: "0 2px 10px rgba(229,9,20,0.25)",
                           }}
                         >
-                          <Eye size={14} />
-                          <span>Watch Live</span>
+                          <Radio size={14} /> Watch Stream
+                        </a>
+                      )}
+
+                      {m.whatsappUrl && (
+                        <a
+                          href={m.whatsappUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "9px 16px",
+                            background: "#25D366",
+                            color: "#ffffff",
+                            borderRadius: 10,
+                            fontSize: 12,
+                            fontWeight: 700,
+                            textDecoration: "none",
+                          }}
+                        >
+                          <MessageSquare size={14} /> Join Lobby Group
                         </a>
                       )}
                     </div>
