@@ -5,7 +5,12 @@ import gsap from "gsap";
 import { useAppStore } from "@/store/useAppStore";
 import Logo from "./Logo";
 
+import { usePathname } from "next/navigation";
+
 export function LoadingScreen() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin");
+
   const ref = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
@@ -13,6 +18,11 @@ export function LoadingScreen() {
   const setLoading = useAppStore((s) => s.setLoading);
 
   useEffect(() => {
+    if (isAdmin) {
+      setLoading(false);
+      setVisible(false);
+      return;
+    }
     const el = ref.current;
     const logo = logoRef.current;
     const bar = barRef.current;
@@ -35,7 +45,7 @@ export function LoadingScreen() {
       .to(logo, { y: -20, opacity: 0, duration: 0.4, ease: "power2.in" }, 1.5);
   }, [setLoading]);
 
-  if (!visible) return null;
+  if (!visible || isAdmin) return null;
 
   return (
     <div
