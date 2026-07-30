@@ -28,25 +28,29 @@ export function HeroSection() {
 
   useEffect(() => {
     try {
-      const unsub = onSnapshot(doc(db, "settings", "tournament"), (snap) => {
-        if (snap.exists()) {
-          const data = snap.data();
-          setSettings({
-            tournamentDate: (data.countdownDate && data.countdownDate.includes("23:00")) ? data.countdownDate : "2026-08-08T23:00:00+05:30",
-            registrationLimit: data.maxTeams || data.registrationLimit,
-            registrationEnabled: data.registrationOpen !== undefined ? data.registrationOpen : data.registrationEnabled,
-            prizePool: data.prizePool,
-            entryFee: data.entryFee,
-            reEntry: data.reEntryFee || data.reEntry,
-          });
-          if (data.registeredTeams !== undefined) {
-            setRegistrationCount(data.registeredTeams);
+      const unsubActive = onSnapshot(doc(db, "settings", "activeTournament"), (activeSnap) => {
+        if (activeSnap.exists()) {
+          const activeId = activeSnap.data().activeTournamentId;
+          if (activeId) {
+            onSnapshot(doc(db, "tournaments", activeId), (tSnap) => {
+              if (tSnap.exists()) {
+                const data = tSnap.data();
+                setSettings({
+                  tournamentDate: data.startDate || "2026-08-08T23:00:00+05:30",
+                  registrationLimit: data.maxTeams || 24,
+                  registrationEnabled: data.status !== "cancelled",
+                  prizePool: data.prizePool || "₹5,000",
+                  entryFee: data.entryFee || 160,
+                  reEntry: data.premiumPassFee || 40,
+                });
+              }
+            });
           }
         }
       });
-      return () => unsub();
+      return () => unsubActive();
     } catch { /* use defaults */ }
-  }, [setSettings, setRegistrationCount]);
+  }, [setSettings]);
 
   useEffect(() => {
     const tl = gsap.timeline({ delay: 2.2 });

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { db, storage } from "@/lib/firebase";
-import { collection, addDoc, serverTimestamp, doc, getDoc, setDoc, increment } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, getDoc, setDoc, increment, onSnapshot } from "firebase/firestore";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import toast from "react-hot-toast";
 import { Check, Upload, ChevronRight, User, Users, CreditCard, Loader2, ArrowLeft, MessageCircle } from "lucide-react";
@@ -131,6 +131,34 @@ export function RegisterForm() {
   } | null>(null);
   const [fileError, setFileError] = useState("");
   const [isDragActive, setIsDragActive] = useState(false);
+  const [activeTournament, setActiveTournament] = useState<any | null>(null);
+  const [checkingActive, setCheckingActive] = useState(true);
+
+  // Real-time Active Tournament listener
+  useEffect(() => {
+    const unsub = onSnapshot(doc(db, "settings", "activeTournament"), (snap) => {
+      if (snap.exists()) {
+        const activeId = snap.data().activeTournamentId;
+        if (activeId) {
+          onSnapshot(doc(db, "tournaments", activeId), (tSnap) => {
+            if (tSnap.exists()) {
+              setActiveTournament({ id: tSnap.id, ...tSnap.data() });
+            } else {
+              setActiveTournament(null);
+            }
+            setCheckingActive(false);
+          });
+        } else {
+          setActiveTournament(null);
+          setCheckingActive(false);
+        }
+      } else {
+        setActiveTournament(null);
+        setCheckingActive(false);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const {
     register,
@@ -382,6 +410,22 @@ export function RegisterForm() {
 
         <p style={{ fontSize: 13, color: "#888", maxWidth: 400, margin: "0 auto", lineHeight: 1.6 }}>
           A confirmation WhatsApp will be sent within 24 hours to your captain.
+        </p>
+      </div>
+    );
+  }
+
+  if (!checkingActive && (!activeTournament || activeTournament.status === "cancelled")) {
+    return (
+      <div style={{ textAlign: "center", padding: "80px 20px", background: "#FFFFFF", borderRadius: 24, border: "1.5px solid #E2E8F0", maxWidth: 540, margin: "0 auto", boxShadow: "0 10px 30px rgba(0,0,0,0.04)" }}>
+        <div style={{ width: 64, height: 64, borderRadius: "50%", background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 18px", color: "#DC2626", fontSize: 28 }}>
+          🏆
+        </div>
+        <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 26, fontWeight: 800, color: "#0F172A", marginBottom: 8 }}>
+          No Active Tournament
+        </h2>
+        <p style={{ fontSize: 15, color: "#64748B", maxWidth: 380, margin: "0 auto" }}>
+          Stay tuned for upcoming tournaments.
         </p>
       </div>
     );
