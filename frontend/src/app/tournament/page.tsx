@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 
 export default function TournamentPage() {
   return (
-    <div style={{ paddingTop: 80 }}>
+    <div>
       {/* Header */}
-      <section className="gradient-mesh" style={{ padding: "80px 0 60px" }}>
+      <section className="gradient-mesh" style={{ padding: "140px 0 60px" }}>
         <div className="container-custom" style={{ textAlign: "center" }}>
           <span className="badge badge-accent" style={{ marginBottom: 24 }}>🏆 Tournament Details</span>
           <h1

@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function LeaderboardPage() {
   return (
-    <div style={{ paddingTop: 80 }}>
-      <section className="gradient-mesh" style={{ padding: "80px 0 60px" }}>
+    <div>
+      <section className="gradient-mesh" style={{ padding: "140px 0 60px" }}>
         <div className="container-custom" style={{ textAlign: "center" }}>
           <span className="badge badge-live" style={{ marginBottom: 24 }}>
             🔴 Live Standings

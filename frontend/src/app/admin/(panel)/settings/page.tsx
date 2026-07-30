@@ -5,6 +5,7 @@ import { db } from "@/lib/firebase";
 import { doc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore";
 import { Save, Settings, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { DangerZoneCard } from "@/components/admin/DangerZoneCard";
 
 export default function SettingsPage() {
   const [form, setForm] = useState({
@@ -12,7 +13,7 @@ export default function SettingsPage() {
     heroTitle: "BATTLE. SURVIVE. CHAMPION.",
     heroSubtitle: "Join the ultimate Free Fire tournament",
     entryFee: 100, reEntryFee: 40, prizePool: 1000,
-    maxTeams: 24, countdownDate: "",
+    maxTeams: 24, countdownDate: "2026-08-08T10:00",
     registrationOpen: true,
     primaryCTA: "Register Team", secondaryCTA: "View Rules",
   });
@@ -170,13 +171,16 @@ export default function SettingsPage() {
           </div>
         </Section>
 
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 32 }}>
           <button type="submit" disabled={saving} style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 24px", background: saving ? "#F87171" : "#EF4444", color: "#fff", border: "none", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontFamily: "Inter, sans-serif" }}>
             {saving ? <Loader2 size={16} style={{ animation: "tspin 0.8s linear infinite" }} /> : <Save size={16} />}
             {saving ? "Saving..." : "Save Changes"}
           </button>
         </div>
       </form>
+
+      {/* Danger Zone Section */}
+      <DangerZoneCard />
     </div>
   );
 }

@@ -170,12 +170,8 @@ export function Roadmap() {
         <div ref={ref} style={{ maxWidth: 800, margin: "0 auto", position: "relative" }}>
           {/* Vertical Progress Line with glowing accent */}
           <div
+            className="absolute top-2 bottom-2 w-[2px] left-[19px] md:left-[27px]"
             style={{
-              position: "absolute",
-              left: 27,
-              top: 10,
-              bottom: 10,
-              width: 2,
               background: "linear-gradient(to bottom, #eaeaea, #e50914, #eaeaea)",
               borderRadius: 1,
             }}
@@ -191,60 +187,43 @@ export function Roadmap() {
                 ref={(el) => { stagesRefs.current[i] = el; }}
                 style={{
                   display: "flex",
-                  gap: 28,
-                  marginBottom: 24,
+                  gap: "16px",
+                  marginBottom: "32px",
                   opacity: 0,
                   transition: "opacity 0.5s ease",
                 }}
               >
                 {/* Node Dot Wrapper */}
                 <div
-                  style={{
-                    position: "relative",
-                    zIndex: 2,
-                    flexShrink: 0,
-                  }}
+                  className="relative z-10 shrink-0"
                 >
                   {/* Dynamic glowing dot rings for active state */}
                   {isExpanded && (
-                    <div style={{
-                      position: "absolute",
-                      top: 4,
-                      left: 4,
-                      width: 48,
-                      height: 48,
-                      borderRadius: "50%",
-                      border: "1.5px solid rgba(229,9,20,0.4)",
-                      animation: "pulse-badge 2s infinite",
-                      transform: "translate(-8px, -8px)",
-                    }} />
+                    <div
+                      className="absolute border-[1.5px] border-[rgba(229,9,20,0.4)] rounded-full top-[2px] left-[2px] w-[36px] h-[36px] -translate-x-[4px] -translate-y-[4px] md:top-[4px] md:left-[4px] md:w-[48px] md:h-[48px] md:-translate-x-[8px] md:-translate-y-[8px]"
+                      style={{
+                        animation: "pulse-badge 2s infinite",
+                      }}
+                    />
                   )}
 
                   <button
                     onClick={() => setActiveStage(isExpanded ? null : stage.id)}
                     aria-label={`Expand details for ${stage.title}`}
+                    className="w-10 h-10 md:w-14 md:h-14 rounded-full flex items-center justify-center cursor-pointer transition-all duration-300"
                     style={{
-                      width: 56,
-                      height: 56,
-                      borderRadius: "50%",
                       background: stage.accent ? "#e50914" : "#fff",
                       border: stage.accent ? "none" : "2px solid #eaeaea",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      cursor: "pointer",
                       boxShadow: stage.accent
                         ? "0 8px 24px rgba(229,9,20,0.25)"
                         : "0 4px 12px rgba(0,0,0,0.03)",
-                      transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                     }}
                   >
                     <Icon
-                      size={20}
+                      className="w-4 h-4 md:w-5 md:h-5 transition-transform duration-200"
                       style={{
                         color: stage.accent ? "#fff" : "#666",
                         transform: isExpanded ? "scale(1.15)" : "scale(1)",
-                        transition: "transform 0.2s",
                       }}
                     />
                   </button>
@@ -252,8 +231,9 @@ export function Roadmap() {
 
                 {/* Content Card */}
                 <div
+                  className="flex-1 rounded-[20px] cursor-pointer transition-all duration-300 min-w-0"
                   style={{
-                    flex: 1,
+                    padding: "20px",
                     background: isExpanded
                       ? "rgba(255, 255, 255, 1)"
                       : stage.accent
@@ -266,57 +246,55 @@ export function Roadmap() {
                         ? "rgba(229,9,20,0.12)"
                         : "#eaeaea"
                     }`,
-                    borderRadius: 20,
-                    padding: "24px 28px",
-                    cursor: "pointer",
                     boxShadow: isExpanded
                       ? "0 20px 48px rgba(0,0,0,0.08)"
                       : "0 2px 8px rgba(0,0,0,0.02)",
-                    transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
                   }}
                   onClick={() => setActiveStage(isExpanded ? null : stage.id)}
                 >
                   {/* Header info */}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 16, marginBottom: 8 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "12px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
                       <span style={{
                         fontFamily: "Space Grotesk, sans-serif",
-                        fontSize: 12,
+                        fontSize: 10,
                         fontWeight: 800,
                         color: stage.accent ? "#e50914" : "#999",
                         background: stage.accent ? "rgba(229,9,20,0.08)" : "rgba(0,0,0,0.04)",
-                        padding: "2px 8px",
+                        padding: "3px 8px",
                         borderRadius: 6,
+                        letterSpacing: "0.05em"
                       }}>
                         STAGE 0{stage.id}
                       </span>
-                      <h3
+                      <span
                         style={{
-                          fontFamily: "Space Grotesk, sans-serif",
-                          fontSize: 18,
+                          fontSize: 11,
                           fontWeight: 700,
-                          color: stage.accent ? "#e50914" : "#111",
-                          letterSpacing: "-0.01em",
+                          color: "#666",
+                          letterSpacing: "0.04em",
+                          background: "#fff",
+                          border: "1px solid #eaeaea",
+                          padding: "3px 10px",
+                          borderRadius: 100,
+                          whiteSpace: "nowrap",
                         }}
                       >
-                        {stage.title}
-                      </h3>
+                        {stage.meta}
+                      </span>
                     </div>
-                    <span
+                    <h3
                       style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: "#666",
-                        letterSpacing: "0.04em",
-                        background: "#fff",
-                        border: "1px solid #eaeaea",
-                        padding: "4px 10px",
-                        borderRadius: 100,
-                        whiteSpace: "nowrap",
+                        fontFamily: "Space Grotesk, sans-serif",
+                        fontSize: 17,
+                        fontWeight: 800,
+                        color: stage.accent ? "#e50914" : "#111",
+                        letterSpacing: "-0.01em",
+                        margin: 0,
                       }}
                     >
-                      {stage.meta}
-                    </span>
+                      {stage.title}
+                    </h3>
                   </div>
 
                   <p style={{ fontSize: 14, color: "#666", lineHeight: 1.6, marginBottom: isExpanded ? 20 : 0, transition: "margin 0.3s" }}>
@@ -338,7 +316,7 @@ export function Roadmap() {
                       </h4>
                       <ul style={{ listStyle: "none", display: "flex", flexDirection: "column", gap: 10 }}>
                         {stage.details.map((detail, idx) => (
-                          <li key={idx} style={{ display: "flex", gap: 10, fontSize: 13, color: "#666", lineHeight: 1.5 }}>
+                           <li key={idx} style={{ display: "flex", gap: 10, fontSize: 13, color: "#666", lineHeight: 1.5 }}>
                             <ChevronRight size={14} style={{ color: "#e50914", flexShrink: 0, marginTop: 3 }} />
                             <span>{detail}</span>
                           </li>

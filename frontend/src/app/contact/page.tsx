@@ -24,8 +24,8 @@ const SOCIALS = [
 
 export default function ContactPage() {
   return (
-    <div style={{ paddingTop: 80 }}>
-      <section className="gradient-mesh" style={{ padding: "80px 0 60px" }}>
+    <div>
+      <section className="gradient-mesh" style={{ padding: "140px 0 60px" }}>
         <div className="container-custom" style={{ textAlign: "center" }}>
           <span className="badge badge-accent" style={{ marginBottom: 24 }}>📬 Contact Us</span>
           <h1 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "clamp(40px, 6vw, 72px)", fontWeight: 800, color: "#111", letterSpacing: "-0.04em", marginBottom: 20 }}>

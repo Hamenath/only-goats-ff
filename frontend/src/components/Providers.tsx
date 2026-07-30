@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
@@ -16,10 +17,33 @@ const queryClientConfig = {
   },
 };
 
+let globalLenis: Lenis | null = null;
+
+function ScrollToTopManager() {
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.scrollRestoration = "manual";
+      window.scrollTo(0, 0);
+      if (globalLenis) {
+        globalLenis.scrollTo(0, { immediate: true });
+      }
+    }
+  }, [pathname]);
+
+  return null;
+}
+
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(() => new QueryClient(queryClientConfig));
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.history.scrollRestoration = "manual";
+      window.scrollTo(0, 0);
+    }
+
     // Register scroll trigger
     gsap.registerPlugin(ScrollTrigger);
 
@@ -31,6 +55,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       smoothWheel: true,
     });
 
+    globalLenis = lenis;
+    lenis.scrollTo(0, { immediate: true });
+
     lenis.on("scroll", ScrollTrigger.update);
 
     const tickHandler = (time: number) => {
@@ -41,12 +68,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
     gsap.ticker.lagSmoothing(0);
 
     return () => {
+      globalLenis = null;
       lenis.destroy();
       gsap.ticker.remove(tickHandler);
     };
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    <QueryClientProvider client={queryClient}>
+      <ScrollToTopManager />
+      {children}
+    </QueryClientProvider>
   );
 }

@@ -29,8 +29,8 @@ const formSchema = z.object({
     }).optional(),
     gameName: z.string().optional(),
   }),
-  phone: z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit Indian phone number"),
-  whatsapp: z.string().regex(/^[6-9]\d{9}$/, "Enter a valid 10-digit WhatsApp number"),
+  phone: z.string().regex(/^[6-9]\d{9}$/, "Phone number must be exactly 10 digits"),
+  whatsapp: z.string().regex(/^[6-9]\d{9}$/, "WhatsApp number must be exactly 10 digits"),
   upiTransactionId: z.string().min(6, "Enter valid UPI transaction ID"),
 });
 
@@ -82,6 +82,7 @@ function InputField({ label, error, touched, ...props }: InputFieldProps) {
         </span>
         <input
           {...props}
+          className={`clean-input ${props.className || ""}`}
           onFocus={(e) => {
             setFocused(true);
             props.onFocus?.(e);
@@ -94,12 +95,13 @@ function InputField({ label, error, touched, ...props }: InputFieldProps) {
             width: "100%",
             border: "none",
             outline: "none",
+            background: "transparent",
+            boxShadow: "none",
             fontSize: 14,
             fontWeight: 500,
             fontFamily: "Inter, sans-serif",
             color: "#111",
             marginTop: focused || hasValue ? 10 : 0,
-            background: "transparent",
             ...props.style,
           }}
         />
@@ -117,7 +119,16 @@ export function RegisterForm() {
   const [step, setStep] = useState(1);
   const [paymentFile, setPaymentFile] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [success, setSuccess] = useState<{ teamId: string } | null>(null);
+  const [success, setSuccess] = useState<{
+    teamId: string;
+    teamName: string;
+    captainName: string;
+    captainUid: string;
+    phone: string;
+    whatsapp: string;
+    upiTransactionId: string;
+    screenshotUrl: string;
+  } | null>(null);
   const [fileError, setFileError] = useState("");
   const [isDragActive, setIsDragActive] = useState(false);
 
@@ -202,7 +213,15 @@ export function RegisterForm() {
     const toastId = toast.loading("Confirming transaction...");
 
     try {
-      const teamId = `OG-${Date.now().toString(36).toUpperCase()}`;
+      // Get current registration count for sequential non-repeating OG-VERIFIED(X)
+      const countRef = doc(db, "settings", "registrationCount");
+      const countSnap = await getDoc(countRef);
+      let currentCount = 0;
+      if (countSnap.exists()) {
+        currentCount = countSnap.data().count || 0;
+      }
+      const nextCount = currentCount + 1;
+      const teamId = `OG-VERIFIED(${nextCount})`;
 
       // Upload file to Cloudinary via secure serverless API route
       const uploadFormData = new FormData();
@@ -235,8 +254,6 @@ export function RegisterForm() {
       });
 
       // Update count
-      const countRef = doc(db, "settings", "registrationCount");
-      const countSnap = await getDoc(countRef);
       if (countSnap.exists()) {
         await setDoc(countRef, { count: increment(1) }, { merge: true });
       } else {
@@ -244,7 +261,16 @@ export function RegisterForm() {
       }
 
       toast.success("Successfully registered! See you in the lobby. 🎉", { id: toastId });
-      setSuccess({ teamId });
+      setSuccess({
+        teamId,
+        teamName: data.teamName,
+        captainName: data.captain.name,
+        captainUid: data.captain.uid,
+        phone: data.phone,
+        whatsapp: data.whatsapp,
+        upiTransactionId: data.upiTransactionId,
+        screenshotUrl,
+      });
       fireConfetti();
     } catch (err) {
       console.error(err);
@@ -281,11 +307,11 @@ export function RegisterForm() {
           Your slot is reserved. Payment is under verification.
         </p>
 
-        <div className="glass-card" style={{ maxWidth: 360, margin: "0 auto 24px", padding: "24px 28px", textAlign: "left", border: "1px solid #111" }}>
+        <div className="glass-card" style={{ maxWidth: 400, margin: "0 auto 24px", padding: "24px 28px", textAlign: "left", border: "1px solid #111" }}>
           <p style={{ fontSize: 10, color: "#999", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 6 }}>
             YOUR SQUAD ID
           </p>
-          <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 32, fontWeight: 800, color: "#e50914", letterSpacing: "-0.02em" }}>
+          <p style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800, color: "#e50914", letterSpacing: "-0.02em" }}>
             {success.teamId}
           </p>
           <p style={{ fontSize: 12, color: "#666", marginTop: 8 }}>
@@ -293,7 +319,8 @@ export function RegisterForm() {
           </p>
         </div>
 
-        <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10, alignItems: "center", marginBottom: 24 }}>
+          {/* Join Official WhatsApp Group */}
           <a
             href="https://chat.whatsapp.com/FeeiKNO0jeBCa0LKOa8iMZ?s=sh&p=a&mlu=4&amv=2"
             target="_blank"
@@ -308,13 +335,14 @@ export function RegisterForm() {
               background: "#25D366",
               color: "#fff",
               fontWeight: 700,
-              fontSize: 15,
+              fontSize: 14,
               textDecoration: "none",
               boxShadow: "0 8px 24px rgba(37,211,102,0.3)",
-              transition: "transform 0.2s ease",
+              width: "100%",
+              maxWidth: 360,
             }}
           >
-            <MessageCircle size={20} />
+            <MessageCircle size={18} />
             <span>Join Official WhatsApp Group</span>
           </a>
         </div>
@@ -415,6 +443,7 @@ export function RegisterForm() {
                 label="Phone Number *"
                 placeholder=""
                 type="tel"
+                maxLength={10}
                 {...register("phone")}
                 error={errors.phone?.message}
                 value={watchedValues.phone ?? ""}
@@ -423,6 +452,7 @@ export function RegisterForm() {
                 label="WhatsApp Number *"
                 placeholder=""
                 type="tel"
+                maxLength={10}
                 {...register("whatsapp")}
                 error={errors.whatsapp?.message}
                 value={watchedValues.whatsapp ?? ""}

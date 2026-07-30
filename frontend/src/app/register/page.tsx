@@ -10,8 +10,8 @@ export const metadata: Metadata = {
 
 export default function RegisterPage() {
   return (
-    <div style={{ paddingTop: 80 }}>
-      <section className="gradient-mesh" style={{ padding: "80px 0 60px" }}>
+    <div>
+      <section className="gradient-mesh" style={{ padding: "140px 0 60px" }}>
         <div className="container-custom" style={{ textAlign: "center" }}>
           <span className="badge badge-accent" style={{ marginBottom: 24 }}>✍️ Registration Open</span>
           <h1
@@ -34,14 +34,14 @@ export default function RegisterPage() {
 
       <section style={{ padding: "60px 0 120px" }}>
         <div className="container-custom">
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 48, alignItems: "start" }}>
+          <div className="register-grid">
             {/* Form */}
-            <div className="glass-card" style={{ padding: "48px 48px" }}>
+            <div className="glass-card p-5 sm:p-8 md:p-12">
               <RegisterForm />
             </div>
 
             {/* Sidebar */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div className="flex flex-col gap-5">
               {[
                 {
                   icon: CreditCard,

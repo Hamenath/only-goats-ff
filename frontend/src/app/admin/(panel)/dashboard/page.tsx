@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { DangerZoneCard } from "@/components/admin/DangerZoneCard";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
@@ -326,6 +327,11 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Danger Zone Section */}
+      <div style={{ marginTop: 32 }}>
+        <DangerZoneCard />
       </div>
       <style>{`@keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
     </div>

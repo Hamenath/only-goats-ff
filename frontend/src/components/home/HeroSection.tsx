@@ -32,7 +32,7 @@ export function HeroSection() {
         if (snap.exists()) {
           const data = snap.data();
           setSettings({
-            tournamentDate: data.countdownDate || data.tournamentDate || "2026-08-08T22:00:00+05:30",
+            tournamentDate: data.countdownDate || data.tournamentDate || "2026-08-08T10:00:00+05:30",
             registrationLimit: data.maxTeams || data.registrationLimit,
             registrationEnabled: data.registrationOpen !== undefined ? data.registrationOpen : data.registrationEnabled,
             prizePool: data.prizePool,
@@ -82,7 +82,7 @@ export function HeroSection() {
         paddingBottom: 80,
       }}
     >
-      {/* Background Image */}
+      {/* Background Video */}
       <div
         style={{
           position: "absolute",
@@ -90,29 +90,31 @@ export function HeroSection() {
           left: 0,
           width: "100%",
           height: "100%",
-          backgroundImage: "url('/hero-bg-clean.jpg')",
-          backgroundSize: "cover",
-          backgroundPosition: "center top",
-          backgroundRepeat: "no-repeat",
           zIndex: 0,
           pointerEvents: "none",
+          overflow: "hidden",
         }}
-      />
+      >
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{
+            position: "absolute",
+            top: "54%",
+            left: "50%",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            transform: "translate(-50%, -50%) scale(1.25)",
+          }}
+        >
+          <source src="/videoplayback.mp4" type="video/mp4" />
+        </video>
+      </div>
 
-      {/* Dimming Overlay */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          background: "rgba(11, 11, 11, 0.78)", // Dark dimmed overlay
-          backdropFilter: "blur(2px)", // Subtle premium blur
-          zIndex: 0,
-          pointerEvents: "none",
-        }}
-      />
+
 
 
       <div className="container-custom" style={{ position: "relative", zIndex: 1, width: "100%", display: "flex", justifyContent: "center", textAlign: "center" }}>
