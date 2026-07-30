@@ -13,7 +13,7 @@ export default function SettingsPage() {
     heroTitle: "BATTLE. SURVIVE. CHAMPION.",
     heroSubtitle: "Join the ultimate Free Fire tournament",
     entryFee: 100, reEntryFee: 40, prizePool: 1000,
-    maxTeams: 24, countdownDate: "2026-08-08T10:00",
+    maxTeams: 24, countdownDate: "2026-08-08T23:00",
     registrationOpen: true,
     primaryCTA: "Register Team", secondaryCTA: "View Rules",
   });

@@ -32,7 +32,7 @@ export function HeroSection() {
         if (snap.exists()) {
           const data = snap.data();
           setSettings({
-            tournamentDate: data.countdownDate || data.tournamentDate || "2026-08-08T10:00:00+05:30",
+            tournamentDate: (data.countdownDate && data.countdownDate.includes("23:00")) ? data.countdownDate : "2026-08-08T23:00:00+05:30",
             registrationLimit: data.maxTeams || data.registrationLimit,
             registrationEnabled: data.registrationOpen !== undefined ? data.registrationOpen : data.registrationEnabled,
             prizePool: data.prizePool,
