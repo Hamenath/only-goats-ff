@@ -21,10 +21,14 @@ import {
   Zap,
   Upload,
   Loader2,
-  KeyRound,
   ShieldCheck,
   ArrowRight,
   LogOut,
+  Swords,
+  Trophy,
+  Target,
+  Award,
+  ChevronRight,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -77,9 +81,8 @@ export default function MyTeamPage() {
     canView: false,
   });
 
-  // Future OTP Step state (ready for seamless OTP extension)
+  // Future OTP Step state
   const [authStep, setAuthStep] = useState<"credentials" | "otp" | "authenticated">("credentials");
-  const [otpInput, setOtpInput] = useState("");
 
   // Premium Pass Form State
   const [showPremiumForm, setShowPremiumForm] = useState(false);
@@ -88,7 +91,7 @@ export default function MyTeamPage() {
   const [uploadingScreen, setUploadingScreen] = useState(false);
   const [submittingPremium, setSubmittingPremium] = useState(false);
 
-  // Auto-restore session from localStorage if present
+  // Auto-restore session from localStorage
   useEffect(() => {
     const savedSquadId = localStorage.getItem("og_auth_squad_id");
     const savedPhone = localStorage.getItem("og_auth_phone");
@@ -274,11 +277,24 @@ export default function MyTeamPage() {
     }
   };
 
+  // Determine Active Progress Tracker Index
+  const getProgressStepIndex = () => {
+    if (!team) return 1;
+    if (team.qualificationStatus === "qualified_round_2" || team.qualificationStatus === "eliminated" || team.qualificationStatus === "premium_pass_granted") {
+      return 5; // Results / Complete
+    }
+    if (roomCreds.canView) return 3; // Room Unlocked
+    if (allocatedMatch) return 2; // Match Assigned
+    return 1; // Registration Complete
+  };
+
+  const progressIndex = getProgressStepIndex();
+
   return (
-    <div style={{ minHeight: "100vh", background: "#FAF9F6", fontFamily: "Inter, sans-serif", paddingTop: 130, paddingBottom: 80 }}>
-      <div className="container-custom" style={{ maxWidth: 1000, margin: "0 auto" }}>
+    <div style={{ minHeight: "100vh", background: "#FAF9F6", fontFamily: "Inter, sans-serif", paddingTop: 120, paddingBottom: 80 }}>
+      <div className="container-custom" style={{ maxWidth: 1040, margin: "0 auto" }}>
         
-        {/* TWO-FACTOR TEAM VERIFICATION LOGIN CARD */}
+        {/* LOGIN CARD */}
         {authStep !== "authenticated" || !team ? (
           <div style={{ maxWidth: 460, margin: "0 auto" }}>
             <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -389,7 +405,6 @@ export default function MyTeamPage() {
                   </div>
                 )}
 
-                {/* Submit Button */}
                 <button
                   type="submit"
                   disabled={verifying}
@@ -426,66 +441,70 @@ export default function MyTeamPage() {
             </div>
           </div>
         ) : (
-          /* AUTHENTICATED SQUAD DASHBOARD */
+          /* AUTHENTICATED ESPORTS CONTROL CENTER */
           <div>
-            {/* Top Team Info Banner with Logout */}
+            {/* 1. HEADER CONTROL BAR */}
             <div
               style={{
-                background: "#1E293B",
+                background: "#0F172A",
                 color: "#FFFFFF",
                 borderRadius: 20,
                 padding: 28,
                 marginBottom: 24,
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                flexWrap: "wrap",
-                gap: 16,
-                boxShadow: "0 10px 30px rgba(0,0,0,0.15)",
+                position: "relative",
+                boxShadow: "0 10px 30px rgba(15, 23, 42, 0.15)",
+                border: "1px solid rgba(255,255,255,0.08)",
               }}
             >
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 6 }}>
-                  <span style={{ padding: "4px 10px", borderRadius: 6, background: "#DC2626", fontSize: 12, fontWeight: 800 }}>
-                    {team.teamId}
-                  </span>
-                  <span style={{ fontSize: 12, color: "#94A3B8" }}>
-                    Reg Order: #{team.registrationOrder || 1}
-                  </span>
-                </div>
-                <h2 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: 28, fontWeight: 800 }}>
-                  {team.teamName}
-                </h2>
-                <p style={{ fontSize: 13, color: "#CBD5E1", marginTop: 4 }}>
-                  Captain: {team.captain.name} ({team.captain.uid}) • Phone: {team.phone}
-                </p>
-              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                    <span style={{ padding: "5px 12px", borderRadius: 8, background: "#DC2626", fontSize: 13, fontWeight: 900, letterSpacing: "0.04em", color: "#FFF" }}>
+                      🛡️ {team.teamId}
+                    </span>
+                    <span style={{ fontSize: 12, fontWeight: 700, color: "#94A3B8" }}>
+                      Reg Order: #{team.registrationOrder || 1}
+                    </span>
+                  </div>
 
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-                  <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-                    Match Allocation
-                  </span>
-                  <span style={{ padding: "6px 12px", borderRadius: 8, background: "#334155", border: "1px solid #475569", fontSize: 13, fontWeight: 800, color: "#38BDF8", marginTop: 2 }}>
-                    📍 {team.allocatedStage}
-                  </span>
+                  <h1 style={{ fontFamily: "Space Grotesk, sans-serif", fontSize: "clamp(26px, 4vw, 36px)", fontWeight: 900, color: "#FFFFFF", letterSpacing: "-0.02em" }}>
+                    {team.teamName}
+                  </h1>
+
+                  <p style={{ fontSize: 13, color: "#CBD5E1", marginTop: 6, display: "flex", gap: 12, flexWrap: "wrap" }}>
+                    <span>👤 Captain: <strong>{team.captain.name}</strong> ({team.captain.uid})</span>
+                    <span>•</span>
+                    <span>📞 Phone: <strong>{team.phone}</strong></span>
+                    <span>•</span>
+                    <span>📍 Assigned: <strong style={{ color: "#38BDF8" }}>{team.allocatedStage}</strong></span>
+                  </p>
                 </div>
 
+                {/* Compact Exit Button in Top Right */}
                 <button
                   onClick={handleLogout}
                   title="Logout from Dashboard"
                   style={{
-                    padding: "10px 14px",
+                    padding: "8px 14px",
                     borderRadius: 10,
-                    background: "#334155",
-                    color: "#F8FAFC",
-                    border: "1px solid #475569",
+                    background: "rgba(255,255,255,0.08)",
+                    color: "#94A3B8",
+                    border: "1px solid rgba(255,255,255,0.15)",
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
                     gap: 6,
                     fontSize: 12,
                     fontWeight: 700,
+                    transition: "all 0.2s ease",
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.color = "#EF4444";
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(239,68,68,0.15)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLButtonElement).style.color = "#94A3B8";
+                    (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.08)";
                   }}
                 >
                   <LogOut size={14} /> Exit
@@ -493,48 +512,109 @@ export default function MyTeamPage() {
               </div>
             </div>
 
-            {/* Stage & Qualification Status Bar */}
+            {/* 2. MATCH PROGRESS TRACKER BAR */}
+            <div
+              style={{
+                background: "#FFFFFF",
+                borderRadius: 16,
+                border: "1px solid #E2E8F0",
+                padding: "18px 24px",
+                marginBottom: 24,
+                boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", overflowX: "auto", gap: 12 }}>
+                {[
+                  { step: 1, label: "Registration" },
+                  { step: 2, label: "Qualifier Assigned" },
+                  { step: 3, label: "Room Reveal" },
+                  { step: 4, label: "Match Live" },
+                  { step: 5, label: "Results & Rank" },
+                ].map((st, idx) => {
+                  const isActive = progressIndex >= st.step;
+                  const isCurrent = progressIndex === st.step;
+
+                  return (
+                    <div key={st.step} style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div
+                          style={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            background: isCurrent ? "#DC2626" : isActive ? "#16A34A" : "#F1F5F9",
+                            color: isActive ? "#FFFFFF" : "#64748B",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: 11,
+                            fontWeight: 800,
+                          }}
+                        >
+                          {isActive && !isCurrent ? <CheckCircle2 size={14} /> : st.step}
+                        </div>
+                        <span style={{ fontSize: 12, fontWeight: isCurrent ? 800 : 600, color: isCurrent ? "#0F172A" : isActive ? "#334155" : "#94A3B8" }}>
+                          {st.label}
+                        </span>
+                      </div>
+                      {idx < 4 && <ChevronRight size={14} style={{ color: "#CBD5E1" }} />}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 3. COLOR-CODED STATUS CARDS */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 16, marginBottom: 24 }}>
+              {/* Card A: Current Stage (Blue Badge = Upcoming) */}
               <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", padding: 20 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Current Stage</span>
-                <h4 style={{ fontSize: 18, fontWeight: 800, color: "#0F172A", marginTop: 4 }}>{team.allocatedStage}</h4>
-                <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{team.registrationOrder <= 12 ? "Teams 1-12 Pool" : "Teams 13-24 Pool"}</p>
+                <div style={{ marginTop: 8 }}>
+                  <span style={{ padding: "6px 14px", borderRadius: 8, background: "#E0F2FE", color: "#0284C7", fontSize: 14, fontWeight: 800, border: "1px solid #BAE6FD" }}>
+                    📍 {team.allocatedStage}
+                  </span>
+                </div>
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 10 }}>
+                  {team.registrationOrder <= 12 ? "Teams 1-12 Pool" : "Teams 13-24 Pool"}
+                </p>
               </div>
 
+              {/* Card B: Qualification Status (Color Coded) */}
               <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", padding: 20 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Qualification Status</span>
-                <div style={{ marginTop: 6 }}>
+                <div style={{ marginTop: 8 }}>
                   {team.qualificationStatus === "pending" && (
-                    <span style={{ padding: "6px 12px", borderRadius: 8, background: "#FEF3C7", color: "#D97706", fontSize: 13, fontWeight: 800 }}>
+                    <span style={{ padding: "6px 14px", borderRadius: 8, background: "#FEF3C7", color: "#D97706", fontSize: 13, fontWeight: 800, border: "1px solid #FDE68A" }}>
                       ⏳ Pending Match Result
                     </span>
                   )}
                   {team.qualificationStatus === "qualified_round_2" && (
-                    <span style={{ padding: "6px 12px", borderRadius: 8, background: "#DCFCE7", color: "#16A34A", fontSize: 13, fontWeight: 800 }}>
+                    <span style={{ padding: "6px 14px", borderRadius: 8, background: "#DCFCE7", color: "#16A34A", fontSize: 13, fontWeight: 800, border: "1px solid #BBF7D0" }}>
                       🎉 Qualified for Round 2!
                     </span>
                   )}
                   {team.qualificationStatus === "eliminated" && (
-                    <span style={{ padding: "6px 12px", borderRadius: 8, background: "#FEE2E2", color: "#DC2626", fontSize: 13, fontWeight: 800 }}>
+                    <span style={{ padding: "6px 14px", borderRadius: 8, background: "#FEE2E2", color: "#DC2626", fontSize: 13, fontWeight: 800, border: "1px solid #FECACA" }}>
                       ❌ Eliminated in Qualifier
                     </span>
                   )}
                   {team.qualificationStatus === "premium_pass_granted" && (
-                    <span style={{ padding: "6px 12px", borderRadius: 8, background: "#F3E8FF", color: "#7E22CE", fontSize: 13, fontWeight: 800 }}>
+                    <span style={{ padding: "6px 14px", borderRadius: 8, background: "#F3E8FF", color: "#7E22CE", fontSize: 13, fontWeight: 800, border: "1px solid #E9D5FF" }}>
                       ⚡ Premium Pass Granted (Round 2)
                     </span>
                   )}
                 </div>
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 10 }}>Top 6 advance to Round 2</p>
               </div>
 
-              {/* Only Goats Premium Pass Entry Status */}
+              {/* Card C: Premium Pass Entry Status */}
               <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", padding: 20 }}>
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>Only Goats Premium Pass</span>
-                <div style={{ marginTop: 6 }}>
+                <div style={{ marginTop: 8 }}>
                   {team.qualificationStatus === "eliminated" ? (
                     <button
                       onClick={() => setShowPremiumForm(true)}
-                      style={{ padding: "8px 14px", borderRadius: 8, background: "#7E22CE", color: "#FFF", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer" }}
+                      style={{ padding: "8px 14px", borderRadius: 8, background: "#7E22CE", color: "#FFF", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer", boxShadow: "0 2px 8px rgba(126,34,206,0.2)" }}
                     >
                       ⚡ Apply Premium Pass (₹40)
                     </button>
@@ -544,11 +624,31 @@ export default function MyTeamPage() {
                     </span>
                   )}
                 </div>
+                <p style={{ fontSize: 12, color: "#64748B", marginTop: 10 }}>Max 4 entries join Round 2</p>
               </div>
             </div>
 
-            {/* Room Credentials Box (Secured Auto Reveal) */}
-            <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1.5px solid #E2E8F0", padding: 24, marginBottom: 24 }}>
+            {/* 4. COMPACT TEAM STATISTICS GRID */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
+              {[
+                { label: "Matches Played", value: "1", icon: Swords, color: "#3B82F6" },
+                { label: "Total Kills", value: "0", icon: Target, color: "#EF4444" },
+                { label: "Total Points", value: "0 PTS", icon: Award, color: "#F59E0B" },
+                { label: "Current Rank", value: "#1", icon: Trophy, color: "#10B981" },
+                { label: "Best Placement", value: "#1", icon: ShieldCheck, color: "#8B5CF6" },
+              ].map((st) => (
+                <div key={st.label} style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: 14, padding: "14px 16px", display: "flex", flexDirection: "column" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>{st.label}</span>
+                    <st.icon size={14} style={{ color: st.color }} />
+                  </div>
+                  <span style={{ fontSize: 20, fontWeight: 900, color: "#0F172A", marginTop: 6 }}>{st.value}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* 5. ROOM DETAILS REVEAL BOX */}
+            <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1.5px solid #E2E8F0", padding: 24, marginBottom: 24, boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
                   🎮 Room Credentials & Match Details
@@ -599,6 +699,38 @@ export default function MyTeamPage() {
               )}
             </div>
 
+            {/* 6. CHRONOLOGICAL NOTIFICATIONS FEED */}
+            <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1px solid #E2E8F0", padding: 24 }}>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
+                <Bell size={18} style={{ color: "#DC2626" }} /> Real-time Activity Notifications
+              </h3>
+
+              {notifications.length === 0 ? (
+                /* Friendly Placeholder */
+                <div style={{ textAlign: "center", padding: "36px 20px", background: "#F8FAFC", borderRadius: 14, border: "1px dashed #E2E8F0" }}>
+                  <Bell size={32} style={{ color: "#CBD5E1", margin: "0 auto 10px" }} />
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#334155" }}>No notifications yet</p>
+                  <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
+                    Live match updates, room unlocks, and qualification alerts will appear here in real time.
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  {notifications.map((n) => (
+                    <div key={n.id} style={{ background: "#F8FAFC", border: "1px solid #F1F5F9", borderRadius: 12, padding: 14, display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                      <div>
+                        <strong style={{ fontSize: 13, color: "#0F172A", display: "block" }}>{n.title}</strong>
+                        <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{n.message}</p>
+                      </div>
+                      <span style={{ fontSize: 11, color: "#94A3B8", flexShrink: 0 }}>
+                        {n.createdAt?.seconds ? new Date(n.createdAt.seconds * 1000).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "Just now"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {/* Premium Pass Modal */}
             {showPremiumForm && (
               <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15,23,42,0.65)", backdropFilter: "blur(6px)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -636,25 +768,6 @@ export default function MyTeamPage() {
                 </div>
               </div>
             )}
-
-            {/* Notifications Feed */}
-            <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1px solid #E2E8F0", padding: 24 }}>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A", marginBottom: 16, display: "flex", alignItems: "center", gap: 8 }}>
-                <Bell size={18} style={{ color: "#DC2626" }} /> Real-time Activity Notifications
-              </h3>
-              {notifications.length === 0 ? (
-                <p style={{ fontSize: 13, color: "#94A3B8" }}>No notifications yet.</p>
-              ) : (
-                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-                  {notifications.map((n) => (
-                    <div key={n.id} style={{ background: "#F8FAFC", border: "1px solid #F1F5F9", borderRadius: 12, padding: 14 }}>
-                      <strong style={{ fontSize: 13, color: "#0F172A", display: "block" }}>{n.title}</strong>
-                      <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{n.message}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </div>
         )}
       </div>
