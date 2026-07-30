@@ -14,13 +14,12 @@ export function LoadingScreen() {
   const ref = useRef<HTMLDivElement>(null);
   const logoRef = useRef<HTMLDivElement>(null);
   const barRef = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(true);
+  const [visible, setVisible] = useState(!isAdmin);
   const setLoading = useAppStore((s) => s.setLoading);
 
   useEffect(() => {
     if (isAdmin) {
       setLoading(false);
-      setVisible(false);
       return;
     }
     const el = ref.current;

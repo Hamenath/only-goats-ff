@@ -131,7 +131,7 @@ export function RegisterForm() {
   } | null>(null);
   const [fileError, setFileError] = useState("");
   const [isDragActive, setIsDragActive] = useState(false);
-  const [activeTournament, setActiveTournament] = useState<any | null>(null);
+  const [activeTournament, setActiveTournament] = useState<Record<string, unknown> | null>(null);
   const [checkingActive, setCheckingActive] = useState(true);
 
   // Real-time Active Tournament listener
