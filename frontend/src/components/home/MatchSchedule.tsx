@@ -94,15 +94,48 @@ export function MatchSchedule() {
 
   useEffect(() => {
     try {
-      const q = query(collection(db, "schedule"), orderBy("date"));
-      const unsub = onSnapshot(q, (snap) => {
+      const unsub = onSnapshot(collection(db, "matches"), (snap) => {
         if (!snap.empty) {
-          setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() } as Match)));
+          const list: Match[] = snap.docs.map((docSnap) => {
+            const d = docSnap.data();
+            let dateStr = d.date || "Aug 8";
+            let timeStr = d.time || "11:00 PM";
+
+            if (d.matchTime) {
+              try {
+                const dateObj = new Date(d.matchTime);
+                if (!isNaN(dateObj.getTime())) {
+                  dateStr = dateObj.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" });
+                  timeStr = dateObj.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+                }
+              } catch {}
+            }
+
+            return {
+              id: docSnap.id,
+              date: dateStr,
+              time: timeStr,
+              match: d.name ? `${d.name} (${d.map || "Bermuda"})` : (d.match || "Custom Match"),
+              status: (d.status as any) || "upcoming",
+              stage: d.round || d.stage || "Qualifier Stage",
+              teams: d.teams || { t1: "12 SQUADS" },
+              streamUrl: d.streamUrl,
+            };
+          });
+          setMatches(list);
+        } else {
+          // Fallback to schedule collection or demo matches
+          const unsubSchedule = onSnapshot(collection(db, "schedule"), (schedSnap) => {
+            if (!schedSnap.empty) {
+              setMatches(schedSnap.docs.map((d) => ({ id: d.id, ...d.data() } as Match)));
+            }
+          });
+          return () => unsubSchedule();
         }
       });
       return () => unsub();
-    } catch {
-      // Use demo data
+    } catch (e) {
+      console.error("Failed to load live matches:", e);
     }
   }, []);
 
