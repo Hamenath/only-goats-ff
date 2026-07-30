@@ -9,7 +9,7 @@ interface LogoProps {
   showText?: boolean;
   textSub?: string;
   className?: string;
-  variant?: "light" | "dark";
+  variant?: "light" | "dark" | "red";
   onClick?: () => void;
 }
 
@@ -21,8 +21,8 @@ export const Logo: React.FC<LogoProps> = ({
   variant = "dark",
   onClick,
 }) => {
-  const textColor = variant === "light" ? "#ffffff" : "#111111";
-  const subColor = variant === "light" ? "rgba(255,255,255,0.6)" : "#999999";
+  const textColor = variant === "red" ? "#e50914" : variant === "light" ? "#ffffff" : "#111111";
+  const subColor = variant === "red" ? "rgba(229,9,20,0.85)" : variant === "light" ? "rgba(255,255,255,0.6)" : "#666666";
 
   return (
     <Link
