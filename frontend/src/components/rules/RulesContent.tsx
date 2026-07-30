@@ -17,9 +17,23 @@ const RULES = [
     category: "Match Rules",
     icon: Shield,
     items: [
+      {
+        q: "What are the official Playing Rules for One Tap Custom Rooms?",
+        a: "FREE FIRE ONE TAP CUSTOM ROOM RULES:\n\n1. No Roof.\n2. No Spray.\n3. No Emote.\n4. Don't Show Face.\n5. No Wall Break.\n6. Don't Jump Into the Wall.\n7. Face to Face Fight Only.\n8. Fighting Inside Rooms and Houses is Allowed.\n9. No Glitches or Exploits.\n10. Respect the Referee's Decision."
+      },
       { q: "What happens if a player disconnects?", a: "Disconnections are not the organizer's responsibility. Teams must be ready at match time. A 5-minute grace period will be given after which the match proceeds." },
       { q: "Which map is played?", a: "All matches are played on Bermuda (Classic). Both qualifier matches and CS League rounds use Bermuda." },
       { q: "What room settings are used?", a: "Classic mode, Bermuda map, TPP, squad. Custom rooms will be created by organizers and room ID/password shared 15 minutes before match time." },
+    ],
+  },
+  {
+    category: "Playing Rules",
+    icon: Shield,
+    items: [
+      {
+        q: "Free Fire One Tap Custom Room Playing Rules",
+        a: "1. No Roof.\n2. No Spray.\n3. No Emote.\n4. Don't Show Face.\n5. No Wall Break.\n6. Don't Jump Into the Wall.\n7. Face to Face Fight Only.\n8. Fighting Inside Rooms and Houses is Allowed.\n9. No Glitches or Exploits.\n10. Respect the Referee's Decision."
+      },
     ],
   },
   {
@@ -79,8 +93,10 @@ function AccordionItem({ q, a }: { q: string; a: string }) {
       <div
         className="accordion-content"
         style={{
-          maxHeight: open ? 300 : 0,
+          maxHeight: open ? 600 : 0,
           paddingBottom: open ? 20 : 0,
+          whiteSpace: "pre-line",
+          lineHeight: 1.7,
           transition: "max-height 0.35s cubic-bezier(0.25,0.46,0.45,0.94), padding 0.2s",
         }}
       >
