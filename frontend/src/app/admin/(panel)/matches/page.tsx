@@ -26,16 +26,15 @@ import {
   Swords,
   Upload,
   Search,
-  Filter,
   CheckCircle2,
   Clock,
   Radio,
-  ExternalLink,
   Shield,
   Loader2,
   XCircle,
-  Archive,
   Layers,
+  Lock,
+  Unlock,
 } from "lucide-react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -47,6 +46,8 @@ interface MatchItem {
   map: string;
   round: string;
   matchTime: string;
+  matchStartTime?: string;
+  roomRevealTime?: string;
   regCloseTime?: string;
   maxSquads: number;
   status: "upcoming" | "live" | "completed" | "cancelled";
@@ -68,6 +69,8 @@ const DEFAULT_FORM: Omit<MatchItem, "id"> = {
   map: "Bermuda",
   round: "Qualifier",
   matchTime: "",
+  matchStartTime: "",
+  roomRevealTime: "",
   regCloseTime: "",
   maxSquads: 24,
   status: "upcoming",
@@ -110,6 +113,26 @@ export default function MatchesPage() {
     });
     return () => unsub();
   }, []);
+
+  // Automatic 10-minute Room Reveal Time Calculation
+  const handleMatchTimeChange = (val: string) => {
+    let autoReveal = form.roomRevealTime;
+    if (val) {
+      const dt = new Date(val);
+      if (!isNaN(dt.getTime())) {
+        // Subtract 10 minutes
+        const revealDt = new Date(dt.getTime() - 10 * 60 * 1000);
+        const pad = (n: number) => String(n).padStart(2, "0");
+        autoReveal = `${revealDt.getFullYear()}-${pad(revealDt.getMonth() + 1)}-${pad(revealDt.getDate())}T${pad(revealDt.getHours())}:${pad(revealDt.getMinutes())}`;
+      }
+    }
+    setForm((prev) => ({
+      ...prev,
+      matchTime: val,
+      matchStartTime: val,
+      roomRevealTime: autoReveal,
+    }));
+  };
 
   // Banner Upload Handler
   const handleBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -236,13 +259,42 @@ export default function MatchesPage() {
     }
   };
 
+  // Quick Action: Lock / Unlock Room Reveal Time Override
+  const toggleRoomLockNow = async (m: MatchItem) => {
+    try {
+      const isCurrentlyLiveOrRevealed = m.status === "live";
+      if (isCurrentlyLiveOrRevealed) {
+        // Lock room again by pushing reveal time into future
+        const futureReveal = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
+        await updateDoc(doc(db, "matches", m.id), {
+          roomRevealTime: futureReveal,
+          status: "upcoming",
+          updatedAt: serverTimestamp(),
+        });
+        toast.success("Room credentials locked!");
+      } else {
+        // Reveal room immediately
+        await updateDoc(doc(db, "matches", m.id), {
+          roomRevealTime: new Date().toISOString(),
+          status: "live",
+          updatedAt: serverTimestamp(),
+        });
+        toast.success("Room unlocked & set to LIVE!");
+      }
+    } catch {
+      toast.error("Failed to toggle room lock");
+    }
+  };
+
   // Start Edit Mode
   const startEdit = (m: MatchItem) => {
     setForm({
       name: m.name || "",
       map: m.map || "Bermuda",
       round: m.round || "Qualifier",
-      matchTime: m.matchTime || "",
+      matchTime: m.matchTime || m.matchStartTime || "",
+      matchStartTime: m.matchStartTime || m.matchTime || "",
+      roomRevealTime: m.roomRevealTime || "",
       regCloseTime: m.regCloseTime || "",
       maxSquads: m.maxSquads || 24,
       status: m.status || "upcoming",
@@ -298,9 +350,9 @@ export default function MatchesPage() {
       {/* Header Bar */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
         <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>⚔️ Match Management</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>⚔️ Match Management & Auto Room Reveal</h1>
           <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
-            Create and manage live room IDs, stream URLs, maps, and schedules in real-time.
+            Manage match schedules, live room IDs, and secure 10-minute auto-reveal triggers.
           </p>
         </div>
 
@@ -382,7 +434,7 @@ export default function MatchesPage() {
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
             <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A" }}>
-              {editId ? "✏️ Edit Match Details" : "➕ Create New Tournament Match"}
+              {editId ? "✏️ Edit Match & Room Reveal Settings" : "➕ Create New Tournament Match"}
             </h3>
             <button
               onClick={() => setShowForm(false)}
@@ -396,7 +448,7 @@ export default function MatchesPage() {
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
               <div>
                 <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MATCH NAME *
+                  MATCH TITLE *
                 </label>
                 <input
                   type="text"
@@ -427,7 +479,7 @@ export default function MatchesPage() {
 
               <div>
                 <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  ROUND *
+                  STAGE / ROUND *
                 </label>
                 <select
                   value={form.round}
@@ -450,8 +502,21 @@ export default function MatchesPage() {
                   type="datetime-local"
                   required
                   value={form.matchTime}
-                  onChange={(e) => setForm((f) => ({ ...f, matchTime: e.target.value }))}
+                  onChange={(e) => handleMatchTimeChange(e.target.value)}
                   style={inpStyle}
+                />
+              </div>
+
+              <div>
+                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#DC2626", marginBottom: 6 }}>
+                  🔒 ROOM REVEAL TIME (AUTO: START - 10 MINS)
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={form.roomRevealTime}
+                  onChange={(e) => setForm((f) => ({ ...f, roomRevealTime: e.target.value }))}
+                  style={{ ...inpStyle, borderColor: "#FCA5A5", background: "#FEF2F2", fontWeight: 700 }}
                 />
               </div>
 
@@ -749,6 +814,8 @@ export default function MatchesPage() {
           {paginatedMatches.map((m) => {
             const isPasswordVisible = !!showPasswordMap[m.id];
             const isSelected = selectedIds.includes(m.id);
+            const revealDate = m.roomRevealTime ? new Date(m.roomRevealTime) : null;
+            const isRevealed = m.status === "live" || (revealDate && Date.now() >= revealDate.getTime());
 
             return (
               <div
@@ -857,12 +924,10 @@ export default function MatchesPage() {
                     </div>
 
                     <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748B" }}>
-                      <span>⏰ {m.matchTime ? new Date(m.matchTime).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "TBD"}</span>
-                      {m.streamUrl && (
-                        <a href={m.streamUrl} target="_blank" rel="noreferrer" style={{ color: "#DC2626", fontWeight: 700, textDecoration: "none" }}>
-                          🔴 Watch Live
-                        </a>
-                      )}
+                      <span>⏰ Start: {m.matchTime ? new Date(m.matchTime).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "TBD"}</span>
+                      <span style={{ fontWeight: 700, color: isRevealed ? "#16A34A" : "#DC2626" }}>
+                        🔒 Reveal: {revealDate ? revealDate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Start - 10m"}
+                      </span>
                     </div>
                   </div>
 
@@ -892,12 +957,32 @@ export default function MatchesPage() {
 
                     <div style={{ display: "flex", gap: 4 }}>
                       <button
+                        onClick={() => toggleRoomLockNow(m)}
+                        title={isRevealed ? "Lock Room Credentials" : "Unlock & Reveal Room Now"}
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: 6,
+                          border: "none",
+                          background: isRevealed ? "#FEF2F2" : "#DCFCE7",
+                          color: isRevealed ? "#DC2626" : "#16A34A",
+                          cursor: "pointer",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {isRevealed ? <Lock size={13} /> : <Unlock size={13} />}
+                      </button>
+
+                      <button
                         onClick={() => handleDuplicate(m)}
                         title="Duplicate Match"
                         style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#F1F5F9", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
                       >
                         <Layers size={13} />
                       </button>
+
                       <button
                         onClick={() => startEdit(m)}
                         title="Edit Match"
@@ -905,6 +990,7 @@ export default function MatchesPage() {
                       >
                         <Edit2 size={13} />
                       </button>
+
                       <button
                         onClick={() => setConfirmDeleteId(m.id)}
                         title="Delete Match"
