@@ -238,10 +238,26 @@ export function RegisterForm() {
       }
       const screenshotUrl = uploadResult.url;
 
-      const allocatedStage = currentCount <= 12 ? "Qualifier 1" : "Qualifier 2";
+      // Fetch Active Tournament Settings for Dynamic Allocation
+      let activeTournId = "og-season-1";
+      let teamsPerQual = 12;
+      try {
+        const activeSnap = await getDoc(doc(db, "settings", "activeTournament"));
+        if (activeSnap.exists()) {
+          activeTournId = activeSnap.data().activeTournamentId || "og-season-1";
+          const tournSnap = await getDoc(doc(db, "tournaments", activeTournId));
+          if (tournSnap.exists()) {
+            teamsPerQual = tournSnap.data().teamsPerQualifier || 12;
+          }
+        }
+      } catch {}
 
-      // Save registration with Automated Stage Allocation
+      const qualNum = Math.ceil(currentCount / teamsPerQual) || 1;
+      const allocatedStage = `Qualifier ${qualNum}`;
+
+      // Save registration with Dynamic Multi-Tournament Allocation
       await addDoc(collection(db, "registrations"), {
+        tournamentId: activeTournId,
         teamId,
         teamName: data.teamName,
         captain: data.captain,

@@ -14,6 +14,7 @@ import { useAdminStore } from "../../store/useAdminStore";
 
 const NAV_ITEMS = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/admin/tournaments", icon: Trophy, label: "Tournaments" },
   { href: "/admin/registrations", icon: Users, label: "Registrations" },
   { href: "/admin/teams", icon: UserCheck, label: "Teams" },
   { href: "/admin/players", icon: User, label: "Players" },
