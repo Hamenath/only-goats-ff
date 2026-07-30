@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Users, UserCheck, Wallet, Swords,
   Trophy, Image, Megaphone, Settings, ShieldCheck,
   FileText, User, LogOut, ChevronLeft, ChevronRight,
-  Menu
+  Menu, CheckCircle2, Zap
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
