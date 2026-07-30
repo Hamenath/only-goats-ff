@@ -35,6 +35,17 @@ import {
   Layers,
   Lock,
   Unlock,
+  ChevronDown,
+  ChevronUp,
+  FileText,
+  Video,
+  Image as ImageIcon,
+  Send,
+  Calendar,
+  Sparkles,
+  AlertCircle,
+  Save,
+  MessageSquare,
 } from "lucide-react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
@@ -65,9 +76,9 @@ interface MatchItem {
 }
 
 const DEFAULT_FORM: Omit<MatchItem, "id"> = {
-  name: "",
+  name: "Qualifier Match 1",
   map: "Bermuda",
-  round: "Qualifier",
+  round: "Qualifier 1",
   matchTime: "",
   matchStartTime: "",
   roomRevealTime: "",
@@ -94,6 +105,20 @@ export default function MatchesPage() {
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [showPasswordMap, setShowPasswordMap] = useState<Record<string, boolean>>({});
 
+  // Accordion Section Expand States
+  const [sections, setSections] = useState({
+    basic: true,
+    room: true,
+    links: false,
+    rules: false,
+    media: false,
+    publication: false,
+  });
+
+  const toggleSection = (key: keyof typeof sections) => {
+    setSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   // Filtering & Pagination State
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
@@ -114,23 +139,32 @@ export default function MatchesPage() {
     return () => unsub();
   }, []);
 
-  // Automatic 10-minute Room Reveal Time Calculation
+  // Smart Automation: Changing Match Start Time auto-calculates Room Reveal (-10m) & Reg Close (-2h)
   const handleMatchTimeChange = (val: string) => {
     let autoReveal = form.roomRevealTime;
+    let autoRegClose = form.regCloseTime;
+
     if (val) {
       const dt = new Date(val);
       if (!isNaN(dt.getTime())) {
-        // Subtract 10 minutes
-        const revealDt = new Date(dt.getTime() - 10 * 60 * 1000);
         const pad = (n: number) => String(n).padStart(2, "0");
+
+        // 1. Auto Room Reveal: Match Start - 10 Minutes
+        const revealDt = new Date(dt.getTime() - 10 * 60 * 1000);
         autoReveal = `${revealDt.getFullYear()}-${pad(revealDt.getMonth() + 1)}-${pad(revealDt.getDate())}T${pad(revealDt.getHours())}:${pad(revealDt.getMinutes())}`;
+
+        // 2. Auto Reg Close: Match Start - 2 Hours
+        const regCloseDt = new Date(dt.getTime() - 2 * 60 * 60 * 1000);
+        autoRegClose = `${regCloseDt.getFullYear()}-${pad(regCloseDt.getMonth() + 1)}-${pad(regCloseDt.getDate())}T${pad(regCloseDt.getHours())}:${pad(regCloseDt.getMinutes())}`;
       }
     }
+
     setForm((prev) => ({
       ...prev,
       matchTime: val,
       matchStartTime: val,
       roomRevealTime: autoReveal,
+      regCloseTime: autoRegClose,
     }));
   };
 
@@ -158,15 +192,15 @@ export default function MatchesPage() {
   };
 
   // Submit Handler (Create / Edit)
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     try {
       if (editId) {
         await updateDoc(doc(db, "matches", editId), {
           ...form,
           updatedAt: serverTimestamp(),
         });
-        toast.success("Match updated successfully!");
+        toast.success("Match changes saved!");
       } else {
         await addDoc(collection(db, "matches"), {
           ...form,
@@ -193,7 +227,7 @@ export default function MatchesPage() {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
-      toast.success("Match duplicated successfully!");
+      toast.success("Match duplicated!");
     } catch {
       toast.error("Failed to duplicate match");
     }
@@ -239,32 +273,21 @@ export default function MatchesPage() {
     }
   };
 
-  // Toggle Live Status Handler
+  // Toggle Status Handler
   const toggleStatus = async (id: string, newStatus: MatchItem["status"]) => {
     try {
       await updateDoc(doc(db, "matches", id), { status: newStatus, updatedAt: serverTimestamp() });
-      toast.success(`Match status set to ${newStatus.toUpperCase()}`);
+      toast.success(`Status updated to ${newStatus.toUpperCase()}`);
     } catch {
       toast.error("Failed to update status");
     }
   };
 
-  // Toggle Publish Visibility Handler
-  const togglePublish = async (id: string, currentState: boolean) => {
-    try {
-      await updateDoc(doc(db, "matches", id), { isPublished: !currentState });
-      toast.success(`Match ${!currentState ? "Published" : "Unpublished"}`);
-    } catch {
-      toast.error("Failed to update publish state");
-    }
-  };
-
-  // Quick Action: Lock / Unlock Room Reveal Time Override
+  // Toggle Lock / Unlock Override
   const toggleRoomLockNow = async (m: MatchItem) => {
     try {
-      const isCurrentlyLiveOrRevealed = m.status === "live";
-      if (isCurrentlyLiveOrRevealed) {
-        // Lock room again by pushing reveal time into future
+      const isCurrentlyLive = m.status === "live";
+      if (isCurrentlyLive) {
         const futureReveal = new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString();
         await updateDoc(doc(db, "matches", m.id), {
           roomRevealTime: futureReveal,
@@ -273,7 +296,6 @@ export default function MatchesPage() {
         });
         toast.success("Room credentials locked!");
       } else {
-        // Reveal room immediately
         await updateDoc(doc(db, "matches", m.id), {
           roomRevealTime: new Date().toISOString(),
           status: "live",
@@ -291,7 +313,7 @@ export default function MatchesPage() {
     setForm({
       name: m.name || "",
       map: m.map || "Bermuda",
-      round: m.round || "Qualifier",
+      round: m.round || "Qualifier 1",
       matchTime: m.matchTime || m.matchStartTime || "",
       matchStartTime: m.matchStartTime || m.matchTime || "",
       roomRevealTime: m.roomRevealTime || "",
@@ -313,7 +335,7 @@ export default function MatchesPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Filtered & Search Matches
+  // Filtered Matches
   const filteredMatches = matches.filter((m) => {
     const matchesSearch =
       m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -329,31 +351,33 @@ export default function MatchesPage() {
     return m.status === statusFilter;
   });
 
-  // Pagination Math
   const totalPages = Math.ceil(filteredMatches.length / itemsPerPage) || 1;
   const paginatedMatches = filteredMatches.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
   const inpStyle: React.CSSProperties = {
     width: "100%",
-    padding: "10px 12px",
+    padding: "10px 14px",
     borderRadius: 8,
     border: "1px solid #CBD5E1",
     fontSize: 13,
     color: "#0F172A",
     outline: "none",
-    background: "#FAFAFA",
+    background: "#FFFFFF",
     fontFamily: "Inter, sans-serif",
   };
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
-      {/* Header Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>⚔️ Match Management & Auto Room Reveal</h1>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
-            Manage match schedules, live room IDs, and secure 10-minute auto-reveal triggers.
-          </p>
+    <div style={{ maxWidth: 1240, margin: "0 auto", fontFamily: "Inter, sans-serif", paddingBottom: showForm ? 90 : 0 }}>
+      {/* 1. ENTERPRISE HEADER */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 900, color: "#0F172A", letterSpacing: "-0.02em" }}>
+            ⚔️ Match Management
+          </h1>
+          <span style={{ padding: "4px 10px", borderRadius: 8, background: "#FEF2F2", color: "#DC2626", fontSize: 12, fontWeight: 800, border: "1px solid #FECACA" }}>
+            {form.round || "Qualifier 1"}
+          </span>
+          <StatusBadge status={form.status} pulse={form.status === "live"} />
         </div>
 
         <div style={{ display: "flex", gap: 10 }}>
@@ -375,7 +399,7 @@ export default function MatchesPage() {
               fontSize: 13,
               fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 2px 8px rgba(220, 38, 38, 0.2)",
+              boxShadow: "0 4px 12px rgba(220, 38, 38, 0.25)",
             }}
           >
             <Plus size={16} /> {showForm ? "Close Form" : "Create New Match"}
@@ -383,619 +407,380 @@ export default function MatchesPage() {
         </div>
       </div>
 
-      {/* Stats Overview Bar */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
-          gap: 12,
-          marginBottom: 24,
-        }}
-      >
+      {/* 2. COLOR SUMMARY CARDS */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 12, marginBottom: 24 }}>
         {[
-          { label: "Total Matches", value: matches.length, color: "#3B82F6" },
-          { label: "Live Now", value: matches.filter((m) => m.status === "live").length, color: "#DC2626" },
-          { label: "Upcoming", value: matches.filter((m) => m.status === "upcoming").length, color: "#F59E0B" },
-          { label: "Completed", value: matches.filter((m) => m.status === "completed").length, color: "#10B981" },
-          { label: "Unpublished", value: matches.filter((m) => !m.isPublished).length, color: "#64748B" },
+          { label: "Total Matches", value: matches.length, color: "#3B82F6", bg: "#EFF6FF" },
+          { label: "Upcoming", value: matches.filter((m) => m.status === "upcoming").length, color: "#F59E0B", bg: "#FFFBEB" },
+          { label: "Live Now", value: matches.filter((m) => m.status === "live").length, color: "#DC2626", bg: "#FEF2F2" },
+          { label: "Completed", value: matches.filter((m) => m.status === "completed").length, color: "#10B981", bg: "#ECFDF5" },
+          { label: "Draft / Hidden", value: matches.filter((m) => !m.isPublished).length, color: "#64748B", bg: "#F8FAFC" },
+          { label: "Cancelled", value: matches.filter((m) => m.status === "cancelled").length, color: "#EF4444", bg: "#FEF2F2" },
         ].map((st) => (
-          <div
-            key={st.label}
-            style={{
-              background: "#FFFFFF",
-              border: "1px solid #E2E8F0",
-              borderRadius: 12,
-              padding: "12px 16px",
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <span style={{ fontSize: 11, fontWeight: 600, color: "#64748B", textTransform: "uppercase" }}>
-              {st.label}
-            </span>
-            <span style={{ fontSize: 20, fontWeight: 800, color: st.color, marginTop: 4 }}>
-              {st.value}
-            </span>
+          <div key={st.label} style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: 14, padding: "14px 16px" }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#64748B", textTransform: "uppercase" }}>{st.label}</span>
+            <div style={{ fontSize: 22, fontWeight: 900, color: st.color, marginTop: 4 }}>{st.value}</div>
           </div>
         ))}
       </div>
 
-      {/* Form Drawer / Modal */}
+      {/* 3. SPLIT FORM & LIVE PLAYER PREVIEW GRID */}
       {showForm && (
-        <div
-          style={{
-            background: "#FFFFFF",
-            borderRadius: 16,
-            border: "1px solid #E2E8F0",
-            padding: 24,
-            marginBottom: 28,
-            boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-          }}
-        >
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-            <h3 style={{ fontSize: 16, fontWeight: 800, color: "#0F172A" }}>
-              {editId ? "✏️ Edit Match & Room Reveal Settings" : "➕ Create New Tournament Match"}
-            </h3>
-            <button
-              onClick={() => setShowForm(false)}
-              style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer" }}
-            >
-              <XCircle size={20} />
-            </button>
+        <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 24, marginBottom: 32 }} className="match-editor-grid">
+          {/* LEFT COLUMN: COLLAPSIBLE FORM ACCORDIONS */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+            {/* SECTION ①: BASIC MATCH DETAILS */}
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+              <button
+                type="button"
+                onClick={() => toggleSection("basic")}
+                style={{ width: "100%", padding: "16px 20px", background: "#F8FAFC", border: "none", borderBottom: sections.basic ? "1px solid #E2E8F0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Swords size={18} style={{ color: "#DC2626" }} />
+                  <span style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>① BASIC MATCH DETAILS</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#16A34A" }}>Required</span>
+                </div>
+                {sections.basic ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {sections.basic && (
+                <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MATCH NAME *</label>
+                    <input type="text" required value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} style={inpStyle} />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MAP *</label>
+                    <select value={form.map} onChange={(e) => setForm((f) => ({ ...f, map: e.target.value }))} style={inpStyle}>
+                      <option value="Bermuda">Bermuda</option>
+                      <option value="Kalahari">Kalahari</option>
+                      <option value="Purgatory">Purgatory</option>
+                      <option value="Alpine">Alpine</option>
+                      <option value="Nexterra">Nexterra</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>STAGE / ROUND *</label>
+                    <select value={form.round} onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))} style={inpStyle}>
+                      <option value="Qualifier 1">Qualifier 1</option>
+                      <option value="Qualifier 2">Qualifier 2</option>
+                      <option value="Round 2">Round 2</option>
+                      <option value="Semi-Final">Semi-Final</option>
+                      <option value="Grand Final">Grand Final</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MATCH START TIME *</label>
+                    <input type="datetime-local" required value={form.matchTime} onChange={(e) => handleMatchTimeChange(e.target.value)} style={inpStyle} />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#DC2626", marginBottom: 6 }}>REGISTRATION CLOSE (AUTO: -2H)</label>
+                    <input type="datetime-local" value={form.regCloseTime} onChange={(e) => setForm((f) => ({ ...f, regCloseTime: e.target.value }))} style={{ ...inpStyle, background: "#FEF2F2", borderColor: "#FECACA" }} />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>MAXIMUM TEAMS</label>
+                    <input type="number" min={2} value={form.maxSquads} onChange={(e) => setForm((f) => ({ ...f, maxSquads: parseInt(e.target.value) || 24 }))} style={inpStyle} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION ②: ROOM CONFIGURATION */}
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+              <button
+                type="button"
+                onClick={() => toggleSection("room")}
+                style={{ width: "100%", padding: "16px 20px", background: "#F8FAFC", border: "none", borderBottom: sections.room ? "1px solid #E2E8F0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Lock size={18} style={{ color: "#0284C7" }} />
+                  <span style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>② ROOM CONFIGURATION & AUTO REVEAL</span>
+                </div>
+                {sections.room ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {sections.room && (
+                <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>ROOM ID (SECRET)</label>
+                    <input type="text" placeholder="12345678" value={form.roomId} onChange={(e) => setForm((f) => ({ ...f, roomId: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>ROOM PASSWORD (SECRET)</label>
+                    <input type="text" placeholder="999" value={form.roomPassword} onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))} style={{ ...inpStyle, fontFamily: "monospace", fontWeight: 700 }} />
+                  </div>
+
+                  <div style={{ gridColumn: "span 2" }}>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#0284C7", marginBottom: 6 }}>
+                      🔒 AUTO ROOM REVEAL TIME (DEFAULT: MATCH START - 10 MINS)
+                    </label>
+                    <input type="datetime-local" value={form.roomRevealTime} onChange={(e) => setForm((f) => ({ ...f, roomRevealTime: e.target.value }))} style={{ ...inpStyle, background: "#F0F9FF", borderColor: "#BAE6FD", fontWeight: 700 }} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION ③: STREAM & LINKS */}
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+              <button
+                type="button"
+                onClick={() => toggleSection("links")}
+                style={{ width: "100%", padding: "16px 20px", background: "#F8FAFC", border: "none", borderBottom: sections.links ? "1px solid #E2E8F0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <Video size={18} style={{ color: "#7E22CE" }} />
+                  <span style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>③ STREAM & LOBBY LINKS</span>
+                </div>
+                {sections.links ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {sections.links && (
+                <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>YOUTUBE / TWITCH LIVE STREAM</label>
+                    <input type="url" placeholder="https://youtube.com/live/..." value={form.streamUrl} onChange={(e) => setForm((f) => ({ ...f, streamUrl: e.target.value }))} style={inpStyle} />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>WHATSAPP LOBBY GROUP LINK</label>
+                    <input type="url" placeholder="https://chat.whatsapp.com/..." value={form.whatsappUrl} onChange={(e) => setForm((f) => ({ ...f, whatsappUrl: e.target.value }))} style={inpStyle} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION ④: MATCH RULES */}
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+              <button
+                type="button"
+                onClick={() => toggleSection("rules")}
+                style={{ width: "100%", padding: "16px 20px", background: "#F8FAFC", border: "none", borderBottom: sections.rules ? "1px solid #E2E8F0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <FileText size={18} style={{ color: "#16A34A" }} />
+                  <span style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>④ QUALIFICATION & MATCH RULES</span>
+                </div>
+                {sections.rules ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {sections.rules && (
+                <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>QUALIFICATION RULES</label>
+                    <textarea rows={3} value={form.rules} onChange={(e) => setForm((f) => ({ ...f, rules: e.target.value }))} style={inpStyle} />
+                  </div>
+
+                  <div>
+                    <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>DESCRIPTION / NOTES</label>
+                    <textarea rows={3} value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} style={inpStyle} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* SECTION ⑤: MEDIA */}
+            <div style={{ background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>
+              <button
+                type="button"
+                onClick={() => toggleSection("media")}
+                style={{ width: "100%", padding: "16px 20px", background: "#F8FAFC", border: "none", borderBottom: sections.media ? "1px solid #E2E8F0" : "none", display: "flex", justifyContent: "space-between", alignItems: "center", cursor: "pointer" }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <ImageIcon size={18} style={{ color: "#F59E0B" }} />
+                  <span style={{ fontSize: 14, fontWeight: 800, color: "#0F172A" }}>⑤ MATCH MEDIA & BANNER</span>
+                </div>
+                {sections.media ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+              </button>
+
+              {sections.media && (
+                <div style={{ padding: 20 }}>
+                  <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>BANNER IMAGE</label>
+                  <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    <label style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "10px 16px", background: "#F1F5F9", borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+                      {uploadingBanner ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Upload size={14} />}
+                      {uploadingBanner ? "Uploading..." : "Upload Banner Image"}
+                      <input type="file" accept="image/*" onChange={handleBannerUpload} style={{ display: "none" }} />
+                    </label>
+                    {form.bannerUrl && <a href={form.bannerUrl} target="_blank" rel="noreferrer" style={{ fontSize: 12, color: "#2563EB", fontWeight: 700 }}>Preview Image 📷</a>}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
 
-          <form onSubmit={handleSubmit}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))", gap: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MATCH TITLE *
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Qualifier Match 1"
-                  value={form.name}
-                  onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-                  style={inpStyle}
-                />
+          {/* RIGHT COLUMN: LIVE PLAYER PREVIEW & MATCH LIFECYCLE TIMELINE */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            {/* LIVE PLAYER PREVIEW CARD */}
+            <div style={{ background: "#1E293B", color: "#FFFFFF", borderRadius: 20, padding: 20, boxShadow: "0 10px 30px rgba(0,0,0,0.15)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+                <Eye size={16} style={{ color: "#38BDF8" }} />
+                <span style={{ fontSize: 11, fontWeight: 800, color: "#38BDF8", textTransform: "uppercase" }}>Live Player Preview</span>
               </div>
 
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MAP *
-                </label>
-                <select
-                  value={form.map}
-                  onChange={(e) => setForm((f) => ({ ...f, map: e.target.value }))}
-                  style={inpStyle}
-                >
-                  <option value="Bermuda">Bermuda</option>
-                  <option value="Kalahari">Kalahari</option>
-                  <option value="Purgatory">Purgatory</option>
-                  <option value="Alpine">Alpine</option>
-                  <option value="Nexterra">Nexterra</option>
-                </select>
-              </div>
+              <div style={{ background: "#FFFFFF", color: "#0F172A", borderRadius: 14, padding: 16, overflow: "hidden" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 8 }}>
+                  <span>{form.round} • {form.map}</span>
+                  <StatusBadge status={form.status} />
+                </div>
+                <h4 style={{ fontSize: 16, fontWeight: 800, marginBottom: 12 }}>{form.name || "Match Title"}</h4>
 
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  STAGE / ROUND *
-                </label>
-                <select
-                  value={form.round}
-                  onChange={(e) => setForm((f) => ({ ...f, round: e.target.value }))}
-                  style={inpStyle}
-                >
-                  <option value="Qualifier">Qualifier Stage</option>
-                  <option value="Quarter-Final">Quarter-Final</option>
-                  <option value="Semi-Final">Semi-Final</option>
-                  <option value="Grand Final">Grand Final</option>
-                  <option value="Custom Room">Custom Room</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MATCH START TIME *
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={form.matchTime}
-                  onChange={(e) => handleMatchTimeChange(e.target.value)}
-                  style={inpStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#DC2626", marginBottom: 6 }}>
-                  🔒 ROOM REVEAL TIME (AUTO: START - 10 MINS)
-                </label>
-                <input
-                  type="datetime-local"
-                  required
-                  value={form.roomRevealTime}
-                  onChange={(e) => setForm((f) => ({ ...f, roomRevealTime: e.target.value }))}
-                  style={{ ...inpStyle, borderColor: "#FCA5A5", background: "#FEF2F2", fontWeight: 700 }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  REGISTRATION CLOSE TIME
-                </label>
-                <input
-                  type="datetime-local"
-                  value={form.regCloseTime}
-                  onChange={(e) => setForm((f) => ({ ...f, regCloseTime: e.target.value }))}
-                  style={inpStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MAX SQUADS
-                </label>
-                <input
-                  type="number"
-                  min={2}
-                  max={48}
-                  value={form.maxSquads}
-                  onChange={(e) => setForm((f) => ({ ...f, maxSquads: parseInt(e.target.value) || 24 }))}
-                  style={inpStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  STATUS
-                </label>
-                <select
-                  value={form.status}
-                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value as any }))}
-                  style={inpStyle}
-                >
-                  <option value="upcoming">Upcoming</option>
-                  <option value="live">🔴 Live Now</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  ROOM ID (SECRET)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 12345678"
-                  value={form.roomId}
-                  onChange={(e) => setForm((f) => ({ ...f, roomId: e.target.value }))}
-                  style={inpStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  ROOM PASSWORD (SECRET)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. 999"
-                  value={form.roomPassword}
-                  onChange={(e) => setForm((f) => ({ ...f, roomPassword: e.target.value }))}
-                  style={inpStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  LIVE STREAM URL (YOUTUBE / TWITCH)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://youtube.com/live/..."
-                  value={form.streamUrl}
-                  onChange={(e) => setForm((f) => ({ ...f, streamUrl: e.target.value }))}
-                  style={inpStyle}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  WHATSAPP GROUP LINK
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://chat.whatsapp.com/..."
-                  value={form.whatsappUrl}
-                  onChange={(e) => setForm((f) => ({ ...f, whatsappUrl: e.target.value }))}
-                  style={inpStyle}
-                />
-              </div>
-
-              {/* Match Banner Upload */}
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MATCH BANNER IMAGE
-                </label>
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <label
-                    style={{
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: 6,
-                      padding: "8px 12px",
-                      background: "#F1F5F9",
-                      borderRadius: 8,
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: "#475569",
-                      cursor: "pointer",
-                    }}
-                  >
-                    {uploadingBanner ? <Loader2 size={14} style={{ animation: "spin 1s linear infinite" }} /> : <Upload size={14} />}
-                    {uploadingBanner ? "Uploading..." : "Choose Image"}
-                    <input type="file" accept="image/*" onChange={handleBannerUpload} style={{ display: "none" }} />
-                  </label>
-                  {form.bannerUrl && (
-                    <a href={form.bannerUrl} target="_blank" rel="noreferrer" style={{ fontSize: 11, color: "#2563EB" }}>
-                      Preview Image
-                    </a>
-                  )}
+                {/* Secret Room Credentials Locked/Unlocked Preview */}
+                <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 12, border: "1px solid #E2E8F0" }}>
+                  <div style={{ fontSize: 11, fontWeight: 800, color: "#DC2626", marginBottom: 4 }}>
+                    🔒 Room Opens (-10m)
+                  </div>
+                  <div style={{ fontSize: 12, fontFamily: "monospace", color: "#334155" }}>
+                    ID: {form.roomId || "Secret"} • PASS: {form.roomPassword || "Secret"}
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Rules & Description Text Areas */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  QUALIFICATION & PLAYING RULES
-                </label>
-                <textarea
-                  rows={3}
-                  value={form.rules}
-                  onChange={(e) => setForm((f) => ({ ...f, rules: e.target.value }))}
-                  style={{ ...inpStyle, resize: "vertical" }}
-                />
+            {/* MATCH LIFECYCLE TIMELINE PREVIEW */}
+            <div style={{ background: "#FFFFFF", borderRadius: 20, border: "1px solid #E2E8F0", padding: 20 }}>
+              <h4 style={{ fontSize: 13, fontWeight: 800, color: "#0F172A", marginBottom: 14, display: "flex", alignItems: "center", gap: 8 }}>
+                <Clock size={16} style={{ color: "#DC2626" }} /> Match Lifecycle Timeline
+              </h4>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: 12, fontSize: 12 }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#16A34A" }} />
+                  <span>📝 <strong>Registration Opens</strong></span>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", opacity: form.regCloseTime ? 1 : 0.5 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#F59E0B" }} />
+                  <span>⏳ <strong>Reg Closes:</strong> {form.regCloseTime ? new Date(form.regCloseTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-2 Hours"}</span>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", opacity: form.roomRevealTime ? 1 : 0.5 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#0284C7" }} />
+                  <span>🔒 <strong>Room Opens:</strong> {form.roomRevealTime ? new Date(form.roomRevealTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "-10 Mins"}</span>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", opacity: form.matchTime ? 1 : 0.5 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#DC2626" }} />
+                  <span>⚔️ <strong>Match Starts:</strong> {form.matchTime ? new Date(form.matchTime).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "Start Time"}</span>
+                </div>
               </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#64748B", marginBottom: 6 }}>
-                  MATCH DESCRIPTION / NOTES
-                </label>
-                <textarea
-                  rows={3}
-                  value={form.description}
-                  onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
-                  style={{ ...inpStyle, resize: "vertical" }}
-                />
-              </div>
             </div>
-
-            {/* Visibility Checkbox */}
-            <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 10 }}>
-              <input
-                type="checkbox"
-                id="isPublished"
-                checked={form.isPublished}
-                onChange={(e) => setForm((f) => ({ ...f, isPublished: e.target.checked }))}
-                style={{ width: 16, height: 16, accentColor: "#DC2626" }}
-              />
-              <label htmlFor="isPublished" style={{ fontSize: 13, fontWeight: 600, color: "#1E293B" }}>
-                Publish match to website immediately
-              </label>
-            </div>
-
-            {/* Submit Action Buttons */}
-            <div style={{ display: "flex", gap: 12, marginTop: 24, justifyContent: "flex-end" }}>
-              <button
-                type="button"
-                onClick={() => setShowForm(false)}
-                style={{
-                  padding: "9px 18px",
-                  borderRadius: 8,
-                  border: "1px solid #E2E8F0",
-                  background: "#F8FAFC",
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: "#64748B",
-                  cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                style={{
-                  padding: "9px 24px",
-                  borderRadius: 8,
-                  background: "#DC2626",
-                  color: "#FFFFFF",
-                  border: "none",
-                  fontSize: 13,
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {editId ? "Save Match Changes" : "Create Match"}
-              </button>
-            </div>
-          </form>
+          </div>
         </div>
       )}
 
-      {/* Filter & Bulk Bar */}
-      <div
-        style={{
-          background: "#FFFFFF",
-          border: "1px solid #E2E8F0",
-          borderRadius: 14,
-          padding: "14px 20px",
-          marginBottom: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: 12,
-        }}
-      >
+      {/* STICKY BOTTOM ACTION FOOTER (Always visible when form open) */}
+      {showForm && (
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "#FFFFFF", borderTop: "1.5px solid #E2E8F0", padding: "14px 32px", zIndex: 9999, boxShadow: "0 -10px 30px rgba(0,0,0,0.08)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A" }}>Editing: {form.name}</span>
+            <span style={{ fontSize: 11, color: "#64748B" }}>Autosaved in local state</span>
+          </div>
+
+          <div style={{ display: "flex", gap: 12 }}>
+            <button type="button" onClick={() => setShowForm(false)} style={{ padding: "9px 18px", borderRadius: 8, border: "1px solid #CBD5E1", background: "#F8FAFC", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+              Cancel
+            </button>
+            <button type="button" onClick={() => handleSubmit()} style={{ padding: "9px 24px", borderRadius: 8, background: "#DC2626", color: "#FFFFFF", border: "none", fontSize: 13, fontWeight: 800, cursor: "pointer" }}>
+              {editId ? "Save Changes" : "Create Match"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 4. MATCH LIST GRID & FILTERS */}
+      <div style={{ background: "#FFFFFF", border: "1px solid #E2E8F0", borderRadius: 14, padding: "14px 20px", marginBottom: 20, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 12, flex: 1, minWidth: 260 }}>
           <div style={{ position: "relative", flex: 1 }}>
             <Search size={16} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94A3B8" }} />
-            <input
-              type="text"
-              placeholder="Search by match name, room ID, map..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              style={{ ...inpStyle, paddingLeft: 36 }}
-            />
+            <input type="text" placeholder="Search match name, room ID, map..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} style={{ ...inpStyle, paddingLeft: 36 }} />
           </div>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            style={{ ...inpStyle, width: 140 }}
-          >
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ ...inpStyle, width: 140 }}>
             <option value="all">All Matches</option>
             <option value="upcoming">Upcoming</option>
             <option value="live">🔴 Live</option>
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
             <option value="unpublished">Unpublished</option>
-            <option value="archived">Archived</option>
           </select>
         </div>
 
-        {/* Bulk Action Controls */}
         {selectedIds.length > 0 && (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>
-              {selectedIds.length} Selected
-            </span>
-            <button
-              onClick={() => handleBulkPublish(true)}
-              style={{ padding: "6px 12px", background: "#10B981", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-            >
-              Publish
-            </button>
-            <button
-              onClick={() => handleBulkPublish(false)}
-              style={{ padding: "6px 12px", background: "#64748B", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-            >
-              Unpublish
-            </button>
-            <button
-              onClick={() => setConfirmBulkDelete(true)}
-              style={{ padding: "6px 12px", background: "#DC2626", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
-            >
-              Delete
-            </button>
+            <span style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>{selectedIds.length} Selected</span>
+            <button onClick={() => handleBulkPublish(true)} style={{ padding: "6px 12px", background: "#10B981", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Publish</button>
+            <button onClick={() => setConfirmBulkDelete(true)} style={{ padding: "6px 12px", background: "#DC2626", color: "#fff", border: "none", borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>Delete</button>
           </div>
         )}
       </div>
 
-      {/* Matches Grid */}
+      {/* MATCHES GRID */}
       {loading ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(340px, 1fr))", gap: 16 }}>
-          {[...Array(6)].map((_, i) => (
-            <div key={i} style={{ height: 240, borderRadius: 16, background: "#F1F5F9" }} />
-          ))}
+          {[...Array(6)].map((_, i) => <div key={i} style={{ height: 240, borderRadius: 16, background: "#F1F5F9" }} />)}
         </div>
       ) : paginatedMatches.length === 0 ? (
         <div style={{ textAlign: "center", padding: "60px 0", background: "#FFFFFF", borderRadius: 16, border: "1px solid #E2E8F0" }}>
           <Swords size={36} style={{ color: "#94A3B8", marginBottom: 12 }} />
           <p style={{ fontSize: 15, fontWeight: 700, color: "#334155" }}>No matches found</p>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>Try creating a match or adjusting your filters.</p>
         </div>
       ) : (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))", gap: 16 }}>
           {paginatedMatches.map((m) => {
             const isPasswordVisible = !!showPasswordMap[m.id];
             const isSelected = selectedIds.includes(m.id);
-            const revealDate = m.roomRevealTime ? new Date(m.roomRevealTime) : null;
-            const isRevealed = m.status === "live" || (revealDate && Date.now() >= revealDate.getTime());
 
             return (
-              <div
-                key={m.id}
-                style={{
-                  background: "#FFFFFF",
-                  borderRadius: 16,
-                  border: isSelected ? "2px solid #DC2626" : "1px solid #E2E8F0",
-                  overflow: "hidden",
-                  boxShadow: "0 4px 14px rgba(0,0,0,0.03)",
-                  position: "relative",
-                }}
-              >
-                {/* Optional Banner Image */}
+              <div key={m.id} style={{ background: "#FFFFFF", borderRadius: 16, border: isSelected ? "2px solid #DC2626" : "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 14px rgba(0,0,0,0.03)" }}>
                 {m.bannerUrl && (
-                  <div style={{ height: 110, width: "100%", position: "relative", overflow: "hidden", background: "#0F172A" }}>
+                  <div style={{ height: 110, width: "100%", overflow: "hidden", background: "#0F172A" }}>
                     <img src={m.bannerUrl} alt={m.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
                 )}
 
                 <div style={{ padding: 18 }}>
-                  {/* Select Checkbox & Status */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) => {
-                          if (e.target.checked) setSelectedIds((prev) => [...prev, m.id]);
-                          else setSelectedIds((prev) => prev.filter((id) => id !== m.id));
-                        }}
-                        style={{ width: 16, height: 16, accentColor: "#DC2626", cursor: "pointer" }}
-                      />
-                      <div>
-                        <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>{m.name || "Unnamed Match"}</h3>
-                        <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>
-                          {m.round} • {m.map} • Max {m.maxSquads || 24} Squads
-                        </p>
-                      </div>
+                    <div>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#0F172A" }}>{m.name}</h3>
+                      <p style={{ fontSize: 12, color: "#64748B", marginTop: 2 }}>{m.round} • {m.map}</p>
                     </div>
-
-                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                      <button
-                        onClick={() => togglePublish(m.id, m.isPublished)}
-                        title={m.isPublished ? "Published to website" : "Unpublished (Draft)"}
-                        style={{
-                          background: m.isPublished ? "#E0F2FE" : "#F1F5F9",
-                          color: m.isPublished ? "#0284C7" : "#94A3B8",
-                          border: "none",
-                          borderRadius: 6,
-                          padding: 5,
-                          cursor: "pointer",
-                        }}
-                      >
-                        {m.isPublished ? <Eye size={14} /> : <EyeOff size={14} />}
-                      </button>
-                      <StatusBadge status={m.status || "upcoming"} pulse={m.status === "live"} />
-                    </div>
+                    <StatusBadge status={m.status || "upcoming"} pulse={m.status === "live"} />
                   </div>
 
-                  {/* Room Details Grid */}
                   <div style={{ background: "#F8FAFC", borderRadius: 10, padding: 12, marginBottom: 14, border: "1px solid #F1F5F9" }}>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
                       <div>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-                          Room ID
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", fontFamily: "monospace" }}>
-                            {m.roomId || "Not Set"}
-                          </span>
-                          {m.roomId && (
-                            <button
-                              onClick={() => {
-                                navigator.clipboard.writeText(m.roomId!);
-                                toast.success("Room ID copied!");
-                              }}
-                              style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer" }}
-                            >
-                              <Copy size={12} />
-                            </button>
-                          )}
-                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>ROOM ID</span>
+                        <div style={{ fontSize: 13, fontWeight: 700, fontFamily: "monospace" }}>{m.roomId || "Not Set"}</div>
                       </div>
-
                       <div>
-                        <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8", textTransform: "uppercase" }}>
-                          Password
-                        </span>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 2 }}>
-                          <span style={{ fontSize: 13, fontWeight: 700, color: "#0F172A", fontFamily: "monospace" }}>
-                            {isPasswordVisible ? m.roomPassword || "Not Set" : "••••••"}
-                          </span>
-                          {m.roomPassword && (
-                            <button
-                              onClick={() =>
-                                setShowPasswordMap((prev) => ({ ...prev, [m.id]: !prev[m.id] }))
-                              }
-                              style={{ background: "none", border: "none", color: "#64748B", cursor: "pointer" }}
-                            >
-                              {isPasswordVisible ? <EyeOff size={12} /> : <Eye size={12} />}
-                            </button>
-                          )}
-                        </div>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#94A3B8" }}>PASSWORD</span>
+                        <div style={{ fontSize: 13, fontWeight: 700, fontFamily: "monospace" }}>{isPasswordVisible ? m.roomPassword || "Not Set" : "••••••"}</div>
                       </div>
-                    </div>
-
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid #E2E8F0", display: "flex", justifyContent: "space-between", fontSize: 11, color: "#64748B" }}>
-                      <span>⏰ Start: {m.matchTime ? new Date(m.matchTime).toLocaleString("en-IN", { dateStyle: "short", timeStyle: "short" }) : "TBD"}</span>
-                      <span style={{ fontWeight: 700, color: isRevealed ? "#16A34A" : "#DC2626" }}>
-                        🔒 Reveal: {revealDate ? revealDate.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }) : "Start - 10m"}
-                      </span>
                     </div>
                   </div>
 
-                  {/* Status Toggle & Actions */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                     <div style={{ display: "flex", gap: 4 }}>
                       {(["upcoming", "live", "completed", "cancelled"] as const).map((st) => (
-                        <button
-                          key={st}
-                          onClick={() => toggleStatus(m.id, st)}
-                          style={{
-                            padding: "4px 8px",
-                            borderRadius: 6,
-                            border: m.status === st ? "1px solid #DC2626" : "1px solid #E2E8F0",
-                            background: m.status === st ? "#FEF2F2" : "#FFFFFF",
-                            color: m.status === st ? "#DC2626" : "#64748B",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            textTransform: "capitalize",
-                          }}
-                        >
+                        <button key={st} onClick={() => toggleStatus(m.id, st)} style={{ padding: "4px 8px", borderRadius: 6, border: m.status === st ? "1px solid #DC2626" : "1px solid #E2E8F0", background: m.status === st ? "#FEF2F2" : "#FFFFFF", color: m.status === st ? "#DC2626" : "#64748B", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>
                           {st}
                         </button>
                       ))}
                     </div>
 
                     <div style={{ display: "flex", gap: 4 }}>
-                      <button
-                        onClick={() => toggleRoomLockNow(m)}
-                        title={isRevealed ? "Lock Room Credentials" : "Unlock & Reveal Room Now"}
-                        style={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: 6,
-                          border: "none",
-                          background: isRevealed ? "#FEF2F2" : "#DCFCE7",
-                          color: isRevealed ? "#DC2626" : "#16A34A",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        {isRevealed ? <Lock size={13} /> : <Unlock size={13} />}
-                      </button>
-
-                      <button
-                        onClick={() => handleDuplicate(m)}
-                        title="Duplicate Match"
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#F1F5F9", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >
+                      <button onClick={() => handleDuplicate(m)} title="Duplicate Match" style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#F1F5F9", color: "#475569", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Layers size={13} />
                       </button>
-
-                      <button
-                        onClick={() => startEdit(m)}
-                        title="Edit Match"
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#E0F2FE", color: "#0284C7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >
+                      <button onClick={() => startEdit(m)} title="Edit Match" style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#E0F2FE", color: "#0284C7", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Edit2 size={13} />
                       </button>
-
-                      <button
-                        onClick={() => setConfirmDeleteId(m.id)}
-                        title="Delete Match"
-                        style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                      >
+                      <button onClick={() => setConfirmDeleteId(m.id)} title="Delete Match" style={{ width: 28, height: 28, borderRadius: 6, border: "none", background: "#FEE2E2", color: "#DC2626", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <Trash2 size={13} />
                       </button>
                     </div>
@@ -1007,35 +792,12 @@ export default function MatchesPage() {
         </div>
       )}
 
-      {/* Pagination Footer */}
-      {totalPages > 1 && (
-        <div style={{ display: "flex", justifyContent: "center", gap: 8, marginTop: 28, alignItems: "center" }}>
-          <button
-            disabled={currentPage === 1}
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #CBD5E1", background: "#FFF", fontSize: 12, fontWeight: 600, cursor: currentPage === 1 ? "not-allowed" : "pointer" }}
-          >
-            Previous
-          </button>
-          <span style={{ fontSize: 13, fontWeight: 700, color: "#475569" }}>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            disabled={currentPage === totalPages}
-            onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-            style={{ padding: "8px 14px", borderRadius: 8, border: "1px solid #CBD5E1", background: "#FFF", fontSize: 12, fontWeight: 600, cursor: currentPage === totalPages ? "not-allowed" : "pointer" }}
-          >
-            Next
-          </button>
-        </div>
-      )}
-
       {/* Confirmation Modals */}
       {confirmDeleteId && (
         <ConfirmModal
           title="Delete Match"
-          message="Are you sure you want to delete this match? This action cannot be undone."
-          confirmLabel="Delete Match"
+          message="Are you sure you want to delete this match? Action cannot be undone."
+          confirmLabel="Delete"
           onConfirm={() => handleDelete(confirmDeleteId)}
           onCancel={() => setConfirmDeleteId(null)}
         />
@@ -1044,7 +806,7 @@ export default function MatchesPage() {
       {confirmBulkDelete && (
         <ConfirmModal
           title={`Delete ${selectedIds.length} Matches`}
-          message={`Are you sure you want to delete ${selectedIds.length} selected matches? This action cannot be undone.`}
+          message={`Are you sure you want to delete ${selectedIds.length} selected matches?`}
           confirmLabel="Delete Selected"
           onConfirm={handleBulkDelete}
           onCancel={() => setConfirmBulkDelete(false)}
