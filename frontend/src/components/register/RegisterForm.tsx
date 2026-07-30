@@ -238,7 +238,9 @@ export function RegisterForm() {
       }
       const screenshotUrl = uploadResult.url;
 
-      // Save registration
+      const allocatedStage = currentCount <= 12 ? "Qualifier 1" : "Qualifier 2";
+
+      // Save registration with Automated Stage Allocation
       await addDoc(collection(db, "registrations"), {
         teamId,
         teamName: data.teamName,
@@ -250,6 +252,9 @@ export function RegisterForm() {
         upiTransactionId: data.upiTransactionId,
         paymentScreenshotUrl: screenshotUrl,
         status: "pending",
+        registrationOrder: currentCount,
+        allocatedStage,
+        qualificationStatus: "pending",
         createdAt: serverTimestamp(),
       });
 
@@ -259,6 +264,18 @@ export function RegisterForm() {
       } else {
         await setDoc(countRef, { count: 1 });
       }
+
+      // Create Automated Real-time Allocation Notification
+      try {
+        await addDoc(collection(db, "notifications"), {
+          teamId,
+          title: `Allocated to ${allocatedStage}`,
+          message: `Welcome! Team ${data.teamName} (${teamId}) has been automatically allocated to ${allocatedStage}.`,
+          type: "allocation",
+          read: false,
+          createdAt: serverTimestamp(),
+        });
+      } catch {}
 
       toast.success("Successfully registered! See you in the lobby. 🎉", { id: toastId });
       setSuccess({

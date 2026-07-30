@@ -4,6 +4,7 @@ import StaggeredMenu from "./StaggeredMenu";
 
 const MENU_ITEMS = [
   { label: "Home", ariaLabel: "Go to home page", link: "/" },
+  { label: "My Dashboard", ariaLabel: "Go to player dashboard", link: "/my-team" },
   { label: "Tournament", ariaLabel: "Learn about the tournament", link: "/tournament" },
   { label: "Rules", ariaLabel: "Tournament rules", link: "/rules" },
   { label: "Schedule", ariaLabel: "Matches schedule", link: "/schedule" },

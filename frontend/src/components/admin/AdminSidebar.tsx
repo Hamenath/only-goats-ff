@@ -19,6 +19,8 @@ const NAV_ITEMS = [
   { href: "/admin/players", icon: User, label: "Players" },
   { href: "/admin/payments", icon: Wallet, label: "Payments" },
   { href: "/admin/matches", icon: Swords, label: "Matches" },
+  { href: "/admin/results", icon: CheckCircle2, label: "Results & Qualify" },
+  { href: "/admin/premium-pass", icon: Zap, label: "Premium Pass" },
   { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
   { href: "/admin/gallery", icon: Image, label: "Gallery" },
   { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
