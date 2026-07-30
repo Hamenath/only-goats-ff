@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = "https://onlygoats-ff.com";
+  const baseUrl = "https://onlygoats.online";
   const pages = [
     { url: "/", priority: 1.0 },
     { url: "/tournament", priority: 0.9 },

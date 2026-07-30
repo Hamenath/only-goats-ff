@@ -18,7 +18,7 @@ function FooterWrapper() {
 }
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://onlygoats-ff.com"),
+  metadataBase: new URL("https://onlygoats.online"),
   icons: {
     icon: [
       { url: "/logo.jpg", type: "image/jpeg" },
@@ -28,11 +28,11 @@ export const metadata: Metadata = {
     apple: "/logo.jpg",
   },
   title: {
-    default: "Only Goats FF — Free Fire Tournament",
+    default: "Only Goats FF — Free Fire Tournament Platform",
     template: "%s | Only Goats FF",
   },
   description:
-    "Compete in the most prestigious Free Fire tournament. Battle, survive, and become the champion. Register your squad now and win cash prizes.",
+    "Compete in the most prestigious Free Fire tournament platform. Battle, survive, and become the champion. Register your squad now and win cash prizes.",
   keywords: [
     "Free Fire tournament",
     "FF tournament",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_IN",
-    url: "https://onlygoats-ff.com",
+    url: "https://onlygoats.online",
     siteName: "Only Goats FF",
     title: "Only Goats FF — Free Fire Tournament",
     description:

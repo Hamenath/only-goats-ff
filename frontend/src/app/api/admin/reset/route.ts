@@ -2,9 +2,9 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/firebase";
 import { collection, getDocs, doc, setDoc, writeBatch } from "firebase/firestore";
 
-const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || "st7je4cw";
-const API_KEY = process.env.CLOUDINARY_API_KEY || "746745946526193";
-const API_SECRET = process.env.CLOUDINARY_API_SECRET || "MCLKiJEUwp0ayo4IpilCzIhSXWs";
+const CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const API_KEY = process.env.CLOUDINARY_API_KEY;
+const API_SECRET = process.env.CLOUDINARY_API_SECRET;
 
 function extractPublicId(url: string): string | null {
   if (!url || typeof url !== "string") return null;
