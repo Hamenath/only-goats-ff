@@ -21,8 +21,8 @@ export interface Tournament {
   startDate?: string;
   endDate?: string;
   regCloseTime?: string;
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: unknown;
+  updatedAt?: unknown;
 }
 
 export interface MatchItem {
@@ -47,8 +47,8 @@ export interface MatchItem {
   rules?: string;
   description?: string;
   orderIndex?: number;
-  createdAt?: any;
-  updatedAt?: any;
+  createdAt?: unknown;
+  updatedAt?: unknown;
 }
 
 export interface RegistrationData {
@@ -67,7 +67,7 @@ export interface RegistrationData {
   allocatedStage: string;
   qualificationStatus: "pending" | "qualified_round_2" | "eliminated" | "premium_pass_granted";
   registrationOrder: number;
-  createdAt?: any;
+  createdAt?: unknown;
 }
 
 export interface AuditLogEntry {
@@ -76,5 +76,5 @@ export interface AuditLogEntry {
   adminName: string;
   action: string;
   details: string;
-  createdAt?: any;
+  createdAt?: unknown;
 }
