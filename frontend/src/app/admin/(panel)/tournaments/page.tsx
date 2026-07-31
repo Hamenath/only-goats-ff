@@ -116,7 +116,7 @@ export default function TournamentsPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || ""}/api/upload`, { method: "POST", body: formData });
       const data = await res.json();
       if (data.url) {
         setForm((prev) => ({ ...prev, bannerUrl: data.url }));

@@ -108,7 +108,7 @@ export default function MyTeamPage() {
     setVerifying(true);
     setAuthError(null);
     try {
-      const res = await fetch("/api/team/verify", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || ""}/api/team/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ squadId, phone }),
@@ -225,7 +225,7 @@ export default function MyTeamPage() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body: formData });
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || ""}/api/upload`, { method: "POST", body: formData });
       const data = await res.json();
       if (data.url) {
         setPremiumScreenshot(data.url);

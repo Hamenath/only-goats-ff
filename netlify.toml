@@ -1,0 +1,32 @@
+# Netlify Monorepo Configuration for Only Goats FF (Next.js 16 App Router)
+# Configured for the official Netlify Next.js Runtime (@netlify/plugin-nextjs)
+
+[build]
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+  functions = "netlify/functions"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+# Security Headers for all routes
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Immutable CDN caching for static background video asset (36MB)
+[[headers]]
+  for = "/videoplayback.mp4"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Immutable CDN caching for fonts and static assets
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

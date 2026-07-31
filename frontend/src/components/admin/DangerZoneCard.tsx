@@ -131,7 +131,7 @@ export function DangerZoneCard({ onResetSuccess }: DangerZoneCardProps) {
 
       setProgressText("Resetting registration counter to 0...");
       
-      const res = await fetch("/api/admin/reset", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || ""}/api/admin/reset`, {
         method: "POST",
       });
 
