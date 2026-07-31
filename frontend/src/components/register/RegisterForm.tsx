@@ -255,7 +255,7 @@ export function RegisterForm() {
       const uploadFormData = new FormData();
       uploadFormData.append("file", paymentFile);
       
-      const uploadRes = await fetch("/api/upload", {
+      const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL || ""}/api/upload`, {
         method: "POST",
         body: uploadFormData,
       });
