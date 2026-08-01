@@ -20,9 +20,9 @@ export function AdminPageHeader({
   actions,
 }: AdminPageHeaderProps) {
   return (
-    <div style={{ marginBottom: 32, fontFamily: "Inter, sans-serif" }}>
+    <div className="admin-page-header-container" style={{ marginBottom: 32, fontFamily: "Inter, sans-serif" }}>
       {/* Breadcrumb & Small Label */}
-      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: "#64748B", fontWeight: 500 }}>
           <Link href="/admin/dashboard" style={{ color: "#64748B", textDecoration: "none" }}>
             {category}
@@ -48,28 +48,37 @@ export function AdminPageHeader({
       </div>
 
       {/* Main Title & Action Row */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 20, flexWrap: "wrap" }}>
-        <div>
+      <div
+        className="admin-page-header-row"
+        style={{
+          display: "flex",
+          alignItems: "flex-end",
+          justifyContent: "space-between",
+          gap: 16,
+          flexWrap: "wrap",
+        }}
+      >
+        <div style={{ flex: 1, minWidth: 260 }}>
           <h1
             style={{
-              fontSize: 40,
+              fontSize: "clamp(24px, 5vw, 40px)",
               fontWeight: 800,
               color: "#0F172A",
               letterSpacing: "-0.025em",
-              lineHeight: 1.1,
+              lineHeight: 1.15,
               margin: 0,
             }}
           >
             {title}
           </h1>
           {description && (
-            <p style={{ fontSize: 16, color: "#64748B", marginTop: 8, maxWidth: 640, lineHeight: 1.5, margin: "8px 0 0" }}>
+            <p style={{ fontSize: "clamp(13px, 3.5vw, 16px)", color: "#64748B", marginTop: 8, maxWidth: 640, lineHeight: 1.5, margin: "8px 0 0" }}>
               {description}
             </p>
           )}
         </div>
 
-        {actions && <div style={{ display: "flex", alignItems: "center", gap: 12 }}>{actions}</div>}
+        {actions && <div className="admin-page-header-actions" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>{actions}</div>}
       </div>
     </div>
   );
