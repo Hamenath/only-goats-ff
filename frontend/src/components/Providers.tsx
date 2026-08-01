@@ -36,6 +36,8 @@ function ScrollToTopManager() {
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin");
   const [queryClient] = useState(() => new QueryClient(queryClientConfig));
 
   useEffect(() => {
@@ -44,7 +46,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
       window.scrollTo(0, 0);
     }
 
-    // Register scroll trigger
+    if (isAdmin) {
+      if (typeof document !== "undefined") {
+        document.documentElement.classList.remove("lenis", "lenis-smooth", "lenis-stopped", "lenis-scrolling");
+        document.body.classList.remove("lenis", "lenis-smooth", "lenis-stopped", "lenis-scrolling");
+      }
+      return;
+    }
+
+    // Register scroll trigger for public pages only
     gsap.registerPlugin(ScrollTrigger);
 
     const lenis = new Lenis({
@@ -72,7 +82,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
       lenis.destroy();
       gsap.ticker.remove(tickHandler);
     };
-  }, []);
+  }, [isAdmin]);
 
   return (
     <QueryClientProvider client={queryClient}>
