@@ -7,9 +7,9 @@ import { AdminTopNav } from "@/components/admin/AdminTopNav";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminGuard>
-      <div style={{ display: "flex", minHeight: "100vh", width: "100%", maxWidth: "100%", overflowX: "hidden", background: "#F8FAFC", fontFamily: "Inter, sans-serif" }}>
+      <div className="flex flex-col md:flex-row min-h-screen w-full max-w-full overflow-x-hidden bg-[#F8FAFC] font-sans">
         <AdminSidebar />
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, width: "100%", maxWidth: "100%", overflowX: "hidden" }}>
+        <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden">
           <AdminTopNav />
           <main
             className="admin-main-container w-full max-w-full overflow-x-hidden p-4 md:p-8"
