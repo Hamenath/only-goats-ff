@@ -7,18 +7,17 @@ import { db } from "@/lib/firebase";
 import { collection, onSnapshot, query, orderBy, limit, doc } from "firebase/firestore";
 import {
   Users, Trophy, Wallet, CheckCircle, Clock, TrendingUp,
-  Swords, Zap, Plus, Bell, Settings, ChevronRight
+  Swords, Zap, Plus, Bell, Settings, ChevronRight, Shield
 } from "lucide-react";
 import { StatsCard } from "@/components/admin/StatsCard";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { DangerZoneCard } from "@/components/admin/DangerZoneCard";
 import {
   LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
 import Link from "next/link";
 
-const ACCENT = "#EF4444";
 const PIE_COLORS = ["#F59E0B", "#22C55E", "#EF4444"];
 
 export default function DashboardPage() {
@@ -29,33 +28,39 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubRegs = onSnapshot(collection(db, "registrations"), snap => {
-      const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    const unsubRegs = onSnapshot(collection(db, "registrations"), (snap) => {
+      const data = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       setRegistrations(data);
       setLoading(false);
     });
-    const unsubMatches = onSnapshot(collection(db, "matches"), snap => {
-      setMatches(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsubMatches = onSnapshot(collection(db, "matches"), (snap) => {
+      setMatches(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
-    const unsubSettings = onSnapshot(doc(db, "settings", "tournament"), snap => {
+    const unsubSettings = onSnapshot(doc(db, "settings", "tournament"), (snap) => {
       if (snap.exists()) setSettings(snap.data());
     });
     const qRecent = query(collection(db, "registrations"), orderBy("createdAt", "desc"), limit(5));
-    const unsubRecent = onSnapshot(qRecent, snap => {
-      setRecentRegs(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    const unsubRecent = onSnapshot(qRecent, (snap) => {
+      setRecentRegs(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
-    return () => { unsubRegs(); unsubMatches(); unsubSettings(); unsubRecent(); };
+
+    return () => {
+      unsubRegs();
+      unsubMatches();
+      unsubSettings();
+      unsubRecent();
+    };
   }, []);
 
-  const approved = registrations.filter(r => r.status === "approved").length;
-  const pending = registrations.filter(r => r.status === "pending").length;
-  const rejected = registrations.filter(r => r.status === "rejected").length;
+  const approved = registrations.filter((r) => r.status === "approved").length;
+  const pending = registrations.filter((r) => r.status === "pending").length;
+  const rejected = registrations.filter((r) => r.status === "rejected").length;
   const total = registrations.length;
   const maxTeams = settings.maxTeams || 24;
   const prizePool = settings.prizePool || 1000;
   const entryFee = settings.entryFee || 100;
   const revenue = approved * entryFee;
-  const liveMatches = matches.filter(m => m.status === "live").length;
+  const liveMatches = matches.filter((m) => m.status === "live").length;
 
   // Build registration growth chart (last 7 days)
   const growthData = (() => {
@@ -65,7 +70,7 @@ export default function DashboardPage() {
       const d = new Date(now - i * 86400000);
       days[d.toLocaleDateString("en-IN", { day: "numeric", month: "short" })] = 0;
     }
-    registrations.forEach(r => {
+    registrations.forEach((r) => {
       if (r.createdAt?.seconds) {
         const d = new Date(r.createdAt.seconds * 1000);
         const key = d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
@@ -81,259 +86,370 @@ export default function DashboardPage() {
     { name: "Rejected", value: rejected || 0 },
   ];
 
-  const revenueData = growthData.map(d => ({ ...d, revenue: d.count * entryFee }));
+  const revenueData = growthData.map((d) => ({ ...d, revenue: d.count * entryFee }));
 
   const QUICK_ACTIONS = [
-    { label: "Registrations", icon: Users, href: "/admin/registrations", color: "#EF4444" },
-    { label: "Create Match", icon: Swords, href: "/admin/matches", color: "#8B5CF6" },
-    { label: "Announcement", icon: Bell, href: "/admin/announcements", color: "#F59E0B" },
-    { label: "Settings", icon: Settings, href: "/admin/settings", color: "#0EA5E9" },
+    { label: "Registrations", icon: Users, href: "/admin/registrations", color: "#38BDF8", count: pending },
+    { label: "Create Match", icon: Swords, href: "/admin/matches", color: "#8B5CF6", count: liveMatches },
+    { label: "Announce", icon: Bell, href: "/admin/announcements", color: "#F59E0B" },
+    { label: "Settings", icon: Settings, href: "/admin/settings", color: "#10B981" },
   ];
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto" }}>
-      {/* Page header */}
-      <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
-          Dashboard
+    <div style={{ maxWidth: 1400, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
+      {/* 1. Page Header */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+          <span style={{ fontSize: 11, fontWeight: 800, color: "#38BDF8", textTransform: "uppercase", letterSpacing: "0.08em" }}>
+            ONLY GOAT'S ESPORTS
+          </span>
+        </div>
+        <h1
+          style={{
+            fontSize: "clamp(24px, 5vw, 30px)",
+            fontWeight: 900,
+            color: "#F8FAFC",
+            fontFamily: "Space Grotesk, Inter, sans-serif",
+            letterSpacing: "-0.02em",
+            lineHeight: 1.1,
+          }}
+        >
+          Admin Control Dashboard
         </h1>
-        <p style={{ fontSize: 13, color: "#64748B", marginTop: 4, fontFamily: "Inter, sans-serif" }}>
-          Welcome back — here's what's happening with your tournament.
+        <p style={{ fontSize: 14, color: "#94A3B8", marginTop: 6 }}>
+          Real-time tournament monitoring, squad management, and live match control center.
         </p>
       </div>
 
-      {/* Stats Grid */}
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
-        gap: 16, marginBottom: 28,
-      }}>
-        <StatsCard title="Registered Teams" value={total} icon={Users}
-          iconColor="#EF4444" iconBg="#FEF2F2" subtitle={`${maxTeams - total} slots remaining`} />
-        <StatsCard title="Approved Teams" value={approved} icon={CheckCircle}
-          iconColor="#22C55E" iconBg="#DCFCE7" />
-        <StatsCard title="Pending Payments" value={pending} icon={Clock}
-          iconColor="#F59E0B" iconBg="#FEF9C3" />
-        <StatsCard title="Prize Pool" value={`₹${prizePool.toLocaleString()}`} icon={Trophy}
-          iconColor="#8B5CF6" iconBg="#EDE9FE" />
-        <StatsCard title="Revenue" value={`₹${revenue.toLocaleString()}`} icon={Wallet}
-          iconColor="#0EA5E9" iconBg="#E0F2FE" />
-        <StatsCard title="Live Matches" value={liveMatches} icon={Swords}
-          accent={liveMatches > 0} />
+      {/* 2. STATS GRID (Stacked 100% width on Mobile, 2 cols on Tablet, 4 cols on Desktop) */}
+      <div
+        className="admin-stats-grid"
+        style={{
+          display: "grid",
+          gap: 16,
+          marginBottom: 28,
+        }}
+      >
+        <StatsCard
+          title="Registered Teams"
+          value={total}
+          icon={Users}
+          iconColor="#38BDF8"
+          iconBg="rgba(56, 189, 248, 0.12)"
+          subtitle={`${maxTeams - total} slots remaining`}
+        />
+        <StatsCard
+          title="Approved Teams"
+          value={approved}
+          icon={CheckCircle}
+          iconColor="#4ADE80"
+          iconBg="rgba(74, 222, 128, 0.12)"
+        />
+        <StatsCard
+          title="Pending Payments"
+          value={pending}
+          icon={Clock}
+          iconColor="#FBBF24"
+          iconBg="rgba(251, 191, 36, 0.12)"
+        />
+        <StatsCard
+          title="Prize Pool"
+          value={`₹${prizePool.toLocaleString()}`}
+          icon={Trophy}
+          iconColor="#A855F7"
+          iconBg="rgba(168, 85, 247, 0.12)"
+          accent
+        />
       </div>
 
-      {/* Charts Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 300px", gap: 16, marginBottom: 28 }}>
-        {/* Registration Growth */}
-        <div style={{
-          background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
-          padding: "20px 20px 12px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
-            Registration Growth (7 days)
-          </h3>
-          <ResponsiveContainer width="100%" height={180}>
+      {/* 3. QUICK ACTIONS BAR */}
+      <div style={{ marginBottom: 28 }}>
+        <h2 style={{ fontSize: 18, fontWeight: 800, color: "#F8FAFC", marginBottom: 14 }}>
+          Quick Action Shortcuts
+        </h2>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))",
+            gap: 12,
+          }}
+        >
+          {QUICK_ACTIONS.map(({ label, icon: Icon, href, color, count }) => (
+            <Link key={label} href={href} style={{ textDecoration: "none" }}>
+              <div
+                style={{
+                  background: "#111827",
+                  border: "1px solid rgba(255, 255, 255, 0.08)",
+                  borderRadius: 16,
+                  padding: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  transition: "all 0.2s ease",
+                  cursor: "pointer",
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = color;
+                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255, 255, 255, 0.08)";
+                  (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      borderRadius: 10,
+                      background: `${color}1A`,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Icon size={18} color={color} />
+                  </div>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}>{label}</span>
+                </div>
+                {count !== undefined && count > 0 && (
+                  <span
+                    style={{
+                      background: color,
+                      color: "#FFFFFF",
+                      fontSize: 11,
+                      fontWeight: 800,
+                      padding: "2px 8px",
+                      borderRadius: 100,
+                    }}
+                  >
+                    {count}
+                  </span>
+                )}
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
+      {/* 4. CHARTS SECTION (Responsive Grid) */}
+      <div
+        className="admin-charts-grid"
+        style={{
+          display: "grid",
+          gap: 16,
+          marginBottom: 28,
+        }}
+      >
+        {/* Registration Growth Chart */}
+        <div
+          style={{
+            background: "#111827",
+            borderRadius: 20,
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            padding: "20px",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+            <h3 style={{ fontSize: 15, fontWeight: 800, color: "#F8FAFC" }}>
+              Registration Growth (7 Days)
+            </h3>
+            <span style={{ fontSize: 11, color: "#38BDF8", fontWeight: 700 }}>Live Feed</span>
+          </div>
+          <ResponsiveContainer width="100%" height={200}>
             <LineChart data={growthData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#94A3B8" }} />
-              <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} allowDecimals={false} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 12 }} />
-              <Line type="monotone" dataKey="count" stroke={ACCENT} strokeWidth={2}
-                dot={{ fill: ACCENT, r: 3 }} name="Registrations" />
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.05)" />
+              <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#64748B" }} />
+              <YAxis tick={{ fontSize: 11, fill: "#64748B" }} allowDecimals={false} />
+              <Tooltip contentStyle={{ background: "#0F172A", borderRadius: 10, border: "1px solid rgba(255, 255, 255, 0.1)", color: "#F8FAFC", fontSize: 12 }} />
+              <Line type="monotone" dataKey="count" stroke="#38BDF8" strokeWidth={3} dot={{ fill: "#38BDF8", r: 4 }} name="Registrations" />
             </LineChart>
           </ResponsiveContainer>
         </div>
 
-        {/* Revenue Chart */}
-        <div style={{
-          background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
-          padding: "20px 20px 12px",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
-            Revenue (₹)
-          </h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={revenueData} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#F1F5F9" />
-              <XAxis dataKey="date" tick={{ fontSize: 10, fill: "#94A3B8" }} />
-              <YAxis tick={{ fontSize: 10, fill: "#94A3B8" }} />
-              <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 12 }} />
-              <Bar dataKey="revenue" fill="#EF4444" radius={[4, 4, 0, 0]} name="Revenue (₹)" />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-
-        {/* Pie Chart */}
-        <div style={{
-          background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
-          padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-          display: "flex", flexDirection: "column",
-        }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 12, fontFamily: "Inter, sans-serif" }}>
-            Team Status
+        {/* Status Distribution Pie Chart */}
+        <div
+          style={{
+            background: "#111827",
+            borderRadius: 20,
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            padding: "20px",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+            display: "flex",
+            flexDirection: "column",
+          }}
+        >
+          <h3 style={{ fontSize: 15, fontWeight: 800, color: "#F8FAFC", marginBottom: 12 }}>
+            Squad Status Ratio
           </h3>
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
             <ResponsiveContainer width="100%" height={160}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70}
-                  dataKey="value" paddingAngle={3}>
-                  {pieData.map((_, i) => <Cell key={i} fill={PIE_COLORS[i]} />)}
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={68} dataKey="value" paddingAngle={4}>
+                  {pieData.map((_, i) => (
+                    <Cell key={i} fill={PIE_COLORS[i]} />
+                  ))}
                 </Pie>
-                <Tooltip contentStyle={{ borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 12 }} />
+                <Tooltip contentStyle={{ background: "#0F172A", borderRadius: 10, border: "1px solid rgba(255, 255, 255, 0.1)", color: "#F8FAFC", fontSize: 12 }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+          <div style={{ display: "flex", justifyContent: "space-around", marginTop: 10 }}>
             {pieData.map((d, i) => (
-              <div key={d.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <div key={d.name} style={{ textAlign: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, justifyContent: "center" }}>
                   <div style={{ width: 8, height: 8, borderRadius: 2, background: PIE_COLORS[i] }} />
-                  <span style={{ fontSize: 11, color: "#64748B", fontFamily: "Inter, sans-serif" }}>{d.name}</span>
+                  <span style={{ fontSize: 11, color: "#94A3B8", fontWeight: 600 }}>{d.name}</span>
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>{d.value}</span>
+                <span style={{ fontSize: 14, fontWeight: 800, color: "#F8FAFC", marginTop: 2, display: "block" }}>{d.value}</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* Bottom Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16 }}>
-        {/* Recent Registrations */}
-        <div style={{
-          background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
-          padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}>
+      {/* 5. RECENT REGISTRATIONS (Card List for Mobile View) */}
+      <div style={{ marginBottom: 28 }}>
+        <div
+          style={{
+            background: "#111827",
+            borderRadius: 20,
+            border: "1px solid rgba(255, 255, 255, 0.08)",
+            padding: "20px",
+            boxShadow: "0 10px 25px rgba(0, 0, 0, 0.2)",
+          }}
+        >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
-              Recent Registrations
-            </h3>
-            <Link href="/admin/registrations" style={{
-              fontSize: 12, color: ACCENT, textDecoration: "none", fontWeight: 500,
-              display: "flex", alignItems: "center", gap: 4, fontFamily: "Inter, sans-serif",
-            }}>
-              View all <ChevronRight size={12} />
+            <h2 style={{ fontSize: 18, fontWeight: 800, color: "#F8FAFC" }}>
+              Recent Squad Registrations
+            </h2>
+            <Link
+              href="/admin/registrations"
+              style={{
+                fontSize: 13,
+                color: "#38BDF8",
+                textDecoration: "none",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              View all <ChevronRight size={14} />
             </Link>
           </div>
+
           {loading ? (
             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-              {[1,2,3].map(i => <div key={i} style={{ height: 48, borderRadius: 8, background: "#F1F5F9" }} />)}
+              {[1, 2, 3].map((i) => (
+                <div key={i} style={{ height: 60, borderRadius: 12, background: "#1E293B" }} />
+              ))}
             </div>
           ) : recentRegs.length === 0 ? (
-            <p style={{ fontSize: 13, color: "#94A3B8", textAlign: "center", padding: "20px 0", fontFamily: "Inter, sans-serif" }}>
-              No registrations yet.
+            <p style={{ fontSize: 14, color: "#94A3B8", textAlign: "center", padding: "24px 0" }}>
+              No squad registrations recorded yet.
             </p>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-              {recentRegs.map(reg => (
-                <div key={reg.id} style={{
-                  display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "10px 12px", borderRadius: 10, fontFamily: "Inter, sans-serif",
-                }}
-                  onMouseEnter={e => (e.currentTarget as HTMLDivElement).style.background = "#F8FAFC"}
-                  onMouseLeave={e => (e.currentTarget as HTMLDivElement).style.background = "transparent"}
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {recentRegs.map((reg) => (
+                <div
+                  key={reg.id}
+                  style={{
+                    background: "rgba(255, 255, 255, 0.03)",
+                    border: "1px solid rgba(255, 255, 255, 0.06)",
+                    borderRadius: 14,
+                    padding: "14px 16px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    flexWrap: "wrap",
+                    gap: 12,
+                  }}
                 >
                   <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 10, background: "#FEF2F2",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      fontSize: 13, fontWeight: 700, color: ACCENT,
-                    }}>
-                      {reg.teamName?.slice(0, 2).toUpperCase() || "??"}
+                    <div
+                      style={{
+                        width: 42,
+                        height: 42,
+                        borderRadius: 12,
+                        background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
+                        color: "#FFFFFF",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 900,
+                        fontSize: 14,
+                        boxShadow: "0 0 12px rgba(37, 99, 235, 0.3)",
+                      }}
+                    >
+                      {reg.teamName?.slice(0, 2).toUpperCase() || "SQ"}
                     </div>
                     <div>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: "#0F172A" }}>{reg.teamName || "—"}</p>
-                      <p style={{ fontSize: 11, color: "#94A3B8" }}>{reg.captain?.name || reg.phone || "—"}</p>
+                      <h4 style={{ fontSize: 15, fontWeight: 800, color: "#F8FAFC", margin: 0 }}>
+                        {reg.teamName || "Unnamed Squad"}
+                      </h4>
+                      <p style={{ fontSize: 12, color: "#94A3B8", marginTop: 2, margin: 0 }}>
+                        Captain: <strong>{reg.captain?.name || "N/A"}</strong> ({reg.phone || "No phone"})
+                      </p>
                     </div>
                   </div>
-                  <StatusBadge status={reg.status || "pending"} />
+
+                  <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                    <StatusBadge status={reg.status || "pending"} />
+                    <Link
+                      href={`/admin/registrations`}
+                      style={{
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        background: "rgba(56, 189, 248, 0.15)",
+                        color: "#38BDF8",
+                        fontSize: 12,
+                        fontWeight: 700,
+                        textDecoration: "none",
+                      }}
+                    >
+                      Manage
+                    </Link>
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </div>
-
-        {/* Quick Actions */}
-        <div style={{
-          background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
-          padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
-        }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
-            Quick Actions
-          </h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {QUICK_ACTIONS.map(({ label, icon: Icon, href, color }) => (
-              <Link key={href} href={href} style={{ textDecoration: "none" }}>
-                <div style={{
-                  display: "flex", alignItems: "center", gap: 12,
-                  padding: "12px 14px", borderRadius: 12,
-                  border: "1px solid #E2E8F0", cursor: "pointer",
-                  transition: "all 0.15s", fontFamily: "Inter, sans-serif",
-                }}
-                  onMouseEnter={e => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = color;
-                    (e.currentTarget as HTMLDivElement).style.background = "#FAFAFA";
-                  }}
-                  onMouseLeave={e => {
-                    (e.currentTarget as HTMLDivElement).style.borderColor = "#E2E8F0";
-                    (e.currentTarget as HTMLDivElement).style.background = "transparent";
-                  }}
-                >
-                  <div style={{
-                    width: 32, height: 32, borderRadius: 8,
-                    background: color + "15",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                  }}>
-                    <Icon size={16} color={color} />
-                  </div>
-                  <span style={{ fontSize: 13, fontWeight: 500, color: "#0F172A", flex: 1 }}>{label}</span>
-                  <ChevronRight size={14} color="#94A3B8" />
-                </div>
-              </Link>
-            ))}
-          </div>
-
-          {/* Tournament status */}
-          <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>
-            <p style={{ fontSize: 11, fontWeight: 600, color: "#64748B", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.04em", fontFamily: "Inter, sans-serif" }}>
-              Registration Status
-            </p>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: "50%",
-                background: settings.registrationOpen ? "#22C55E" : "#EF4444",
-                ...(settings.registrationOpen ? { animation: "statusPulse 1.5s ease-in-out infinite" } : {}),
-              }} />
-              <span style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
-                {settings.registrationOpen ? "Open" : "Closed"}
-              </span>
-            </div>
-            <div style={{ marginTop: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ fontSize: 11, color: "#64748B", fontFamily: "Inter, sans-serif" }}>Teams filled</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
-                  {total}/{maxTeams}
-                </span>
-              </div>
-              <div style={{ height: 6, borderRadius: 3, background: "#E2E8F0" }}>
-                <div style={{
-                  height: "100%", borderRadius: 3, background: ACCENT,
-                  width: `${Math.min(100, (total / maxTeams) * 100)}%`,
-                  transition: "width 0.5s ease",
-                }} />
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
-      
-      {/* Danger Zone Section */}
-      <div style={{ marginTop: 32 }}>
-        <DangerZoneCard />
-      </div>
-      <style>{`@keyframes statusPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }`}</style>
+
+      {/* 6. DANGER ZONE */}
+      <DangerZoneCard />
+
+      <style jsx global>{`
+        /* Responsive Grid Adjustments */
+        @media (max-width: 767px) {
+          .admin-stats-grid {
+            grid-template-columns: 1fr !important;
+          }
+          .admin-charts-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (min-width: 768px) and (max-width: 1023px) {
+          .admin-stats-grid {
+            grid-template-columns: 1fr 1fr !important;
+          }
+          .admin-charts-grid {
+            grid-template-columns: 1fr !important;
+          }
+        }
+        @media (min-width: 1024px) {
+          .admin-stats-grid {
+            grid-template-columns: repeat(4, 1fr) !important;
+          }
+          .admin-charts-grid {
+            grid-template-columns: 2fr 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

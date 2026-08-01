@@ -6,11 +6,11 @@ import {
   LayoutDashboard, Users, UserCheck, Wallet, Swords,
   Trophy, Image, Megaphone, Settings, ShieldCheck,
   FileText, User, LogOut, ChevronLeft, ChevronRight,
-  Menu, CheckCircle2, Zap
+  CheckCircle2, Zap, Shield
 } from "lucide-react";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-import { useAdminStore } from "../../store/useAdminStore";
+import { useAdminStore } from "@/store/useAdminStore";
 
 const NAV_ITEMS = [
   { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
@@ -44,127 +44,187 @@ export function AdminSidebar() {
     router.push("/admin");
   };
 
-  const w = sidebarCollapsed ? 64 : 240;
+  const w = sidebarCollapsed ? 72 : 250;
 
   return (
-    <>
-      <aside style={{
-        width: w, minHeight: "100vh", background: "#FFFFFF",
-        borderRight: "1px solid #E2E8F0", display: "flex",
-        flexDirection: "column", transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)",
-        position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 40,
+    <aside
+      className="admin-desktop-only"
+      style={{
+        width: w,
+        minHeight: "100vh",
+        background: "#0F172A",
+        borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+        display: "flex",
+        flexDirection: "column",
+        transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        bottom: 0,
+        zIndex: 30,
         overflow: "hidden",
-      }}>
-        {/* Nav */}
-        <nav style={{ flex: 1, padding: "12px 8px", overflowY: "auto", overflowX: "hidden" }}>
-          {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-            const active = pathname === href || pathname.startsWith(href + "/");
-            return (
-              <Link key={href} href={href} style={{ textDecoration: "none", display: "block", marginBottom: 2 }}>
-                <div style={{
-                  display: "flex", alignItems: "center",
-                  gap: 10, padding: sidebarCollapsed ? "10px 0" : "10px 12px",
-                  borderRadius: 10, cursor: "pointer",
+        fontFamily: "Inter, sans-serif",
+      }}
+    >
+      {/* Brand Header */}
+      <div
+        style={{
+          padding: sidebarCollapsed ? "18px 12px" : "18px 16px",
+          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+          display: "flex",
+          alignItems: "center",
+          gap: 12,
+          justifyContent: sidebarCollapsed ? "center" : "flex-start",
+        }}
+      >
+        <div
+          style={{
+            width: 36,
+            height: 36,
+            borderRadius: 10,
+            background: "linear-gradient(135deg, #2563EB, #38BDF8)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            boxShadow: "0 0 14px rgba(37, 99, 235, 0.4)",
+            flexShrink: 0,
+          }}
+        >
+          <Shield size={20} color="#FFFFFF" />
+        </div>
+        {!sidebarCollapsed && (
+          <div>
+            <span
+              style={{
+                fontFamily: "Space Grotesk, sans-serif",
+                fontWeight: 900,
+                fontSize: 16,
+                color: "#F8FAFC",
+                letterSpacing: "-0.02em",
+                display: "block",
+                lineHeight: 1,
+              }}
+            >
+              ONLY GOAT'S
+            </span>
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 700,
+                color: "#38BDF8",
+                letterSpacing: "0.08em",
+                textTransform: "uppercase",
+              }}
+            >
+              ESPORTS ADMIN
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Nav List */}
+      <nav style={{ flex: 1, padding: "14px 10px", overflowY: "auto", overflowX: "hidden" }}>
+        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
+          const active = pathname === href || pathname.startsWith(href + "/");
+
+          return (
+            <Link key={href} href={href} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: sidebarCollapsed ? "10px 0" : "11px 14px",
+                  borderRadius: 12,
+                  cursor: "pointer",
                   justifyContent: sidebarCollapsed ? "center" : "flex-start",
-                  background: active ? "#FEF2F2" : "transparent",
-                  color: active ? "#EF4444" : "#64748B",
+                  background: active ? "linear-gradient(135deg, #2563EB, #1D4ED8)" : "transparent",
+                  color: active ? "#FFFFFF" : "#94A3B8",
+                  boxShadow: active ? "0 4px 16px rgba(37, 99, 235, 0.35)" : "none",
+                  fontWeight: active ? 700 : 500,
+                  fontSize: 13,
                   transition: "all 0.15s ease",
                   whiteSpace: "nowrap",
                 }}
-                  onMouseEnter={e => {
-                    if (!active) {
-                      (e.currentTarget as HTMLDivElement).style.background = "#F8FAFC";
-                      (e.currentTarget as HTMLDivElement).style.color = "#0F172A";
-                    }
-                  }}
-                  onMouseLeave={e => {
-                    if (!active) {
-                      (e.currentTarget as HTMLDivElement).style.background = "transparent";
-                      (e.currentTarget as HTMLDivElement).style.color = "#64748B";
-                    }
-                  }}
-                >
-                  <Icon size={16} style={{ flexShrink: 0 }} />
-                  {!sidebarCollapsed && (
-                    <span style={{ fontSize: 13, fontWeight: active ? 600 : 500, fontFamily: "Inter, sans-serif" }}>
-                      {label}
-                    </span>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-        </nav>
+              >
+                <Icon size={18} style={{ flexShrink: 0, color: active ? "#FFFFFF" : "#38BDF8" }} />
+                {!sidebarCollapsed && <span>{label}</span>}
+              </div>
+            </Link>
+          );
+        })}
+      </nav>
 
-        {/* Bottom */}
-        <div style={{ padding: "8px 8px 12px", borderTop: "1px solid #E2E8F0" }}>
-          {BOTTOM_ITEMS.map(({ href, icon: Icon, label }) => {
-            const active = pathname === href;
-            return (
-              <Link key={href} href={href} style={{ textDecoration: "none", display: "block", marginBottom: 2 }}>
-                <div style={{
-                  display: "flex", alignItems: "center",
-                  gap: 10, padding: sidebarCollapsed ? "10px 0" : "10px 12px",
-                  borderRadius: 10, cursor: "pointer",
+      {/* Bottom Nav */}
+      <div style={{ padding: "10px 10px 14px", borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
+        {BOTTOM_ITEMS.map(({ href, icon: Icon, label }) => {
+          const active = pathname === href;
+          return (
+            <Link key={href} href={href} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 12,
+                  padding: sidebarCollapsed ? "10px 0" : "11px 14px",
+                  borderRadius: 12,
+                  cursor: "pointer",
                   justifyContent: sidebarCollapsed ? "center" : "flex-start",
-                  background: active ? "#FEF2F2" : "transparent",
-                  color: active ? "#EF4444" : "#64748B",
-                  transition: "all 0.15s ease",
-                }}>
-                  <Icon size={16} style={{ flexShrink: 0 }} />
-                  {!sidebarCollapsed && (
-                    <span style={{ fontSize: 13, fontWeight: 500, fontFamily: "Inter, sans-serif" }}>{label}</span>
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-          <div
-            onClick={handleLogout}
-            style={{
-              display: "flex", alignItems: "center",
-              gap: 10, padding: sidebarCollapsed ? "10px 0" : "10px 12px",
-              borderRadius: 10, cursor: "pointer",
-              justifyContent: sidebarCollapsed ? "center" : "flex-start",
-              color: "#64748B", transition: "all 0.15s ease",
-            }}
-            onMouseEnter={e => {
-              (e.currentTarget as HTMLDivElement).style.color = "#DC2626";
-              (e.currentTarget as HTMLDivElement).style.background = "#FEF2F2";
-            }}
-            onMouseLeave={e => {
-              (e.currentTarget as HTMLDivElement).style.color = "#64748B";
-              (e.currentTarget as HTMLDivElement).style.background = "transparent";
-            }}
-          >
-            <LogOut size={16} style={{ flexShrink: 0 }} />
-            {!sidebarCollapsed && (
-              <span style={{ fontSize: 13, fontWeight: 500, fontFamily: "Inter, sans-serif" }}>Logout</span>
-            )}
-          </div>
-        </div>
-
-        {/* Collapse toggle */}
-        <button
-          onClick={toggleSidebar}
+                  background: active ? "linear-gradient(135deg, #2563EB, #1D4ED8)" : "transparent",
+                  color: active ? "#FFFFFF" : "#94A3B8",
+                  fontSize: 13,
+                  fontWeight: 600,
+                }}
+              >
+                <Icon size={18} style={{ flexShrink: 0, color: "#38BDF8" }} />
+                {!sidebarCollapsed && <span>{label}</span>}
+              </div>
+            </Link>
+          );
+        })}
+        <div
+          onClick={handleLogout}
           style={{
-            position: "absolute", right: -12, top: "50%", transform: "translateY(-50%)",
-            width: 24, height: 24, borderRadius: "50%",
-            background: "#FFFFFF", border: "1px solid #E2E8F0",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            cursor: "pointer", zIndex: 50,
-            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            padding: sidebarCollapsed ? "10px 0" : "11px 14px",
+            borderRadius: 12,
+            cursor: "pointer",
+            justifyContent: sidebarCollapsed ? "center" : "flex-start",
+            color: "#EF4444",
+            background: "rgba(239, 68, 68, 0.08)",
+            fontSize: 13,
+            fontWeight: 700,
+            marginTop: 4,
           }}
         >
-          {sidebarCollapsed
-            ? <ChevronRight size={12} color="#64748B" />
-            : <ChevronLeft size={12} color="#64748B" />
-          }
-        </button>
-      </aside>
+          <LogOut size={18} style={{ flexShrink: 0 }} />
+          {!sidebarCollapsed && <span>Logout</span>}
+        </div>
+      </div>
 
-      {/* Spacer */}
-      <div style={{ width: w, flexShrink: 0, transition: "width 0.25s cubic-bezier(0.4,0,0.2,1)" }} />
-    </>
+      {/* Collapse Toggle */}
+      <button
+        onClick={toggleSidebar}
+        style={{
+          position: "absolute",
+          right: 12,
+          bottom: 72,
+          width: 24,
+          height: 24,
+          borderRadius: "50%",
+          background: "#1E293B",
+          border: "1px solid rgba(255, 255, 255, 0.15)",
+          color: "#94A3B8",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          cursor: "pointer",
+        }}
+      >
+        {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+      </button>
+    </aside>
   );
 }

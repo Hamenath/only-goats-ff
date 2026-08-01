@@ -14,63 +14,127 @@ interface StatsCardProps {
 }
 
 export function StatsCard({
-  title, value, subtitle, icon: Icon, iconColor = "#64748B",
-  iconBg = "#F8FAFC", trend, accent,
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  iconColor = "#38BDF8",
+  iconBg = "rgba(56, 189, 248, 0.12)",
+  trend,
+  accent,
 }: StatsCardProps) {
   return (
-    <div style={{
-      background: accent ? "#EF4444" : "#FFFFFF",
-      border: accent ? "none" : "1px solid #E2E8F0",
-      borderRadius: 16, padding: "20px 24px",
-      display: "flex", alignItems: "flex-start", gap: 16,
-      boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)",
-      transition: "box-shadow 0.2s, transform 0.2s",
-      cursor: "default",
-      fontFamily: "Inter, sans-serif",
-    }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)";
-        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)";
+    <div
+      style={{
+        background: accent
+          ? "linear-gradient(135deg, #2563EB, #1D4ED8)"
+          : "#111827",
+        border: accent
+          ? "1px solid #3B82F6"
+          : "1px solid rgba(255, 255, 255, 0.08)",
+        borderRadius: 20,
+        padding: "20px 22px",
+        display: "flex",
+        alignItems: "flex-start",
+        gap: 16,
+        boxShadow: accent
+          ? "0 10px 30px rgba(37, 99, 235, 0.35)"
+          : "0 10px 25px rgba(0, 0, 0, 0.2)",
+        transition: "all 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
+        width: "100%",
+        fontFamily: "Inter, sans-serif",
       }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.02)";
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = accent
+          ? "#60A5FA"
+          : "rgba(56, 189, 248, 0.3)";
+      }}
+      onMouseLeave={(e) => {
         (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLDivElement).style.borderColor = accent
+          ? "#3B82F6"
+          : "rgba(255, 255, 255, 0.08)";
       }}
     >
-      <div style={{
-        width: 44, height: 44, borderRadius: 12,
-        background: accent ? "rgba(255,255,255,0.2)" : iconBg,
-        display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-      }}>
-        <Icon size={20} color={accent ? "#fff" : iconColor} />
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 14,
+          background: accent ? "rgba(255, 255, 255, 0.2)" : iconBg,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          flexShrink: 0,
+        }}
+      >
+        <Icon size={22} color={accent ? "#FFFFFF" : iconColor} />
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{
-          fontSize: 12, fontWeight: 600, letterSpacing: "0.04em", textTransform: "uppercase",
-          color: accent ? "rgba(255,255,255,0.75)" : "#64748B", marginBottom: 4,
-        }}>
+        <p
+          style={{
+            fontSize: 13,
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+            color: accent ? "rgba(255, 255, 255, 0.85)" : "#94A3B8",
+            marginBottom: 6,
+          }}
+        >
           {title}
         </p>
-        <p style={{
-          fontSize: 26, fontWeight: 700, color: accent ? "#fff" : "#0F172A", lineHeight: 1,
-        }}>
+        <p
+          style={{
+            fontSize: 28,
+            fontWeight: 900,
+            color: "#F8FAFC",
+            lineHeight: 1,
+            fontFamily: "Space Grotesk, Inter, sans-serif",
+          }}
+        >
           {value}
         </p>
         {subtitle && (
-          <p style={{ fontSize: 12, color: accent ? "rgba(255,255,255,0.65)" : "#94A3B8", marginTop: 4 }}>
+          <p
+            style={{
+              fontSize: 12,
+              color: accent ? "rgba(255, 255, 255, 0.7)" : "#64748B",
+              marginTop: 6,
+              fontWeight: 500,
+            }}
+          >
             {subtitle}
           </p>
         )}
         {trend && (
-          <div style={{ display: "flex", alignItems: "center", gap: 4, marginTop: 6 }}>
-            <span style={{
-              fontSize: 11, fontWeight: 600, padding: "2px 6px", borderRadius: 6,
-              background: trend.value >= 0 ? "#DCFCE7" : "#FEE2E2",
-              color: trend.value >= 0 ? "#16A34A" : "#DC2626",
-            }}>
-              {trend.value >= 0 ? "+" : ""}{trend.value}%
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 6,
+              marginTop: 8,
+            }}
+          >
+            <span
+              style={{
+                fontSize: 11,
+                fontWeight: 700,
+                padding: "2px 8px",
+                borderRadius: 6,
+                background: trend.value >= 0 ? "rgba(34, 197, 94, 0.15)" : "rgba(239, 68, 68, 0.15)",
+                color: trend.value >= 0 ? "#4ADE80" : "#F87171",
+              }}
+            >
+              {trend.value >= 0 ? "+" : ""}
+              {trend.value}%
             </span>
-            <span style={{ fontSize: 11, color: accent ? "rgba(255,255,255,0.6)" : "#94A3B8" }}>
+            <span
+              style={{
+                fontSize: 11,
+                color: accent ? "rgba(255, 255, 255, 0.7)" : "#64748B",
+              }}
+            >
               {trend.label}
             </span>
           </div>
