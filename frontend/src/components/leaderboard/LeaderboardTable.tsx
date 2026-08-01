@@ -15,15 +15,31 @@ interface LeaderboardEntry {
   placement: string;
 }
 
-const DEMO: LeaderboardEntry[] = [
-  { id: "1", rank: 1, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "2", rank: 2, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "3", rank: 3, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "4", rank: 4, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "5", rank: 5, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "6", rank: 6, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "7", rank: 7, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
-  { id: "8", rank: 8, teamName: "NULL", kills: 0, points: 0, wins: 0, placement: "-" },
+const DEMO_24_SQUADS: LeaderboardEntry[] = [
+  { id: "1", rank: 1, teamName: "Goat Esports", kills: 24, points: 36, wins: 2, placement: "Qualified Round 2" },
+  { id: "2", rank: 2, teamName: "Vortex Gaming", kills: 17, points: 26, wins: 1, placement: "Qualified Round 2" },
+  { id: "3", rank: 3, teamName: "Apex Predators", kills: 10, points: 18, wins: 0, placement: "Qualified Round 2" },
+  { id: "4", rank: 4, teamName: "Red Titans", kills: 8, points: 15, wins: 0, placement: "Qualified Round 2" },
+  { id: "5", rank: 5, teamName: "Cyber Warriors", kills: 8, points: 14, wins: 0, placement: "Qualified Round 2" },
+  { id: "6", rank: 6, teamName: "Venom Esports", kills: 7, points: 12, wins: 0, placement: "Qualified Round 2" },
+  { id: "7", rank: 7, teamName: "Phantom Squad", kills: 6, points: 10, wins: 0, placement: "Premium Pass" },
+  { id: "8", rank: 8, teamName: "Shadow Hunters", kills: 6, points: 9, wins: 0, placement: "Premium Pass" },
+  { id: "9", rank: 9, teamName: "Blaze Kings", kills: 6, points: 8, wins: 0, placement: "Premium Pass" },
+  { id: "10", rank: 10, teamName: "Thunder Bolts", kills: 5, points: 7, wins: 0, placement: "Premium Pass" },
+  { id: "11", rank: 11, teamName: "Alpha Legends", kills: 4, points: 6, wins: 0, placement: "Premium Pass" },
+  { id: "12", rank: 12, teamName: "Omega Force", kills: 3, points: 5, wins: 0, placement: "Premium Pass" },
+  { id: "13", rank: 13, teamName: "Iron Shield", kills: 4, points: 4, wins: 0, placement: "Open Qualifier" },
+  { id: "14", rank: 14, teamName: "Viper Clan", kills: 3, points: 3, wins: 0, placement: "Open Qualifier" },
+  { id: "15", rank: 15, teamName: "Dark Knightz", kills: 2, points: 2, wins: 0, placement: "Open Qualifier" },
+  { id: "16", rank: 16, teamName: "Phoenix Rise", kills: 2, points: 2, wins: 0, placement: "Open Qualifier" },
+  { id: "17", rank: 17, teamName: "Storm Breakers", kills: 2, points: 2, wins: 0, placement: "Open Qualifier" },
+  { id: "18", rank: 18, teamName: "Hyper Gladiators", kills: 1, points: 1, wins: 0, placement: "Open Qualifier" },
+  { id: "19", rank: 19, teamName: "Nexus Army", kills: 1, points: 1, wins: 0, placement: "Open Qualifier" },
+  { id: "20", rank: 20, teamName: "Frost Bite", kills: 0, points: 0, wins: 0, placement: "Open Qualifier" },
+  { id: "21", rank: 21, teamName: "Rogue Gaming", kills: 0, points: 0, wins: 0, placement: "Open Qualifier" },
+  { id: "22", rank: 22, teamName: "Stealth Wolves", kills: 0, points: 0, wins: 0, placement: "Open Qualifier" },
+  { id: "23", rank: 23, teamName: "Echo Vanguard", kills: 0, points: 0, wins: 0, placement: "Open Qualifier" },
+  { id: "24", rank: 24, teamName: "Zenith Squad", kills: 0, points: 0, wins: 0, placement: "Open Qualifier" },
 ];
 
 const PODIUM_CONFIG = [
@@ -33,21 +49,49 @@ const PODIUM_CONFIG = [
 ];
 
 export function LeaderboardTable() {
-  const [entries, setEntries] = useState<LeaderboardEntry[]>(DEMO);
+  const [entries, setEntries] = useState<LeaderboardEntry[]>(DEMO_24_SQUADS);
 
   useEffect(() => {
     try {
-      const q = query(collection(db, "leaderboard"), orderBy("rank"));
+      const q = query(collection(db, "leaderboard"), orderBy("points", "desc"));
       const unsub = onSnapshot(q, (snap) => {
         if (!snap.empty) {
-          setEntries(snap.docs.map((d) => ({ id: d.id, ...d.data() } as LeaderboardEntry)));
+          const list = snap.docs.map((d, index) => {
+            const data = d.data();
+            return {
+              id: d.id,
+              rank: index + 1,
+              teamName: data.teamName || `Squad ${index + 1}`,
+              kills: data.kills ?? 0,
+              points: data.points ?? 0,
+              wins: data.wins ?? 0,
+              placement: data.placement ? (typeof data.placement === 'number' ? `Rank ${data.placement}` : data.placement) : (index < 6 ? "Top 6 Slot" : "Qualifier"),
+            } as LeaderboardEntry;
+          });
+
+          // Pad list up to 24 teams if fewer exist
+          while (list.length < 24) {
+            const r = list.length + 1;
+            list.push({
+              id: `slot_${r}`,
+              rank: r,
+              teamName: `Squad Slot #${r}`,
+              kills: 0,
+              points: 0,
+              wins: 0,
+              placement: "Open Slot",
+            });
+          }
+
+          setEntries(list);
         }
       });
       return () => unsub();
     } catch {
-      // Use demo data
+      // Use DEMO_24_SQUADS dataset
     }
   }, []);
+
 
   const top3 = [...entries]
     .slice(0, 3)
