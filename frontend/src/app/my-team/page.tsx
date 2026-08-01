@@ -67,26 +67,6 @@ interface MatchItem {
   status: string;
 }
 
-const MOCK_DEMO_TEAM: RegistrationData = {
-
-  id: "demo_team_01",
-  teamId: "OG-VERIFIED(01)",
-  teamName: "Goat Esports",
-  captain: { name: "Manibalan (Captain)", uid: "OG-CAP-01", gameName: "GOAT_LEADER" },
-  players: [
-    { name: "Manibalan", uid: "OG-CAP-01", gameName: "GOAT_LEADER" },
-    { name: "Rusher Pro", uid: "OG-P1", gameName: "GOAT_RUSHER" },
-    { name: "Sniper Elite", uid: "OG-P2", gameName: "GOAT_SNIPER" },
-    { name: "Support Main", uid: "OG-P3", gameName: "GOAT_SUPPORT" },
-  ],
-  substitute: { name: "Sub Player", uid: "OG-SUB", gameName: "GOAT_SUB" },
-  phone: "9876543210",
-  whatsapp: "9876543210",
-  allocatedStage: "Qualifier 1",
-  qualificationStatus: "qualified_round_2",
-  registrationOrder: 1,
-};
-
 export default function MyTeamPage() {
   // Authentication State
   const [squadIdInput, setSquadIdInput] = useState("");
@@ -113,38 +93,6 @@ export default function MyTeamPage() {
   const [uploadingScreen, setUploadingScreen] = useState(false);
   const [submittingPremium, setSubmittingPremium] = useState(false);
 
-  const handleDemoAccess = () => {
-    setActiveSession({ squadId: "OG-VERIFIED(01)", phone: "9876543210" });
-    setTeam(MOCK_DEMO_TEAM);
-    setAuthStep("authenticated");
-    setRoomCreds({ canView: true, roomId: "9823145", roomPassword: "OGPASS2026" });
-    setAllocatedMatch({
-      id: "match_demo_1",
-      name: "Qualifier Match 1 — Bermuda",
-      map: "Bermuda",
-      round: "Qualifier 1",
-      matchTime: "7:00 PM",
-      status: "live",
-    });
-    setNotifications([
-      {
-        id: "n1",
-        teamId: "OG-VERIFIED(01)",
-        title: "🎉 Congratulations! Qualified for Round 2",
-        message: "Your team Goat Esports ranked #1 with 36 pts in Qualifier 1 and has qualified for Round 2!",
-        type: "qualification",
-      },
-      {
-        id: "n2",
-        teamId: "OG-VERIFIED(01)",
-        title: "🎮 Room Credentials Unlocked",
-        message: "Room ID: 9823145 | Pass: OGPASS2026 — Bermuda Qualifier starting soon.",
-        type: "room",
-      },
-    ]);
-    toast.success("Welcome to Team Dashboard Preview! 🚀");
-  };
-
   // Auto-restore session from localStorage
   useEffect(() => {
     const savedSquadId = localStorage.getItem("og_auth_squad_id");
@@ -157,7 +105,7 @@ export default function MyTeamPage() {
     }
   }, []);
 
-  // Server-side + Client-side Fallback Verification
+  // Server-side + Client-side Firestore Verification
   const verifyCredentials = async (squadId: string, phone: string, isAutoRestore = false) => {
     setVerifying(true);
     setAuthError(null);
@@ -172,6 +120,16 @@ export default function MyTeamPage() {
       if (!snap.empty) {
         const docSnap = snap.docs[0];
         const teamData = { id: docSnap.id, ...docSnap.data() } as RegistrationData;
+        
+        // Verify phone matches or allow captain phone match
+        const cleanInputPhone = phone.replace(/\D/g, "");
+        const cleanRegPhone = (teamData.phone || "").replace(/\D/g, "");
+        if (cleanRegPhone && cleanInputPhone && !cleanRegPhone.includes(cleanInputPhone) && !cleanInputPhone.includes(cleanRegPhone)) {
+          setAuthError("Phone number does not match registered captain phone.");
+          if (!isAutoRestore) toast.error("Phone number does not match registered captain phone.");
+          return;
+        }
+
         setActiveSession({ squadId: teamData.teamId, phone });
         setTeam(teamData);
         localStorage.setItem("og_auth_squad_id", teamData.teamId);
@@ -205,14 +163,23 @@ export default function MyTeamPage() {
         }
       }
 
-      // 3. Fallback to Demo Team Dashboard access
-      handleDemoAccess();
+      // If invalid
+      setAuthError("Invalid Squad ID or Captain Phone Number. Please verify your registration.");
+      if (!isAutoRestore) {
+        toast.error("Invalid Squad ID or Captain Phone Number.");
+      }
+      localStorage.removeItem("og_auth_squad_id");
+      localStorage.removeItem("og_auth_phone");
     } catch {
-      handleDemoAccess();
+      setAuthError("Failed to verify squad credentials. Please try again.");
+      if (!isAutoRestore) {
+        toast.error("Failed to verify squad credentials.");
+      }
     } finally {
       setVerifying(false);
     }
   };
+
 
 
   const handleAuthSubmit = (e: React.FormEvent) => {
@@ -504,35 +471,8 @@ export default function MyTeamPage() {
                     </>
                   )}
                 </button>
-
-                <div style={{ textAlign: "center", marginTop: 20, paddingTop: 18, borderTop: "1px solid #F1F5F9" }}>
-                  <p style={{ fontSize: 12, color: "#64748B", marginBottom: 12 }}>
-                    Want to explore the Team Control Center right now?
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleDemoAccess}
-                    style={{
-                      width: "100%",
-                      padding: "12px",
-                      borderRadius: 12,
-                      background: "#F8FAFC",
-                      color: "#0F172A",
-                      border: "1.5px solid #CBD5E1",
-                      fontSize: 13,
-                      fontWeight: 800,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <Zap size={16} color="#DC2626" />
-                    <span>Instant Demo Team Dashboard</span>
-                  </button>
-                </div>
               </form>
+
 
             </div>
           </div>
