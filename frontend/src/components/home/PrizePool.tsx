@@ -3,7 +3,7 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Trophy, Medal, Zap } from "lucide-react";
+import { Trophy } from "lucide-react";
 import gsap from "gsap";
 import { useInView } from "react-intersection-observer";
 
@@ -12,7 +12,7 @@ const PRIZES = [
     rank: 1,
     title: "Champion",
     icon: Trophy,
-    amount: "₹600",
+    amount: "₹1,000",
     description: "1st Place Winner · Paid via UPI",
     badge: "🥇",
     image: "/trophy-cup.png",
@@ -20,46 +20,19 @@ const PRIZES = [
     shadow: "0 20px 60px rgba(255,200,0,0.25)",
     size: "large",
   },
-  {
-    rank: 2,
-    title: "Runner-up",
-    icon: Medal,
-    amount: "₹300",
-    description: "2nd Place Finisher",
-    badge: "🥈",
-    image: "/runner-up-cup.png",
-    gradient: "linear-gradient(135deg, #E8E8E8 0%, #B0B0B0 100%)",
-    shadow: "0 16px 40px rgba(150,150,150,0.2)",
-    size: "medium",
-  },
-  {
-    rank: 3,
-    title: "Most Kills",
-    icon: Zap,
-    amount: "₹100",
-    description: "Highest kill count",
-    badge: "💀",
-    image: "/most-kills-icon.png",
-    gradient: "linear-gradient(135deg, #FF6B6B 0%, #e50914 100%)",
-    shadow: "0 16px 40px rgba(229,9,20,0.2)",
-    size: "medium",
-  },
 ];
 
 export function PrizePool() {
   const { ref, inView } = useInView({ threshold: 0.15, triggerOnce: true });
-  const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const cardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!inView) return;
-    cardsRef.current.forEach((el, i) => {
-      if (!el) return;
-      gsap.fromTo(
-        el,
-        { y: 50, opacity: 0, scale: 0.95 },
-        { y: 0, opacity: 1, scale: 1, duration: 0.7, delay: i * 0.1, ease: "power3.out" }
-      );
-    });
+    if (!inView || !cardRef.current) return;
+    gsap.fromTo(
+      cardRef.current,
+      { y: 50, opacity: 0, scale: 0.95 },
+      { y: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }
+    );
   }, [inView]);
 
   return (
@@ -72,7 +45,7 @@ export function PrizePool() {
       }}
     >
       <div className="container-custom">
-        <div style={{ textAlign: "center", marginBottom: 80 }}>
+        <div style={{ textAlign: "center", marginBottom: 60 }}>
           <p className="section-tag" style={{ marginBottom: 12 }}>Rewards</p>
           <h2
             style={{
@@ -87,17 +60,17 @@ export function PrizePool() {
             Prize Pool
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 480, margin: "0 auto" }}>
-            Prove your skill and take home the prize. ₹1000 Total Prize Pool.
+            Prove your skill and take home the prize. ₹1,000 Total Prize Pool.
           </p>
         </div>
 
         <div ref={ref}>
           {/* Champion Card */}
           <div
-            ref={(el) => { cardsRef.current[0] = el; }}
+            ref={cardRef}
             style={{
-              maxWidth: 480,
-              margin: "0 auto 24px",
+              maxWidth: 520,
+              margin: "0 auto",
               opacity: 0,
             }}
           >
@@ -151,69 +124,10 @@ export function PrizePool() {
               >
                 {PRIZES[0].amount}
               </div>
-              <p style={{ fontSize: 14, color: "rgba(0,0,0,0.6)", marginTop: 12, fontWeight: 500 }}>
+              <p style={{ fontSize: 15, color: "rgba(0,0,0,0.7)", marginTop: 14, fontWeight: 600 }}>
                 {PRIZES[0].description}
               </p>
             </div>
-          </div>
-
-          {/* Other prizes */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-              gap: 20,
-              maxWidth: 640,
-              margin: "0 auto",
-            }}
-          >
-            {PRIZES.slice(1).map((prize, i) => (
-              <div
-                key={prize.rank}
-                ref={(el) => { cardsRef.current[i + 1] = el; }}
-                style={{ opacity: 0 }}
-              >
-                <div
-                  className="glass-card glass-card-hover"
-                  style={{
-                    padding: "32px 24px",
-                    textAlign: "center",
-                    border: "1px solid #eaeaea",
-                    background: "#ffffff",
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "center", marginBottom: 16, height: 80, alignItems: "center" }}>
-                    {prize.image ? (
-                      <Image
-                        src={prize.image}
-                        alt={prize.title}
-                        width={80}
-                        height={80}
-                        style={{ objectFit: "contain", filter: "drop-shadow(0 6px 12px rgba(0,0,0,0.12))", width: "auto", height: "auto" }}
-                      />
-                    ) : (
-                      <span style={{ fontSize: 40 }}>{prize.badge}</span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#e50914", letterSpacing: "0.06em", textTransform: "uppercase", marginBottom: 8 }}>
-                    {prize.title}
-                  </div>
-                  <div
-                    style={{
-                      fontFamily: "Space Grotesk, sans-serif",
-                      fontSize: 32,
-                      fontWeight: 800,
-                      color: "#111",
-                      letterSpacing: "-0.02em",
-                      marginBottom: 8,
-                    }}
-                  >
-                    {prize.amount}
-                  </div>
-                  <p style={{ fontSize: 13, color: "#666", fontWeight: 500 }}>{prize.description}</p>
-                </div>
-              </div>
-            ))}
           </div>
         </div>
 
