@@ -94,7 +94,7 @@ export default function DashboardPage() {
     <div style={{ maxWidth: 1400, margin: "0 auto" }}>
       {/* Page header */}
       <div style={{ marginBottom: 28 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
+        <h1 className="admin-dashboard-title" style={{ fontSize: 22, fontWeight: 700, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
           Dashboard
         </h1>
         <p style={{ fontSize: 13, color: "#64748B", marginTop: 4, fontFamily: "Inter, sans-serif" }}>
@@ -103,7 +103,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Grid */}
-      <div style={{
+      <div className="admin-stats-grid" style={{
         display: "grid",
         gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
         gap: 16, marginBottom: 28,
@@ -123,14 +123,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 300px", gap: 16, marginBottom: 28 }}>
+      <div className="admin-charts-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 300px", gap: 16, marginBottom: 28 }}>
         {/* Registration Growth */}
         <div style={{
           background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
           padding: "20px 20px 12px",
           boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
+          <h3 className="admin-section-title" style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
             Registration Growth (7 days)
           </h3>
           <ResponsiveContainer width="100%" height={180}>
@@ -151,7 +151,7 @@ export default function DashboardPage() {
           padding: "20px 20px 12px",
           boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
+          <h3 className="admin-section-title" style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
             Revenue (₹)
           </h3>
           <ResponsiveContainer width="100%" height={180}>
@@ -171,7 +171,7 @@ export default function DashboardPage() {
           padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
           display: "flex", flexDirection: "column",
         }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 12, fontFamily: "Inter, sans-serif" }}>
+          <h3 className="admin-section-title" style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 12, fontFamily: "Inter, sans-serif" }}>
             Team Status
           </h3>
           <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -200,14 +200,14 @@ export default function DashboardPage() {
       </div>
 
       {/* Bottom Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16 }}>
+      <div className="admin-bottom-grid" style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 16 }}>
         {/* Recent Registrations */}
         <div style={{
           background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
           padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-            <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
+            <h3 className="admin-section-title" style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", fontFamily: "Inter, sans-serif" }}>
               Recent Registrations
             </h3>
             <Link href="/admin/registrations" style={{
@@ -260,10 +260,10 @@ export default function DashboardPage() {
           background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
           padding: "20px", boxShadow: "0 1px 3px rgba(0,0,0,0.04)",
         }}>
-          <h3 style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
+          <h3 className="admin-section-title" style={{ fontSize: 13, fontWeight: 600, color: "#0F172A", marginBottom: 16, fontFamily: "Inter, sans-serif" }}>
             Quick Actions
           </h3>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="admin-quick-actions-grid" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
             {QUICK_ACTIONS.map(({ label, icon: Icon, href, color }) => (
               <Link key={href} href={href} style={{ textDecoration: "none" }}>
                 <div style={{
@@ -294,6 +294,7 @@ export default function DashboardPage() {
               </Link>
             ))}
           </div>
+
 
           {/* Tournament status */}
           <div style={{ marginTop: 16, padding: 14, borderRadius: 12, background: "#F8FAFC", border: "1px solid #E2E8F0" }}>

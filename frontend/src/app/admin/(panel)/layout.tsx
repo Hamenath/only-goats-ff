@@ -8,11 +8,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <AdminGuard>
       <div style={{
         display: "flex", minHeight: "100vh", background: "#F8FAFC",
-        fontFamily: "Inter, sans-serif",
+        fontFamily: "Inter, sans-serif", flexDirection: "column",
       }}>
         <AdminSidebar />
         <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "hidden" }}>
-          <main style={{ flex: 1, padding: "24px", overflowX: "hidden", overflowY: "auto" }}>
+          <main className="admin-main-container" style={{ flex: 1, overflowX: "hidden", overflowY: "auto" }}>
             {children}
           </main>
         </div>
@@ -20,3 +20,4 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     </AdminGuard>
   );
 }
+

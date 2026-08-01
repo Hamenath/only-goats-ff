@@ -164,7 +164,7 @@ export default function RegistrationsPage() {
       {/* Table */}
       <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse" }}>
+          <table className="admin-responsive-table" style={{ width: "100%", borderCollapse: "collapse" }}>
             <thead>
               <tr style={{ background: "#F8FAFC", borderBottom: "1px solid #E2E8F0" }}>
                 <th style={th()}><input type="checkbox" onChange={toggleAll} checked={selectedIds.size === paged.length && paged.length > 0} style={{ accentColor: "#EF4444" }} /></th>
@@ -188,8 +188,8 @@ export default function RegistrationsPage() {
                 <tr key={r.id} style={{ borderBottom: "1px solid #F1F5F9" }}
                   onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.background = "#FAFAFA"}
                   onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.background = "transparent"}>
-                  <td style={td()}><input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} style={{ accentColor: "#EF4444" }} /></td>
-                  <td style={td()}>
+                  <td style={td()} data-label="Select"><input type="checkbox" checked={selectedIds.has(r.id)} onChange={() => toggleSelect(r.id)} style={{ accentColor: "#EF4444" }} /></td>
+                  <td style={td()} data-label="Team">
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <div style={{ width: 36, height: 36, borderRadius: 10, background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700, color: "#EF4444", flexShrink: 0 }}>
                         {r.teamName?.slice(0, 2).toUpperCase() || "??"}
@@ -200,20 +200,20 @@ export default function RegistrationsPage() {
                       </div>
                     </div>
                   </td>
-                  <td style={td()}><div style={{ fontSize: 13, color: "#0F172A" }}>{r.captain?.name || "—"}</div><div style={{ fontSize: 11, color: "#94A3B8" }}>{r.captain?.gameName || ""}</div></td>
-                  <td style={td()}><div style={{ fontSize: 12, color: "#64748B" }}>{r.phone || "—"}</div></td>
-                  <td style={td()}><code style={{ fontSize: 11, background: "#F1F5F9", padding: "3px 6px", borderRadius: 4, color: "#475569" }}>{r.upiTransactionId || "—"}</code></td>
-                  <td style={td()}>
+                  <td style={td()} data-label="Captain"><div style={{ fontSize: 13, color: "#0F172A" }}>{r.captain?.name || "—"}</div><div style={{ fontSize: 11, color: "#94A3B8" }}>{r.captain?.gameName || ""}</div></td>
+                  <td style={td()} data-label="Contact"><div style={{ fontSize: 12, color: "#64748B" }}>{r.phone || "—"}</div></td>
+                  <td style={td()} data-label="Transaction ID"><code style={{ fontSize: 11, background: "#F1F5F9", padding: "3px 6px", borderRadius: 4, color: "#475569" }}>{r.upiTransactionId || "—"}</code></td>
+                  <td style={td()} data-label="Screenshot">
                     {r.paymentScreenshotUrl ? (
                       <button onClick={() => setPreviewImg(r.paymentScreenshotUrl)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                         <img src={r.paymentScreenshotUrl} alt="Screenshot" style={{ width: 44, height: 36, objectFit: "cover", borderRadius: 6, border: "1px solid #E2E8F0" }} />
                       </button>
                     ) : <span style={{ fontSize: 12, color: "#94A3B8" }}>None</span>}
                   </td>
-                  <td style={td()}><StatusBadge status={r.status || "pending"} /></td>
-                  <td style={td()}><span style={{ fontSize: 11, color: "#94A3B8" }}>{r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString("en-IN") : "—"}</span></td>
-                  <td style={td()}>
-                    <div style={{ display: "flex", gap: 4 }}>
+                  <td style={td()} data-label="Status"><StatusBadge status={r.status || "pending"} /></td>
+                  <td style={td()} data-label="Date"><span style={{ fontSize: 11, color: "#94A3B8" }}>{r.createdAt?.seconds ? new Date(r.createdAt.seconds * 1000).toLocaleDateString("en-IN") : "—"}</span></td>
+                  <td style={td()} data-label="Actions">
+                    <div className="action-btn-group" style={{ display: "flex", gap: 4 }}>
                       <ActionBtn icon={<Check size={13} />} color="#22C55E" title="Approve" onClick={() => updateStatus(r.id, "approved")} />
                       <ActionBtn icon={<X size={13} />} color="#EF4444" title="Reject" onClick={() => updateStatus(r.id, "rejected")} />
                       <ActionBtn icon={<Trash2 size={13} />} color="#DC2626" title="Delete" onClick={() => setConfirmDelete(r.id)} />
@@ -223,6 +223,7 @@ export default function RegistrationsPage() {
               ))}
             </tbody>
           </table>
+
         </div>
 
         {/* Pagination */}
