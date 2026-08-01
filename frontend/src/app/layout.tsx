@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     apple: "/logo.jpg",
   },
   title: {
-    default: "Only Goats FF — Free Fire Tournament Platform",
+    default: "Only Goat's FF Tournament 🐐",
     template: "%s | Only Goats FF",
   },
   description:
