@@ -54,11 +54,11 @@ export function AdminTopNav() {
     <header
       className="hidden md:flex"
       style={{
-        height: 76,
-        background: "rgba(255, 255, 255, 0.85)",
-        backdropFilter: "blur(16px)",
-        WebkitBackdropFilter: "blur(16px)",
-        borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+        height: 72,
+        background: "rgba(255, 255, 255, 0.75)",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+        borderBottom: "1px solid #ECECEC",
         boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
         display: "flex",
         alignItems: "center",

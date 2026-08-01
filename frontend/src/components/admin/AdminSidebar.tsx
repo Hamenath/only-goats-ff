@@ -81,7 +81,7 @@ export function AdminSidebar() {
     router.push("/admin");
   };
 
-  const w = sidebarCollapsed ? 88 : 280;
+  const w = sidebarCollapsed ? 88 : 260;
 
   return (
     <>

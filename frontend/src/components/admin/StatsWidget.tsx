@@ -30,17 +30,17 @@ export function StatsWidget({
     <div
       style={{
         height: "100%",
-        minHeight: 125,
+        minHeight: 100,
         background: accent ? "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)" : "#FFFFFF",
         border: accent ? "none" : "1px solid #E2E8F0",
-        borderRadius: 20,
-        padding: "16px 20px",
+        borderRadius: 16,
+        padding: "16px",
         display: "flex",
         flexDirection: "column",
         justifyContent: "space-between",
         boxShadow: accent
-          ? "0 8px 24px rgba(37, 99, 235, 0.3)"
-          : "0 2px 6px rgba(15, 23, 42, 0.04), 0 10px 20px rgba(15, 23, 42, 0.02)",
+          ? "0 4px 14px rgba(37, 99, 235, 0.2)"
+          : "0 1px 3px rgba(15, 23, 42, 0.05), 0 4px 10px rgba(15, 23, 42, 0.02)",
         transition: "transform 250ms ease, box-shadow 250ms ease",
         cursor: "default",
         position: "relative",
@@ -65,9 +65,9 @@ export function StatsWidget({
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <div
             style={{
-              width: 36,
-              height: 36,
-              borderRadius: 12,
+              width: 32,
+              height: 32,
+              borderRadius: 10,
               background: accent ? "rgba(255, 255, 255, 0.2)" : iconBg,
               display: "flex",
               alignItems: "center",
@@ -75,12 +75,12 @@ export function StatsWidget({
               flexShrink: 0,
             }}
           >
-            <Icon size={18} color={accent ? "#FFFFFF" : iconColor} strokeWidth={2} />
+            <Icon size={16} color={accent ? "#FFFFFF" : iconColor} strokeWidth={2.5} />
           </div>
           <div>
             <p
               style={{
-                fontSize: 13,
+                fontSize: 12,
                 fontWeight: 600,
                 color: accent ? "rgba(255, 255, 255, 0.85)" : "#64748B",
                 margin: 0,
@@ -119,14 +119,14 @@ export function StatsWidget({
       </div>
 
       {/* Middle Row: Value */}
-      <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
         <span
           style={{
-            fontSize: 28,
+            fontSize: 24,
             fontWeight: 800,
             color: accent ? "#FFFFFF" : "#0F172A",
             letterSpacing: "-0.03em",
-            lineHeight: 1,
+            lineHeight: 1.1,
           }}
         >
           {value}

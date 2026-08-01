@@ -7,7 +7,7 @@ import { AdminTopNav } from "@/components/admin/AdminTopNav";
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <AdminGuard>
-      <div className="h-dvh max-h-dvh w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-[#F8FAFC] font-sans">
+      <div className="admin-theme h-dvh max-h-dvh w-full max-w-full overflow-hidden flex flex-col md:flex-row bg-[var(--admin-bg)] font-sans">
         <AdminSidebar />
         {/* Mobile Header Spacer - Exactly 72px */}
         <div className="h-[72px] md:hidden flex-shrink-0 w-full" aria-hidden="true" />
