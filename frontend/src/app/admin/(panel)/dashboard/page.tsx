@@ -162,7 +162,7 @@ export default function DashboardPage() {
       />
 
       {/* 2. Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 mb-8 w-full">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5 mb-8 w-full">
         <StatsWidget
           title="Registered Teams"
           value={total}
