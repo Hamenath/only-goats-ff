@@ -85,7 +85,7 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* 1. MOBILE TOP BAR (< 768px) - Position Fixed Liquid Glass */}
+      {/* 1. MOBILE TOP BAR (< 768px) - Permanently Fixed Liquid Glass */}
       <header
         className="admin-mobile-topbar md:hidden"
         style={{
@@ -94,18 +94,21 @@ export function AdminSidebar() {
           left: 0,
           right: 0,
           zIndex: 50,
-          height: 64,
+          height: 72,
+          paddingTop: "env(safe-area-inset-top, 0px)",
           background: "rgba(255, 255, 255, 0.85)",
           backdropFilter: "blur(16px)",
           WebkitBackdropFilter: "blur(16px)",
           borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
-          boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
+          boxShadow: "0 1px 3px rgba(15, 23, 42, 0.05)",
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "0 16px",
+          paddingLeft: 16,
+          paddingRight: 16,
           width: "100%",
           fontFamily: "Inter, sans-serif",
+          boxSizing: "border-box",
         }}
       >
         <button
@@ -115,8 +118,8 @@ export function AdminSidebar() {
             background: "#F8FAFC",
             border: "1px solid #E2E8F0",
             cursor: "pointer",
-            width: 40,
-            height: 40,
+            width: 42,
+            height: 42,
             borderRadius: 12,
             display: "flex",
             alignItems: "center",
@@ -130,8 +133,8 @@ export function AdminSidebar() {
         <Link href="/admin/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
-              width: 32,
-              height: 32,
+              width: 34,
+              height: 34,
               borderRadius: 10,
               overflow: "hidden",
               background: "#2563EB",
@@ -140,7 +143,7 @@ export function AdminSidebar() {
               justifyContent: "center",
             }}
           >
-            <Image src="/logo.jpg" alt="Logo" width={32} height={32} style={{ objectFit: "cover" }} />
+            <Image src="/logo.jpg" alt="Logo" width={34} height={34} style={{ objectFit: "cover" }} />
           </div>
           <div>
             <span
@@ -169,8 +172,8 @@ export function AdminSidebar() {
               background: "#F8FAFC",
               border: "1px solid #E2E8F0",
               borderRadius: 12,
-              width: 40,
-              height: 40,
+              width: 42,
+              height: 42,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -182,8 +185,8 @@ export function AdminSidebar() {
             <span
               style={{
                 position: "absolute",
-                top: 8,
-                right: 8,
+                top: 9,
+                right: 9,
                 width: 7,
                 height: 7,
                 borderRadius: "50%",
@@ -194,7 +197,7 @@ export function AdminSidebar() {
         </div>
       </header>
 
-      {/* MOBILE DRAWER OVERLAY */}
+      {/* MOBILE DRAWER OVERLAY (z-55) */}
       <div
         className="admin-mobile-drawer-overlay md:hidden"
         onClick={() => setDrawerOpen(false)}
@@ -204,14 +207,14 @@ export function AdminSidebar() {
           background: "rgba(15, 23, 42, 0.6)",
           backdropFilter: "blur(6px)",
           WebkitBackdropFilter: "blur(6px)",
-          zIndex: 99,
+          zIndex: 55,
           opacity: drawerOpen ? 1 : 0,
           pointerEvents: drawerOpen ? "auto" : "none",
           transition: "opacity 0.3s ease",
         }}
       />
 
-      {/* MOBILE DRAWER PANEL */}
+      {/* MOBILE DRAWER PANEL (z-60) */}
       <aside
         className="admin-mobile-drawer md:hidden"
         style={{
@@ -223,7 +226,7 @@ export function AdminSidebar() {
           maxHeight: "100dvh",
           width: "min(80vw, 320px)",
           background: "#FFFFFF",
-          zIndex: 100,
+          zIndex: 60,
           display: "flex",
           flexDirection: "column",
           transform: drawerOpen ? "translateX(0)" : "translateX(-100%)",

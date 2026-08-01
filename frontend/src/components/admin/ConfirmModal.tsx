@@ -26,7 +26,7 @@ export function ConfirmModal({
     <div
       onClick={onCancel}
       style={{
-        position: "fixed", inset: 0, zIndex: 1000,
+        position: "fixed", inset: 0, zIndex: 70,
         background: "rgba(0,0,0,0.4)", backdropFilter: "blur(2px)",
         display: "flex", alignItems: "center", justifyContent: "center", padding: 24,
       }}
