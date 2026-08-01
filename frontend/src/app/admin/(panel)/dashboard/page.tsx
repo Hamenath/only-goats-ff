@@ -161,16 +161,8 @@ export default function DashboardPage() {
         }
       />
 
-      {/* 2. Stats Grid (150px Height, 24px Radius Cards) */}
-      <div
-        className="admin-stats-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
-          gap: 20,
-          marginBottom: 32,
-        }}
-      >
+      {/* 2. Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 md:gap-5 mb-8 w-full">
         <StatsWidget
           title="Registered Teams"
           value={total}
@@ -242,14 +234,7 @@ export default function DashboardPage() {
         >
           Quick Actions
         </h3>
-        <div
-          className="admin-quick-actions-grid"
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            gap: 20,
-          }}
-        >
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 w-full">
           <QuickActionCard
             label="Create Tournament"
             description="Set up tournament format, slots & prize pool"
@@ -283,16 +268,8 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* 4. Charts Section (24px Radius Cards) */}
-      <div
-        className="admin-charts-grid"
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr 340px",
-          gap: 24,
-          marginBottom: 32,
-        }}
-      >
+      {/* 4. Charts Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 w-full">
         {/* Registration Growth Chart */}
         <div
           style={{

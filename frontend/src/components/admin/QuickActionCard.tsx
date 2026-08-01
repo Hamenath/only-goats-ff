@@ -22,7 +22,7 @@ export function QuickActionCard({
   badge,
 }: QuickActionCardProps) {
   return (
-    <Link href={href} style={{ textDecoration: "none" }}>
+    <Link href={href} className="block w-full" style={{ textDecoration: "none" }}>
       <div
         style={{
           background: "#FFFFFF",

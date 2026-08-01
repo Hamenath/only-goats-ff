@@ -988,16 +988,6 @@ html, body {
     overflow-x: hidden !important;
   }
 
-  /* Single Column Full Width Stack for Mobile Cards */
-  .admin-stats-grid,
-  .admin-quick-actions-grid,
-  .admin-charts-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    width: 100% !important;
-  }
-
   .admin-page-header-row {
     flex-direction: column !important;
     align-items: flex-start !important;
