@@ -29,7 +29,8 @@ export function StatsWidget({
   return (
     <div
       style={{
-        height: 150,
+        height: "100%",
+        minHeight: 150,
         background: accent ? "linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)" : "#FFFFFF",
         border: accent ? "none" : "1px solid #E2E8F0",
         borderRadius: 24,

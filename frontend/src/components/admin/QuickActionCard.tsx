@@ -25,6 +25,7 @@ export function QuickActionCard({
     <Link href={href} className="block w-full" style={{ textDecoration: "none" }}>
       <div
         style={{
+          height: "100%",
           background: "#FFFFFF",
           border: "1px solid #E2E8F0",
           borderRadius: 24,
