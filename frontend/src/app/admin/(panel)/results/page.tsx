@@ -29,6 +29,7 @@ import {
   Users,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { PLACEMENT_POINTS_MAP, getPlacementPoints } from "@/config/scoring";
 
 interface TeamRegistration {
   id: string;
@@ -48,20 +49,6 @@ interface TeamScoreInput {
   totalPoints: number;
 }
 
-const PLACEMENT_POINTS_MAP: Record<number, number> = {
-  1: 12,
-  2: 9,
-  3: 7,
-  4: 5,
-  5: 4,
-  6: 3,
-  7: 2,
-  8: 1,
-  9: 0,
-  10: 0,
-  11: 0,
-  12: 0,
-};
 
 export default function ResultsPage() {
   const [stage, setStage] = useState<string>("Qualifier 1");
@@ -96,7 +83,7 @@ export default function ResultsPage() {
       const initialScores: Record<string, TeamScoreInput> = {};
       list.forEach((t, index) => {
         const p = index + 1;
-        const placePts = PLACEMENT_POINTS_MAP[p] || 0;
+        const placePts = getPlacementPoints(p);
         initialScores[t.teamId] = {
           teamId: t.teamId,
           teamName: t.teamName,
@@ -116,9 +103,9 @@ export default function ResultsPage() {
   const handleScoreChange = (teamId: string, field: "placement" | "kills", val: number) => {
     setScores((prev) => {
       const item = prev[teamId] || { teamId, teamName: "", placement: 1, kills: 0, placementPoints: 12, totalPoints: 12 };
-      const newPlacement = field === "placement" ? Math.max(1, Math.min(12, val)) : item.placement;
+      const newPlacement = field === "placement" ? Math.max(1, val) : item.placement;
       const newKills = field === "kills" ? Math.max(0, val) : item.kills;
-      const placementPts = PLACEMENT_POINTS_MAP[newPlacement] || 0;
+      const placementPts = getPlacementPoints(newPlacement);
       const total = placementPts + newKills;
 
       return {
@@ -343,7 +330,7 @@ export default function ResultsPage() {
               <tbody>
                 {sortedList.map((t, index) => {
                   const rank = index + 1;
-                  const sc = scores[t.teamId] || { placement: rank, kills: 0, placementPoints: PLACEMENT_POINTS_MAP[rank] || 0, totalPoints: PLACEMENT_POINTS_MAP[rank] || 0 };
+                  const sc = scores[t.teamId] || { placement: rank, kills: 0, placementPoints: getPlacementPoints(rank), totalPoints: getPlacementPoints(rank) };
                   const isTop6 = rank <= 6;
 
                   return (
