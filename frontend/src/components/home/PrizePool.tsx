@@ -3,24 +3,8 @@
 import { useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Trophy } from "lucide-react";
 import gsap from "gsap";
 import { useInView } from "react-intersection-observer";
-
-const PRIZES = [
-  {
-    rank: 1,
-    title: "Champion",
-    icon: Trophy,
-    amount: "₹1,000",
-    description: "1st Place Winner · Paid via UPI",
-    badge: "🥇",
-    image: "/trophy-cup.png",
-    gradient: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
-    shadow: "0 20px 60px rgba(255,200,0,0.25)",
-    size: "large",
-  },
-];
 
 export function PrizePool() {
   const { ref, inView } = useInView({ threshold: 0.15, triggerOnce: true });
@@ -60,26 +44,27 @@ export function PrizePool() {
             Prize Pool
           </h2>
           <p style={{ fontSize: 16, color: "#666", maxWidth: 480, margin: "0 auto" }}>
-            Prove your skill and take home the prize. ₹1,000 Total Prize Pool.
+            Prove your skill and take home the prize. ₹1000 Total Prize Pool.
           </p>
         </div>
 
         <div ref={ref}>
-          {/* Champion Card */}
+          {/* Centered Champion Card */}
           <div
             ref={cardRef}
             style={{
-              maxWidth: 520,
+              maxWidth: 480,
               margin: "0 auto",
               opacity: 0,
+              width: "100%",
             }}
           >
             <div
               style={{
                 borderRadius: 28,
                 padding: "56px 48px",
-                background: PRIZES[0].gradient,
-                boxShadow: PRIZES[0].shadow,
+                background: "linear-gradient(135deg, #FFD700 0%, #FFA500 100%)",
+                boxShadow: "0 20px 60px rgba(255,200,0,0.25)",
                 textAlign: "center",
                 position: "relative",
                 overflow: "hidden",
@@ -91,7 +76,7 @@ export function PrizePool() {
             >
               <div style={{ display: "flex", justifyContent: "center", marginBottom: 16 }}>
                 <Image
-                  src={PRIZES[0].image!}
+                  src="/trophy-cup.png"
                   alt="Gold Trophy Cup"
                   width={110}
                   height={110}
@@ -122,10 +107,10 @@ export function PrizePool() {
                   textShadow: "0 2px 16px rgba(0,0,0,0.2)",
                 }}
               >
-                {PRIZES[0].amount}
+                ₹1000
               </div>
               <p style={{ fontSize: 15, color: "rgba(0,0,0,0.7)", marginTop: 14, fontWeight: 600 }}>
-                {PRIZES[0].description}
+                1st Place Winner • Paid via UPI
               </p>
             </div>
           </div>
