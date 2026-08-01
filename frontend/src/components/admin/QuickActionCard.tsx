@@ -28,8 +28,8 @@ export function QuickActionCard({
           height: "100%",
           background: "#FFFFFF",
           border: "1px solid #E2E8F0",
-          borderRadius: 24,
-          padding: "20px 22px",
+          borderRadius: 20,
+          padding: "16px 20px",
           display: "flex",
           alignItems: "center",
           gap: 16,
@@ -55,9 +55,9 @@ export function QuickActionCard({
         {/* Icon Block */}
         <div
           style={{
-            width: 48,
-            height: 48,
-            borderRadius: 16,
+            width: 40,
+            height: 40,
+            borderRadius: 12,
             background: color + "15",
             display: "flex",
             alignItems: "center",
@@ -65,7 +65,7 @@ export function QuickActionCard({
             flexShrink: 0,
           }}
         >
-          <Icon size={22} color={color} strokeWidth={2} />
+          <Icon size={20} color={color} strokeWidth={2} />
         </div>
 
         {/* Info Block */}
@@ -73,7 +73,7 @@ export function QuickActionCard({
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 2 }}>
             <h4
               style={{
-                fontSize: 15,
+                fontSize: 14,
                 fontWeight: 700,
                 color: "#0F172A",
                 margin: 0,
@@ -99,7 +99,7 @@ export function QuickActionCard({
           </div>
           <p
             style={{
-              fontSize: 13,
+              fontSize: 12,
               color: "#64748B",
               margin: 0,
               lineHeight: 1.4,
@@ -115,9 +115,9 @@ export function QuickActionCard({
         {/* Chevron Arrow */}
         <div
           style={{
-            width: 32,
-            height: 32,
-            borderRadius: 12,
+            width: 28,
+            height: 28,
+            borderRadius: 10,
             background: "#F8FAFC",
             border: "1px solid #E2E8F0",
             display: "flex",
@@ -126,7 +126,7 @@ export function QuickActionCard({
             flexShrink: 0,
           }}
         >
-          <ChevronRight size={16} color="#64748B" />
+          <ChevronRight size={14} color="#64748B" />
         </div>
       </div>
     </Link>
