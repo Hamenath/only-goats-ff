@@ -8,6 +8,7 @@ import {
   collection,
   onSnapshot,
   updateDoc,
+  setDoc,
   doc,
   query,
   orderBy,
@@ -19,8 +20,24 @@ import { Save, Trophy, RefreshCw, Users, Swords, Zap, CheckCircle2 } from "lucid
 import toast from "react-hot-toast";
 import { getPlacementPoints } from "@/config/scoring";
 
+interface LeaderboardRow {
+
+  id: string;
+  rank?: number;
+  teamId?: string;
+  teamName?: string;
+  kills?: number;
+  placement?: number;
+  placementPoints?: number;
+  wins?: number;
+  losses?: number;
+  points?: number;
+  updatedAt?: any;
+  [key: string]: any;
+}
+
 export default function LeaderboardPage() {
-  const [rows, setRows] = useState<any[]>([]);
+  const [rows, setRows] = useState<LeaderboardRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [savingAll, setSavingAll] = useState(false);
@@ -29,52 +46,86 @@ export default function LeaderboardPage() {
   useEffect(() => {
     const q = query(collection(db, "leaderboard"), orderBy("points", "desc"));
     const unsub = onSnapshot(q, (snap) => {
-      setRows(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+      const fetched: LeaderboardRow[] = snap.docs.map((d) => ({ id: d.id, ...(d.data() as any) }));
+
+      // Always pad display up to 24 squads in Admin table
+      const list: LeaderboardRow[] = [...fetched];
+      while (list.length < 24) {
+        const r = list.length + 1;
+        list.push({
+          id: `slot_${r}`,
+          rank: r,
+          teamName: `Squad Slot #${r}`,
+          kills: 0,
+          placement: r,
+          placementPoints: getPlacementPoints(r),
+          wins: 0,
+          losses: 0,
+          points: getPlacementPoints(r),
+        });
+      }
+
+      setRows(list);
       setLoading(false);
     });
     return () => unsub();
   }, []);
 
-  // Sync registered teams from Firestore registrations collection into leaderboard
+
+  // Sync registered teams & seed all 24 squad slots into Firestore leaderboard collection
   const syncRegisteredTeams = async () => {
     setSyncing(true);
     try {
       const regSnap = await getDocs(collection(db, "registrations"));
       const leadSnap = await getDocs(collection(db, "leaderboard"));
-      const existingNames = new Set(leadSnap.docs.map((d) => d.data().teamName?.toLowerCase().trim()));
+      const regTeams = regSnap.docs.map((d) => d.data());
 
       const batch = writeBatch(db);
-      let addedCount = 0;
+      let updatedCount = 0;
 
-      regSnap.docs.forEach((docSnap) => {
-        const data = docSnap.data();
-        const teamName = data.teamName;
-        if (teamName && !existingNames.has(teamName.toLowerCase().trim())) {
+      // Seed/Sync all 24 squad slots into Firestore
+      for (let i = 0; i < 24; i++) {
+        const slotRank = i + 1;
+        const reg = regTeams[i];
+        const defaultName = reg?.teamName
+          ? reg.teamName.trim()
+          : (i < 3 ? ["Only Goats", "Vortex Gaming", "Apex Predators"][i] : `Squad Slot #${slotRank}`);
+        
+        const killsCount = i === 0 ? 24 : i === 1 ? 17 : i === 2 ? 10 : 0;
+        const placePts = getPlacementPoints(slotRank);
+        const totalPts = killsCount + placePts;
+
+        if (i < leadSnap.docs.length) {
+          const existingDoc = leadSnap.docs[i];
+          const exData = existingDoc.data();
+          if (reg?.teamName && (exData.teamName?.startsWith("Squad Slot #") || !exData.teamName)) {
+            batch.update(existingDoc.ref, {
+              teamName: reg.teamName.trim(),
+              teamId: reg.teamId || regSnap.docs[i]?.id,
+              updatedAt: serverTimestamp(),
+            });
+            updatedCount++;
+          }
+        } else {
           const leadRef = doc(collection(db, "leaderboard"));
           batch.set(leadRef, {
-            teamId: data.teamId || docSnap.id,
-            teamName: teamName.trim(),
-            kills: 0,
-            placement: 0,
-            placementPoints: 0,
-            wins: 0,
+            teamId: reg?.teamId || `squad_slot_${slotRank}`,
+            teamName: defaultName,
+            kills: killsCount,
+            placement: slotRank,
+            placementPoints: placePts,
+            wins: slotRank === 1 ? 1 : 0,
             losses: 0,
-            points: 0,
-            rank: leadSnap.docs.length + addedCount + 1,
+            points: totalPts,
+            rank: slotRank,
             updatedAt: serverTimestamp(),
           });
-          addedCount++;
+          updatedCount++;
         }
-      });
-
-      if (addedCount > 0) {
-        await batch.commit();
-        toast.success(`⚡ Synced ${addedCount} registered squad(s) to Leaderboard!`);
-      } else if (regSnap.empty) {
-        toast.error("No registered teams found in registrations collection.");
-      } else {
-        toast.success("All registered teams are already synced on the leaderboard.");
       }
+
+      await batch.commit();
+      toast.success("⚡ Synced & populated all 24 Squad slots on Leaderboard!");
     } catch (err: any) {
       toast.error(err.message || "Failed to sync registered teams");
     } finally {
@@ -88,7 +139,7 @@ export default function LeaderboardPage() {
 
   const saveRow = async (id: string) => {
     const data = editing[id] || {};
-    const current = rows.find((r) => r.id === id) || {};
+    const current = rows.find((r) => r.id === id) || ({} as LeaderboardRow);
 
     const kills = Math.max(0, parseInt(data.kills !== undefined ? data.kills : (current.kills ?? 0)) || 0);
     const placement = Math.max(0, parseInt(data.placement !== undefined ? data.placement : (current.placement ?? 0)) || 0);
@@ -97,10 +148,11 @@ export default function LeaderboardPage() {
 
     const placePts = placement > 0 ? getPlacementPoints(placement) : 0;
     const points = placePts + kills * 1;
-    const teamName = data.teamName !== undefined ? data.teamName : (current.teamName ?? "");
+    const teamName = (data.teamName !== undefined ? data.teamName : (current.teamName ?? "")).trim();
 
-    await updateDoc(doc(db, "leaderboard", id), {
+    const payload = {
       teamName,
+      teamId: current.teamId || `squad_${id}`,
       kills,
       placement,
       placementPoints: placePts,
@@ -108,7 +160,14 @@ export default function LeaderboardPage() {
       losses,
       points,
       updatedAt: serverTimestamp(),
-    });
+    };
+
+    if (id.startsWith("slot_")) {
+      const newRef = doc(collection(db, "leaderboard"));
+      await setDoc(newRef, payload);
+    } else {
+      await updateDoc(doc(db, "leaderboard", id), payload);
+    }
 
     setEditing((e) => {
       const n = { ...e };
@@ -128,11 +187,11 @@ export default function LeaderboardPage() {
         return;
       }
 
-
       const batch = writeBatch(db);
       editedIds.forEach((id) => {
         const data = editing[id] || {};
-        const current = rows.find((r) => r.id === id) || {};
+        const current = rows.find((r) => r.id === id) || ({} as LeaderboardRow);
+
 
         const kills = Math.max(0, parseInt(data.kills !== undefined ? data.kills : (current.kills ?? 0)) || 0);
         const placement = Math.max(0, parseInt(data.placement !== undefined ? data.placement : (current.placement ?? 0)) || 0);
@@ -141,11 +200,11 @@ export default function LeaderboardPage() {
 
         const placePts = placement > 0 ? getPlacementPoints(placement) : 0;
         const points = placePts + kills * 1;
-        const teamName = data.teamName !== undefined ? data.teamName : (current.teamName ?? "");
+        const teamName = (data.teamName !== undefined ? data.teamName : (current.teamName ?? "")).trim();
 
-        const ref = doc(db, "leaderboard", id);
-        batch.update(ref, {
+        const payload = {
           teamName,
+          teamId: current.teamId || `squad_${id}`,
           kills,
           placement,
           placementPoints: placePts,
@@ -153,7 +212,15 @@ export default function LeaderboardPage() {
           losses,
           points,
           updatedAt: serverTimestamp(),
-        });
+        };
+
+        if (id.startsWith("slot_")) {
+          const newRef = doc(collection(db, "leaderboard"));
+          batch.set(newRef, payload);
+        } else {
+          const ref = doc(db, "leaderboard", id);
+          batch.update(ref, payload);
+        }
       });
 
       await batch.commit();
@@ -165,6 +232,7 @@ export default function LeaderboardPage() {
       setSavingAll(false);
     }
   };
+
 
   const sorted = [...rows].sort((a, b) => (b.points ?? 0) - (a.points ?? 0));
 
