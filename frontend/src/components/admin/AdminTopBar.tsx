@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Menu, Bell, Shield, User, LogOut, Search } from "lucide-react";
+import { Menu, Bell, Shield, User, LogOut, Search, Sun, Moon } from "lucide-react";
 import { useAdminStore } from "@/store/useAdminStore";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -9,9 +9,11 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function AdminTopBar() {
-  const { toggleMobileDrawer } = useAdminStore();
+  const { toggleMobileDrawer, theme, toggleTheme } = useAdminStore();
   const router = useRouter();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+
+  const isDark = theme === "dark";
 
   const handleLogout = async () => {
     await signOut(auth);
@@ -24,39 +26,40 @@ export function AdminTopBar() {
         position: "sticky",
         top: 0,
         zIndex: 40,
-        height: 64,
-        background: "#0F172A",
-        borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
+        height: 72,
+        background: isDark ? "rgba(15, 23, 42, 0.85)" : "rgba(255, 255, 255, 0.85)",
+        borderBottom: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
         backdropFilter: "blur(16px)",
         WebkitBackdropFilter: "blur(16px)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
-        padding: "0 16px",
+        padding: "0 24px",
         fontFamily: "Inter, sans-serif",
+        boxShadow: isDark ? "0 4px 20px rgba(0, 0, 0, 0.3)" : "0 4px 20px rgba(0, 0, 0, 0.03)",
+        transition: "background 0.25s ease, border-color 0.25s ease",
       }}
     >
-      {/* LEFT: Mobile Hamburger Button & Title */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      {/* LEFT: Mobile Hamburger & Logo */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <button
           onClick={toggleMobileDrawer}
           className="admin-mobile-only"
           aria-label="Open Navigation Drawer"
           style={{
-            width: 40,
-            height: 40,
+            width: 42,
+            height: 42,
             borderRadius: 12,
-            background: "rgba(255, 255, 255, 0.06)",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            color: "#F8FAFC",
+            background: isDark ? "rgba(255, 255, 255, 0.06)" : "#F1F5F9",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #CBD5E1",
+            color: isDark ? "#F8FAFC" : "#0F172A",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             cursor: "pointer",
-            transition: "all 0.2s ease",
           }}
         >
-          <Menu size={20} />
+          <Menu size={22} />
         </button>
 
         <Link
@@ -65,33 +68,33 @@ export function AdminTopBar() {
             textDecoration: "none",
             display: "flex",
             alignItems: "center",
-            gap: 10,
+            gap: 12,
           }}
         >
           <div
             style={{
-              width: 34,
-              height: 34,
-              borderRadius: 10,
+              width: 38,
+              height: 38,
+              borderRadius: 12,
               background: "linear-gradient(135deg, #2563EB, #38BDF8)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              boxShadow: "0 0 12px rgba(37, 99, 235, 0.4)",
+              boxShadow: "0 0 16px rgba(37, 99, 235, 0.4)",
             }}
           >
-            <Shield size={18} color="#FFFFFF" />
+            <Shield size={20} color="#FFFFFF" />
           </div>
           <div>
             <span
               style={{
                 fontFamily: "Space Grotesk, sans-serif",
                 fontWeight: 900,
-                fontSize: 16,
-                color: "#F8FAFC",
+                fontSize: 17,
+                color: isDark ? "#F8FAFC" : "#0F172A",
                 letterSpacing: "-0.02em",
                 display: "block",
-                lineHeight: 1,
+                lineHeight: 1.1,
               }}
             >
               ONLY GOAT'S
@@ -99,66 +102,88 @@ export function AdminTopBar() {
             <span
               style={{
                 fontSize: 10,
-                fontWeight: 700,
-                color: "#38BDF8",
+                fontWeight: 800,
+                color: "#2563EB",
                 letterSpacing: "0.08em",
                 textTransform: "uppercase",
               }}
             >
-              ADMIN PANEL
+              ADMIN DASHBOARD
             </span>
           </div>
         </Link>
       </div>
 
-      {/* CENTER: Desktop Search Bar (Hidden on Mobile) */}
+      {/* CENTER: Rounded Search Bar (Desktop) */}
       <div
         className="admin-desktop-only"
         style={{
           position: "relative",
-          maxWidth: 360,
+          maxWidth: 420,
           width: "100%",
-          margin: "0 24px",
+          margin: "0 32px",
         }}
       >
         <Search
-          size={16}
+          size={18}
           style={{
             position: "absolute",
-            left: 14,
+            left: 16,
             top: "50%",
             transform: "translateY(-50%)",
-            color: "#64748B",
+            color: isDark ? "#64748B" : "#94A3B8",
           }}
         />
         <input
           type="text"
-          placeholder="Search teams, registrations, matches..."
+          placeholder="Search registrations, squad names, transactions..."
           style={{
             width: "100%",
-            padding: "9px 14px 9px 40px",
-            borderRadius: 10,
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            color: "#F8FAFC",
+            padding: "11px 16px 11px 44px",
+            borderRadius: 100,
+            background: isDark ? "rgba(255, 255, 255, 0.05)" : "#F1F5F9",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
+            color: isDark ? "#F8FAFC" : "#0F172A",
             fontSize: 13,
             outline: "none",
             transition: "all 0.2s ease",
+            fontWeight: 500,
           }}
         />
       </div>
 
-      {/* RIGHT: Notifications & Profile Avatar */}
+      {/* RIGHT: Theme Switcher, Notifications & Profile */}
       <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative" }}>
+        {/* Theme Switcher Toggle Button */}
+        <button
+          onClick={toggleTheme}
+          title={`Switch to ${isDark ? "Light" : "Dark"} Theme`}
+          style={{
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            background: isDark ? "rgba(255, 255, 255, 0.06)" : "#F1F5F9",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #CBD5E1",
+            color: isDark ? "#FBBF24" : "#2563EB",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            transition: "all 0.2s ease",
+          }}
+        >
+          {isDark ? <Sun size={20} /> : <Moon size={20} />}
+        </button>
+
         {/* Notification Bell */}
         <button
           style={{
-            width: 38,
-            height: 38,
-            borderRadius: 10,
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            color: "#94A3B8",
+            width: 42,
+            height: 42,
+            borderRadius: 12,
+            background: isDark ? "rgba(255, 255, 255, 0.06)" : "#F1F5F9",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #CBD5E1",
+            color: isDark ? "#94A3B8" : "#64748B",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -166,12 +191,12 @@ export function AdminTopBar() {
             position: "relative",
           }}
         >
-          <Bell size={18} />
+          <Bell size={20} />
           <span
             style={{
               position: "absolute",
-              top: 8,
-              right: 8,
+              top: 9,
+              right: 9,
               width: 8,
               height: 8,
               borderRadius: "50%",
@@ -181,60 +206,69 @@ export function AdminTopBar() {
           />
         </button>
 
-        {/* Profile Avatar Button */}
+        {/* Profile Avatar & Dropdown Trigger */}
         <button
           onClick={() => setShowProfileMenu((prev) => !prev)}
           style={{
             display: "flex",
             alignItems: "center",
-            gap: 8,
-            background: "rgba(255, 255, 255, 0.05)",
-            border: "1px solid rgba(255, 255, 255, 0.08)",
-            padding: "4px 10px 4px 4px",
-            borderRadius: 12,
+            gap: 10,
+            background: isDark ? "rgba(255, 255, 255, 0.06)" : "#F1F5F9",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #CBD5E1",
+            padding: "5px 12px 5px 5px",
+            borderRadius: 14,
             cursor: "pointer",
           }}
         >
           <div
             style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
+              width: 32,
+              height: 32,
+              borderRadius: 10,
               background: "linear-gradient(135deg, #2563EB, #1D4ED8)",
               color: "#FFFFFF",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontWeight: 800,
-              fontSize: 13,
+              fontSize: 14,
             }}
           >
             A
           </div>
           <span
             className="admin-desktop-only"
-            style={{ fontSize: 13, fontWeight: 700, color: "#F8FAFC" }}
+            style={{
+              fontSize: 13,
+              fontWeight: 700,
+              color: isDark ? "#F8FAFC" : "#0F172A",
+            }}
           >
-            Admin
+            Admin User
           </span>
         </button>
 
-        {/* Profile Dropdown Menu */}
+        {/* Dropdown Menu */}
         {showProfileMenu && (
           <div
             style={{
               position: "absolute",
               right: 0,
-              top: 48,
-              width: 180,
-              background: "#111827",
-              border: "1px solid rgba(255, 255, 255, 0.1)",
-              borderRadius: 14,
-              padding: "6px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              top: 54,
+              width: 200,
+              background: isDark ? "#111827" : "#FFFFFF",
+              border: isDark ? "1px solid rgba(255, 255, 255, 0.1)" : "1px solid #E2E8F0",
+              borderRadius: 16,
+              padding: "8px",
+              boxShadow: "0 14px 40px rgba(0, 0, 0, 0.25)",
               zIndex: 100,
             }}
           >
+            <div style={{ padding: "8px 12px 10px", borderBottom: isDark ? "1px solid rgba(255,255,255,0.08)" : "1px solid #F1F5F9", marginBottom: 6 }}>
+              <strong style={{ fontSize: 13, color: isDark ? "#F8FAFC" : "#0F172A", display: "block" }}>Only Goat's Admin</strong>
+              <span style={{ fontSize: 11, color: isDark ? "#94A3B8" : "#64748B" }}>admin@onlygoats.online</span>
+            </div>
+
             <Link
               href="/admin/profile"
               onClick={() => setShowProfileMenu(false)}
@@ -244,16 +278,17 @@ export function AdminTopBar() {
                 alignItems: "center",
                 gap: 10,
                 padding: "10px 12px",
-                borderRadius: 8,
-                color: "#F8FAFC",
+                borderRadius: 10,
+                color: isDark ? "#F8FAFC" : "#334155",
                 fontSize: 13,
                 fontWeight: 600,
               }}
             >
-              <User size={15} color="#38BDF8" /> Profile
+              <User size={16} color="#2563EB" /> Profile & Account
             </Link>
+
             <button
-              onClick={handleLogout}
+              onClick={toggleTheme}
               style={{
                 width: "100%",
                 background: "none",
@@ -262,14 +297,36 @@ export function AdminTopBar() {
                 alignItems: "center",
                 gap: 10,
                 padding: "10px 12px",
-                borderRadius: 8,
-                color: "#EF4444",
+                borderRadius: 10,
+                color: isDark ? "#F8FAFC" : "#334155",
                 fontSize: 13,
                 fontWeight: 600,
                 cursor: "pointer",
               }}
             >
-              <LogOut size={15} /> Logout
+              {isDark ? <Sun size={16} color="#FBBF24" /> : <Moon size={16} color="#2563EB" />}
+              <span>{isDark ? "Light Mode" : "Dark Mode"}</span>
+            </button>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                width: "100%",
+                background: "rgba(239, 68, 68, 0.1)",
+                border: "none",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                padding: "10px 12px",
+                borderRadius: 10,
+                color: "#EF4444",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer",
+                marginTop: 6,
+              }}
+            >
+              <LogOut size={16} /> Logout
             </button>
           </div>
         )}

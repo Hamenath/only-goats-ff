@@ -12,219 +12,192 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAdminStore } from "@/store/useAdminStore";
 
-const NAV_ITEMS = [
-  { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-  { href: "/admin/tournaments", icon: Trophy, label: "Tournaments" },
-  { href: "/admin/registrations", icon: Users, label: "Registrations" },
-  { href: "/admin/teams", icon: UserCheck, label: "Teams" },
-  { href: "/admin/players", icon: User, label: "Players" },
-  { href: "/admin/payments", icon: Wallet, label: "Payments" },
-  { href: "/admin/matches", icon: Swords, label: "Matches" },
-  { href: "/admin/results", icon: CheckCircle2, label: "Results & Qualify" },
-  { href: "/admin/premium-pass", icon: Zap, label: "Premium Pass" },
-  { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
-  { href: "/admin/gallery", icon: Image, label: "Gallery" },
-  { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
-  { href: "/admin/settings", icon: Settings, label: "Settings" },
-  { href: "/admin/admins", icon: ShieldCheck, label: "Admins" },
-  { href: "/admin/logs", icon: FileText, label: "Logs" },
-];
+interface NavGroup {
+  title: string;
+  items: { href: string; icon: any; label: string }[];
+}
 
-const BOTTOM_ITEMS = [
-  { href: "/admin/profile", icon: User, label: "Profile" },
+const MENU_GROUPS: NavGroup[] = [
+  {
+    title: "MAIN",
+    items: [
+      { href: "/admin/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    ],
+  },
+  {
+    title: "ESPORTS",
+    items: [
+      { href: "/admin/tournaments", icon: Trophy, label: "Tournaments" },
+      { href: "/admin/teams", icon: UserCheck, label: "Teams" },
+      { href: "/admin/registrations", icon: Users, label: "Registrations" },
+      { href: "/admin/players", icon: User, label: "Players" },
+    ],
+  },
+  {
+    title: "MATCHES & SCORING",
+    items: [
+      { href: "/admin/matches", icon: Swords, label: "Matches" },
+      { href: "/admin/results", icon: CheckCircle2, label: "Results & Qualify" },
+      { href: "/admin/premium-pass", icon: Zap, label: "Premium Pass" },
+      { href: "/admin/leaderboard", icon: Trophy, label: "Leaderboard" },
+    ],
+  },
+  {
+    title: "MANAGEMENT",
+    items: [
+      { href: "/admin/payments", icon: Wallet, label: "Payments" },
+      { href: "/admin/gallery", icon: Image, label: "Gallery" },
+      { href: "/admin/announcements", icon: Megaphone, label: "Announcements" },
+    ],
+  },
+  {
+    title: "SYSTEM",
+    items: [
+      { href: "/admin/settings", icon: Settings, label: "Settings" },
+      { href: "/admin/admins", icon: ShieldCheck, label: "Admins" },
+      { href: "/admin/logs", icon: FileText, label: "Logs" },
+      { href: "/admin/profile", icon: User, label: "Profile" },
+    ],
+  },
 ];
 
 export function AdminSidebar() {
   const pathname = usePathname();
   const router = useRouter();
-  const { sidebarCollapsed, toggleSidebar } = useAdminStore();
+  const { sidebarCollapsed, toggleSidebar, theme } = useAdminStore();
 
+  const isDark = theme === "dark";
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/admin");
   };
 
-  const w = sidebarCollapsed ? 72 : 250;
+  const w = sidebarCollapsed ? 80 : 270;
 
   return (
     <aside
       className="admin-desktop-only"
       style={{
         width: w,
-        minHeight: "100vh",
-        background: "#0F172A",
-        borderRight: "1px solid rgba(255, 255, 255, 0.08)",
+        minHeight: "calc(100vh - 72px)",
+        background: isDark ? "#0F172A" : "#FFFFFF",
+        borderRight: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0",
         display: "flex",
         flexDirection: "column",
         transition: "width 0.25s cubic-bezier(0.4, 0, 0.2, 1)",
-        position: "fixed",
-        top: 0,
-        left: 0,
-        bottom: 0,
+        position: "sticky",
+        top: 72,
+        height: "calc(100vh - 72px)",
         zIndex: 30,
         overflow: "hidden",
         fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* Brand Header */}
-      <div
-        style={{
-          padding: sidebarCollapsed ? "18px 12px" : "18px 16px",
-          borderBottom: "1px solid rgba(255, 255, 255, 0.08)",
-          display: "flex",
-          alignItems: "center",
-          gap: 12,
-          justifyContent: sidebarCollapsed ? "center" : "flex-start",
-        }}
-      >
-        <div
-          style={{
-            width: 36,
-            height: 36,
-            borderRadius: 10,
-            background: "linear-gradient(135deg, #2563EB, #38BDF8)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            boxShadow: "0 0 14px rgba(37, 99, 235, 0.4)",
-            flexShrink: 0,
-          }}
-        >
-          <Shield size={20} color="#FFFFFF" />
-        </div>
-        {!sidebarCollapsed && (
-          <div>
-            <span
-              style={{
-                fontFamily: "Space Grotesk, sans-serif",
-                fontWeight: 900,
-                fontSize: 16,
-                color: "#F8FAFC",
-                letterSpacing: "-0.02em",
-                display: "block",
-                lineHeight: 1,
-              }}
-            >
-              ONLY GOAT'S
-            </span>
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                color: "#38BDF8",
-                letterSpacing: "0.08em",
-                textTransform: "uppercase",
-              }}
-            >
-              ESPORTS ADMIN
-            </span>
-          </div>
-        )}
-      </div>
-
-      {/* Nav List */}
-      <nav style={{ flex: 1, padding: "14px 10px", overflowY: "auto", overflowX: "hidden" }}>
-        {NAV_ITEMS.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href || pathname.startsWith(href + "/");
-
-          return (
-            <Link key={href} href={href} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
-              <div
+      {/* Scrollable Nav List */}
+      <nav style={{ flex: 1, padding: "16px 12px", overflowY: "auto", overflowX: "hidden" }}>
+        {MENU_GROUPS.map((group) => (
+          <div key={group.title} style={{ marginBottom: 16 }}>
+            {!sidebarCollapsed && (
+              <span
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: sidebarCollapsed ? "10px 0" : "11px 14px",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  justifyContent: sidebarCollapsed ? "center" : "flex-start",
-                  background: active ? "linear-gradient(135deg, #2563EB, #1D4ED8)" : "transparent",
-                  color: active ? "#FFFFFF" : "#94A3B8",
-                  boxShadow: active ? "0 4px 16px rgba(37, 99, 235, 0.35)" : "none",
-                  fontWeight: active ? 700 : 500,
-                  fontSize: 13,
-                  transition: "all 0.15s ease",
-                  whiteSpace: "nowrap",
+                  display: "block",
+                  fontSize: 10,
+                  fontWeight: 800,
+                  color: isDark ? "#64748B" : "#94A3B8",
+                  letterSpacing: "0.08em",
+                  padding: "0 14px 6px",
+                  textTransform: "uppercase",
                 }}
               >
-                <Icon size={18} style={{ flexShrink: 0, color: active ? "#FFFFFF" : "#38BDF8" }} />
-                {!sidebarCollapsed && <span>{label}</span>}
-              </div>
-            </Link>
-          );
-        })}
+                {group.title}
+              </span>
+            )}
+            {group.items.map(({ href, icon: Icon, label }) => {
+              const active = pathname === href || pathname.startsWith(href + "/");
+
+              return (
+                <Link key={href} href={href} title={sidebarCollapsed ? label : undefined} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      padding: sidebarCollapsed ? "11px 0" : "11px 14px",
+                      borderRadius: 14,
+                      cursor: "pointer",
+                      justifyContent: sidebarCollapsed ? "center" : "flex-start",
+                      background: active
+                        ? "linear-gradient(135deg, #2563EB, #1D4ED8)"
+                        : "transparent",
+                      color: active ? "#FFFFFF" : isDark ? "#94A3B8" : "#475569",
+                      boxShadow: active ? "0 4px 16px rgba(37, 99, 235, 0.4)" : "none",
+                      fontWeight: active ? 700 : 500,
+                      fontSize: 13,
+                      transition: "all 0.15s ease",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    <Icon size={18} style={{ flexShrink: 0, color: active ? "#FFFFFF" : "#2563EB" }} />
+                    {!sidebarCollapsed && <span>{label}</span>}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
       </nav>
 
-      {/* Bottom Nav */}
-      <div style={{ padding: "10px 10px 14px", borderTop: "1px solid rgba(255, 255, 255, 0.08)" }}>
-        {BOTTOM_ITEMS.map(({ href, icon: Icon, label }) => {
-          const active = pathname === href;
-          return (
-            <Link key={href} href={href} style={{ textDecoration: "none", display: "block", marginBottom: 3 }}>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: sidebarCollapsed ? "10px 0" : "11px 14px",
-                  borderRadius: 12,
-                  cursor: "pointer",
-                  justifyContent: sidebarCollapsed ? "center" : "flex-start",
-                  background: active ? "linear-gradient(135deg, #2563EB, #1D4ED8)" : "transparent",
-                  color: active ? "#FFFFFF" : "#94A3B8",
-                  fontSize: 13,
-                  fontWeight: 600,
-                }}
-              >
-                <Icon size={18} style={{ flexShrink: 0, color: "#38BDF8" }} />
-                {!sidebarCollapsed && <span>{label}</span>}
-              </div>
-            </Link>
-          );
-        })}
-        <div
+      {/* Footer & Logout */}
+      <div style={{ padding: "12px 12px 18px", borderTop: isDark ? "1px solid rgba(255, 255, 255, 0.08)" : "1px solid #E2E8F0", position: "relative" }}>
+        <button
           onClick={handleLogout}
+          title={sidebarCollapsed ? "Logout" : undefined}
           style={{
+            width: "100%",
             display: "flex",
             alignItems: "center",
             gap: 12,
-            padding: sidebarCollapsed ? "10px 0" : "11px 14px",
-            borderRadius: 12,
+            padding: sidebarCollapsed ? "11px 0" : "11px 14px",
+            borderRadius: 14,
             cursor: "pointer",
             justifyContent: sidebarCollapsed ? "center" : "flex-start",
             color: "#EF4444",
-            background: "rgba(239, 68, 68, 0.08)",
+            background: "rgba(239, 68, 68, 0.1)",
+            border: "1px solid rgba(239, 68, 68, 0.2)",
             fontSize: 13,
             fontWeight: 700,
-            marginTop: 4,
           }}
         >
           <LogOut size={18} style={{ flexShrink: 0 }} />
           {!sidebarCollapsed && <span>Logout</span>}
-        </div>
-      </div>
+        </button>
 
-      {/* Collapse Toggle */}
-      <button
-        onClick={toggleSidebar}
-        style={{
-          position: "absolute",
-          right: 12,
-          bottom: 72,
-          width: 24,
-          height: 24,
-          borderRadius: "50%",
-          background: "#1E293B",
-          border: "1px solid rgba(255, 255, 255, 0.15)",
-          color: "#94A3B8",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          cursor: "pointer",
-        }}
-      >
-        {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-      </button>
+        {/* Collapse Toggle */}
+        <button
+          onClick={toggleSidebar}
+          aria-label={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          style={{
+            position: "absolute",
+            right: sidebarCollapsed ? "50%" : -12,
+            transform: sidebarCollapsed ? "translateX(50%)" : "none",
+            top: -12,
+            width: 24,
+            height: 24,
+            borderRadius: "50%",
+            background: isDark ? "#1E293B" : "#FFFFFF",
+            border: isDark ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid #CBD5E1",
+            color: isDark ? "#94A3B8" : "#475569",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: "pointer",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+            zIndex: 40,
+          }}
+        >
+          {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+        </button>
+      </div>
     </aside>
   );
 }

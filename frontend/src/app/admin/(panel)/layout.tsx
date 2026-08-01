@@ -8,34 +8,36 @@ import { AdminBottomNav } from "@/components/admin/AdminBottomNav";
 import { useAdminStore } from "@/store/useAdminStore";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const { sidebarCollapsed } = useAdminStore();
+  const { sidebarCollapsed, theme } = useAdminStore();
 
-  const desktopLeftOffset = sidebarCollapsed ? 72 : 250;
+  const isDark = theme === "dark";
+  const desktopLeftOffset = sidebarCollapsed ? 80 : 270;
 
   return (
     <AdminGuard>
       <div
         style={{
           minHeight: "100vh",
-          background: "#020617",
-          color: "#F8FAFC",
+          background: isDark ? "#020617" : "#F8FAFC",
+          color: isDark ? "#F8FAFC" : "#334155",
           fontFamily: "Inter, sans-serif",
           display: "flex",
           flexDirection: "column",
+          transition: "background 0.25s ease, color 0.25s ease",
         }}
       >
-        {/* Top App Bar */}
+        {/* Top App Bar (72px) */}
         <AdminTopBar />
 
-        {/* Mobile Slide-Out Drawer */}
+        {/* Mobile Slide Drawer (0–768px) */}
         <AdminDrawer />
 
-        {/* Main Body Container */}
+        {/* Main Body Layout */}
         <div style={{ display: "flex", flex: 1, position: "relative" }}>
-          {/* Desktop Fixed Sidebar */}
+          {/* Desktop Collapsible Sidebar (270px / 80px) */}
           <AdminSidebar />
 
-          {/* Main Content Area */}
+          {/* Main Workspace Container */}
           <div
             className="admin-main-wrapper"
             style={{
@@ -49,9 +51,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <main
               style={{
                 flex: 1,
-                padding: "16px",
-                paddingBottom: "84px",
-                overflowY: "auto",
+                padding: "32px",
+                paddingBottom: "96px",
+                maxWidth: 1600,
+                width: "100%",
+                margin: "0 auto",
               }}
             >
               {children}
@@ -59,12 +63,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
 
-        {/* Mobile Bottom Navigation */}
+        {/* Mobile Bottom Thumb Navigation */}
         <AdminBottomNav />
       </div>
 
       <style jsx global>{`
-        /* Mobile-First Responsive Breakpoints */
+        /* Responsive Breakpoints & Desktop Sidebar Offset */
         @media (min-width: 1024px) {
           .admin-mobile-only {
             display: none !important;
@@ -77,8 +81,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             transition: margin-left 0.25s cubic-bezier(0.4, 0, 0.2, 1);
           }
           main {
-            padding: 24px !important;
-            padding-bottom: 32px !important;
+            padding: 32px !important;
+            padding-bottom: 40px !important;
           }
         }
 
@@ -91,6 +95,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           }
           .admin-main-wrapper {
             margin-left: 0 !important;
+          }
+          main {
+            padding: 16px !important;
+            padding-bottom: 84px !important;
           }
         }
       `}</style>
