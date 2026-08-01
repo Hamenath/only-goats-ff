@@ -104,8 +104,8 @@ export default function DashboardPage() {
       {/* 1. Universal Page Header */}
       <AdminPageHeader
         category="Admin"
-        title="Dashboard"
-        description="Monitor tournaments, registrations, revenue and live esports matches in real-time."
+        title="Tournament Control Center"
+        description="Good Evening, Hamenath 👋 Monitor registrations, payments, live matches and tournament operations from one place."
         badgeLabel="ESPORTS CONTROL CENTER"
         actions={
           <>

@@ -372,20 +372,21 @@ export function AdminSidebar() {
         className="admin-sidebar-desktop hidden md:flex"
         style={{
           width: w,
-          height: "100vh",
+          height: "calc(100vh - 32px)",
           background: "#FFFFFF",
-          borderRight: "1px solid #E2E8F0",
+          border: "1px solid #E2E8F0",
+          borderRadius: 24,
           display: "flex",
           flexDirection: "column",
           transition: "width 250ms cubic-bezier(0.16, 1, 0.3, 1)",
           position: "fixed",
-          top: 0,
-          left: 0,
-          bottom: 0,
+          top: 16,
+          left: 16,
+          bottom: 16,
           zIndex: 40,
           overflow: "hidden",
           fontFamily: "Inter, sans-serif",
-          boxShadow: "2px 0 12px rgba(15, 23, 42, 0.03)",
+          boxShadow: "0 8px 32px rgba(15, 23, 42, 0.06)",
         }}
       >
         {/* Brand Header */}
@@ -511,15 +512,15 @@ export function AdminSidebar() {
                           style={{
                             position: "absolute",
                             left: 0,
-                            top: 10,
-                            bottom: 10,
-                            width: 4,
+                            top: 0,
+                            bottom: 0,
+                            width: 3,
                             background: "#2563EB",
                             borderRadius: "0 4px 4px 0",
                           }}
                         />
                       )}
-                      <Icon size={19} color={active ? "#2563EB" : "#64748B"} strokeWidth={active ? 2.2 : 1.8} style={{ flexShrink: 0 }} />
+                      <Icon size={22} color={active ? "#2563EB" : "#64748B"} strokeWidth={active ? 2.2 : 1.8} style={{ flexShrink: 0 }} />
                       {!sidebarCollapsed && <span>{label}</span>}
                     </div>
                   </Link>
@@ -592,7 +593,7 @@ export function AdminSidebar() {
       <div
         className="admin-sidebar-spacer hidden md:block"
         style={{
-          width: w,
+          width: w + 16, // accounting for the left margin
           flexShrink: 0,
           transition: "width 250ms cubic-bezier(0.16, 1, 0.3, 1)",
         }}
