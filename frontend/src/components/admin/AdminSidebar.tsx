@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -64,6 +64,18 @@ export function AdminSidebar() {
   const { sidebarCollapsed, toggleSidebar } = useAdminStore();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Body Scroll Lock when Drawer is open
+  useEffect(() => {
+    if (drawerOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [drawerOpen]);
+
   const handleLogout = async () => {
     await signOut(auth);
     router.push("/admin");
@@ -75,7 +87,7 @@ export function AdminSidebar() {
     <>
       {/* 1. MOBILE TOP BAR (< 768px) */}
       <header
-        className="admin-mobile-topbar"
+        className="admin-mobile-topbar md:hidden"
         style={{
           position: "sticky",
           top: 0,
@@ -107,7 +119,7 @@ export function AdminSidebar() {
             color: "#0F172A",
           }}
         >
-          <Menu size={20} />
+          <Menu size={22} />
         </button>
 
         <Link href="/admin/dashboard" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: 10 }}>
@@ -179,7 +191,7 @@ export function AdminSidebar() {
 
       {/* MOBILE DRAWER OVERLAY */}
       <div
-        className="admin-mobile-drawer-overlay"
+        className="admin-mobile-drawer-overlay md:hidden"
         onClick={() => setDrawerOpen(false)}
         style={{
           position: "fixed",
@@ -196,13 +208,15 @@ export function AdminSidebar() {
 
       {/* MOBILE DRAWER PANEL */}
       <aside
-        className="admin-mobile-drawer"
+        className="admin-mobile-drawer md:hidden"
         style={{
           position: "fixed",
           top: 0,
           bottom: 0,
           left: 0,
-          width: "min(85vw, 320px)",
+          height: "100dvh",
+          maxHeight: "100dvh",
+          width: "min(80vw, 320px)",
           background: "#FFFFFF",
           zIndex: 100,
           display: "flex",
@@ -210,15 +224,20 @@ export function AdminSidebar() {
           transform: drawerOpen ? "translateX(0)" : "translateX(-100%)",
           transition: "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
           boxShadow: "8px 0 32px rgba(15, 23, 42, 0.15)",
+          overflowY: "auto",
+          overflowX: "hidden",
+          WebkitOverflowScrolling: "touch",
         }}
       >
+        {/* Drawer Header */}
         <div
           style={{
-            padding: "20px 24px",
+            padding: "20px 20px",
             borderBottom: "1px solid #E2E8F0",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
+            flexShrink: 0,
           }}
         >
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
@@ -250,7 +269,8 @@ export function AdminSidebar() {
           </button>
         </div>
 
-        <nav style={{ flex: 1, padding: "16px 16px", overflowY: "auto" }}>
+        {/* Independent Scrollable Navigation Menu */}
+        <nav style={{ flex: 1, padding: "16px 14px", overflowY: "auto", overflowX: "hidden", WebkitOverflowScrolling: "touch" }}>
           {MENU_GROUPS.map((group) => (
             <div key={group.title} style={{ marginBottom: 20 }}>
               <p
@@ -311,33 +331,37 @@ export function AdminSidebar() {
               })}
             </div>
           ))}
-          <div
-            onClick={() => {
-              setDrawerOpen(false);
-              handleLogout();
-            }}
-            style={{
-              height: 48,
-              borderRadius: 16,
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              padding: "0 16px",
-              color: "#EF4444",
-              fontWeight: 600,
-              fontSize: 14,
-              cursor: "pointer",
-            }}
-          >
-            <LogOut size={18} color="#EF4444" />
-            <span>Logout</span>
+
+          {/* Account Profile & Logout always reachable in scroll */}
+          <div style={{ paddingTop: 12, borderTop: "1px solid #E2E8F0", marginTop: 12 }}>
+            <div
+              onClick={() => {
+                setDrawerOpen(false);
+                handleLogout();
+              }}
+              style={{
+                height: 48,
+                borderRadius: 16,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "0 16px",
+                color: "#EF4444",
+                fontWeight: 600,
+                fontSize: 14,
+                cursor: "pointer",
+              }}
+            >
+              <LogOut size={18} color="#EF4444" />
+              <span>Logout</span>
+            </div>
           </div>
         </nav>
       </aside>
 
       {/* 2. DESKTOP SIDEBAR (>= 768px) */}
       <aside
-        className="admin-sidebar-desktop"
+        className="admin-sidebar-desktop hidden md:flex"
         style={{
           width: w,
           height: "100vh",
@@ -558,7 +582,7 @@ export function AdminSidebar() {
 
       {/* Desktop Spacer */}
       <div
-        className="admin-sidebar-spacer"
+        className="admin-sidebar-spacer hidden md:block"
         style={{
           width: w,
           flexShrink: 0,

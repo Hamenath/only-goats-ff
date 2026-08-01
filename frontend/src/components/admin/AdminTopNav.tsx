@@ -52,6 +52,7 @@ export function AdminTopNav() {
 
   return (
     <header
+      className="hidden md:flex"
       style={{
         height: 76,
         background: "rgba(255, 255, 255, 0.85)",
