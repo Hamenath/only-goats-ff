@@ -997,6 +997,29 @@ body:has(.admin-main-container) {
   overflow-y: auto !important;
 }
 
+/* Custom Scrollbar for Admin Sidebar Navigation */
+.admin-sidebar-nav::-webkit-scrollbar,
+.admin-mobile-drawer nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-track,
+.admin-mobile-drawer nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb,
+.admin-mobile-drawer nav::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 4px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb:hover,
+.admin-mobile-drawer nav::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+
 
 
 

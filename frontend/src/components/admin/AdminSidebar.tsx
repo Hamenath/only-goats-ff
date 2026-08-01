@@ -441,7 +441,7 @@ export function AdminSidebar() {
         </div>
 
         {/* Menu Navigation */}
-        <nav style={{ flex: 1, padding: "20px 14px", overflowY: "auto", overflowX: "hidden" }}>
+        <nav className="admin-sidebar-nav" style={{ flex: 1, padding: "20px 14px", overflowY: "auto", overflowX: "hidden", maxHeight: "calc(100vh - 156px)", WebkitOverflowScrolling: "touch" }}>
           {MENU_GROUPS.map((group) => (
             <div key={group.title} style={{ marginBottom: 24 }}>
               {!sidebarCollapsed ? (
