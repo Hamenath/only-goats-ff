@@ -56,16 +56,17 @@ export function AdminTopNav() {
       style={{
         height: 76,
         background: "rgba(255, 255, 255, 0.85)",
-        backdropFilter: "blur(12px)",
-        WebkitBackdropFilter: "blur(12px)",
-        borderBottom: "1px solid #E2E8F0",
+        backdropFilter: "blur(16px)",
+        WebkitBackdropFilter: "blur(16px)",
+        borderBottom: "1px solid rgba(226, 232, 240, 0.8)",
+        boxShadow: "0 4px 20px rgba(15, 23, 42, 0.04)",
         display: "flex",
         alignItems: "center",
         justifyContent: "space-between",
         padding: "0 32px",
         position: "sticky",
         top: 0,
-        zIndex: 35,
+        zIndex: 50,
         fontFamily: "Inter, sans-serif",
       }}
     >
