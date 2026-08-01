@@ -8,6 +8,8 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import toast from "react-hot-toast";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+
 export default function TeamsPage() {
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -33,26 +35,27 @@ export default function TeamsPage() {
   };
 
   return (
-    <div style={{ maxWidth: 1400, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A" }}>Teams</h1>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>{filtered.length} registered teams</p>
-        </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ position: "relative" }}>
-            <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#94A3B8" }} />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search teams..." style={{ padding: "8px 12px 8px 32px", borderRadius: 10, border: "1px solid #E2E8F0", fontSize: 13, color: "#0F172A", background: "#F8FAFC", outline: "none", width: 220, fontFamily: "Inter, sans-serif" }} />
+    <div style={{ maxWidth: 1600, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
+      <AdminPageHeader
+        category="Main"
+        title="Teams"
+        description={`Explore all ${filtered.length} registered esports squads, active lineups, and player rosters.`}
+        actions={
+          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+            <div style={{ position: "relative" }}>
+              <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#94A3B8" }} />
+              <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search teams..." style={{ padding: "10px 14px 10px 42px", borderRadius: 14, border: "1px solid #E2E8F0", fontSize: 14, color: "#0F172A", background: "#F8FAFC", outline: "none", width: 260, fontFamily: "Inter, sans-serif" }} />
+            </div>
+            <div style={{ display: "flex", border: "1px solid #E2E8F0", borderRadius: 14, overflow: "hidden", background: "#FFFFFF" }}>
+              {([["grid", <LayoutGrid size={16} key="grid" />], ["table", <List size={16} key="table" />]] as const).map(([v, icon]) => (
+                <button key={v} onClick={() => setView(v)} style={{ padding: "10px 16px", background: view === v ? "rgba(37, 99, 235, 0.08)" : "#fff", border: "none", cursor: "pointer", color: view === v ? "#2563EB" : "#94A3B8", display: "flex", alignItems: "center" }}>
+                  {icon}
+                </button>
+              ))}
+            </div>
           </div>
-          <div style={{ display: "flex", border: "1px solid #E2E8F0", borderRadius: 10, overflow: "hidden" }}>
-            {([["grid", <LayoutGrid size={15} />], ["table", <List size={15} />]] as const).map(([v, icon]) => (
-              <button key={v} onClick={() => setView(v)} style={{ padding: "8px 12px", background: view === v ? "#F8FAFC" : "#fff", border: "none", cursor: "pointer", color: view === v ? "#0F172A" : "#94A3B8", display: "flex", alignItems: "center" }}>
-                {icon}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+        }
+      />
 
       {view === "grid" ? (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))", gap: 16 }}>

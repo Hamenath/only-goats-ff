@@ -19,6 +19,7 @@ import {
 import { Save, Trophy, RefreshCw, Users, Swords, Zap, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { getPlacementPoints } from "@/config/scoring";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 interface LeaderboardRow {
 
@@ -255,64 +256,64 @@ export default function LeaderboardPage() {
   });
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ maxWidth: 1600, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
       {/* Top Action Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A", display: "flex", alignItems: "center", gap: 8 }}>
-            <Trophy size={22} color="#DC2626" /> Tournament Leaderboard ({rows.length} Squads)
-          </h1>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
-            Edit match kills & placement rank — points auto-calculate using Official Free Fire Matrix (1st: 12, 2nd: 9, 3rd: 8... + 1pt/kill)
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button
-            onClick={syncRegisteredTeams}
-            disabled={syncing}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 8,
-              padding: "9px 16px",
-              background: "#0284C7",
-              color: "#FFFFFF",
-              border: "none",
-              borderRadius: 8,
-              fontSize: 13,
-              fontWeight: 700,
-              cursor: syncing ? "not-allowed" : "pointer",
-            }}
-          >
-            <RefreshCw size={15} style={{ animation: syncing ? "spin 1s linear infinite" : "none" }} />
-            {syncing ? "Syncing Squads..." : "Sync 24 Registered Squads"}
-          </button>
-
-          {Object.keys(editing).length > 0 && (
+      <AdminPageHeader
+        category="Operations"
+        title="Leaderboard Editor"
+        description={`Edit match kills & placement rank — points auto-calculate using Official Free Fire Matrix (1st: 12, 2nd: 9, 3rd: 8... + 1pt/kill). Currently displaying ${rows.length} Squads.`}
+        actions={
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
             <button
-              onClick={saveAllRows}
-              disabled={savingAll}
+              onClick={syncRegisteredTeams}
+              disabled={syncing}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 8,
-                padding: "9px 18px",
-                background: "#DC2626",
+                height: 44,
+                padding: "0 18px",
+                background: "#0284C7",
                 color: "#FFFFFF",
                 border: "none",
-                borderRadius: 8,
+                borderRadius: 14,
                 fontSize: 13,
                 fontWeight: 700,
-                cursor: savingAll ? "not-allowed" : "pointer",
-                boxShadow: "0 2px 10px rgba(220,38,38,0.2)",
+                cursor: syncing ? "not-allowed" : "pointer",
+                boxShadow: "0 4px 14px rgba(2, 132, 199, 0.25)",
               }}
             >
-              <Save size={15} /> Save All Changes ({Object.keys(editing).length})
+              <RefreshCw size={15} style={{ animation: syncing ? "spin 1s linear infinite" : "none" }} />
+              {syncing ? "Syncing Squads..." : "Sync 24 Registered Squads"}
             </button>
-          )}
-        </div>
-      </div>
+
+            {Object.keys(editing).length > 0 && (
+              <button
+                onClick={saveAllRows}
+                disabled={savingAll}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  height: 44,
+                  padding: "0 20px",
+                  background: "#2563EB",
+                  color: "#FFFFFF",
+                  border: "none",
+                  borderRadius: 14,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  cursor: savingAll ? "not-allowed" : "pointer",
+                  boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
+                }}
+              >
+                <Save size={15} />
+                {savingAll ? "Saving..." : `Save All (${Object.keys(editing).length})`}
+              </button>
+            )}
+          </div>
+        }
+      />
 
       {/* Main Leaderboard Table */}
       <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0", overflow: "hidden", boxShadow: "0 4px 16px rgba(0,0,0,0.03)" }}>

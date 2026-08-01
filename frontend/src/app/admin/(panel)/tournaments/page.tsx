@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { Tournament } from "@/types/tournament";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import toast from "react-hot-toast";
 
 const DEFAULT_TOURNAMENT: Omit<Tournament, "id"> = {
@@ -272,42 +273,40 @@ export default function TournamentsPage() {
   };
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
+    <div style={{ maxWidth: 1600, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: "#0F172A" }}>
-            🏆 Tournament Management Hub
-          </h1>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
-            Create, configure, clone, and host unlimited esports tournaments dynamically from Admin.
-          </p>
-        </div>
-
-        <button
-          onClick={() => {
-            setShowForm(!showForm);
-            setEditId(null);
-            setForm(DEFAULT_TOURNAMENT);
-          }}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-            padding: "10px 18px",
-            background: "#DC2626",
-            color: "#FFFFFF",
-            border: "none",
-            borderRadius: 10,
-            fontSize: 13,
-            fontWeight: 700,
-            cursor: "pointer",
-            boxShadow: "0 2px 8px rgba(220,38,38,0.2)",
-          }}
-        >
-          <Plus size={16} /> {showForm ? "Close Form" : "Create Tournament"}
-        </button>
-      </div>
+      <AdminPageHeader
+        category="Main"
+        title="Tournament Hub"
+        description="Create, configure, clone, and host unlimited esports tournaments dynamically with slot counts & rules."
+        actions={
+          <button
+            onClick={() => {
+              setShowForm(!showForm);
+              setEditId(null);
+              setForm(DEFAULT_TOURNAMENT);
+            }}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              height: 46,
+              padding: "0 22px",
+              background: "#2563EB",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: 16,
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <Plus size={18} strokeWidth={2.5} /> {showForm ? "Cancel Form" : "Create New Tournament"}
+          </button>
+        }
+      />
 
       {/* Form Drawer / Modal */}
       {showForm && (

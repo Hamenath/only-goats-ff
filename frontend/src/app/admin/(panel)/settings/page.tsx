@@ -6,6 +6,7 @@ import { doc, onSnapshot, updateDoc, serverTimestamp } from "firebase/firestore"
 import { Save, Settings, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { DangerZoneCard } from "@/components/admin/DangerZoneCard";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 
 export default function SettingsPage() {
   const [form, setForm] = useState({
@@ -80,11 +81,37 @@ export default function SettingsPage() {
   );
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A" }}>Tournament Settings</h1>
-        <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>Configure your tournament details, fees, and registration</p>
-      </div>
+    <div style={{ maxWidth: 1600, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
+      <AdminPageHeader
+        category="System"
+        title="Tournament Settings"
+        description="Configure tournament parameters, entry fees, team limits, and site hero copy."
+        actions={
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              height: 46,
+              padding: "0 22px",
+              background: "#2563EB",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: 16,
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: saving ? "not-allowed" : "pointer",
+              boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
+              transition: "all 0.2s ease",
+            }}
+          >
+            {saving ? <Loader2 size={18} style={{ animation: "tspin 0.8s linear infinite" }} /> : <Save size={18} />}
+            {saving ? "Saving..." : "Save Settings"}
+          </button>
+        }
+      />
 
       <form onSubmit={handleSave}>
         <Section title="Tournament Details">

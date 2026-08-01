@@ -9,6 +9,7 @@ import { Search, Download, Trash2, Check, X, Eye, Filter } from "lucide-react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ImageModal } from "@/components/admin/ImageModal";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import toast from "react-hot-toast";
 
 type Status = "all" | "pending" | "approved" | "rejected";
@@ -106,56 +107,57 @@ export default function RegistrationsPage() {
   return (
     <div style={{ maxWidth: 1400, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
       {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A" }}>Registrations</h1>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>{rows.length} total registrations</p>
-        </div>
-        <div style={{ display: "flex", gap: 8 }}>
-          {selectedIds.size > 0 && (
-            <>
-              <button onClick={bulkApprove} style={{ ...btnStyle("#22C55E"), padding: "8px 14px" }}>
-                <Check size={14} /> Approve {selectedIds.size}
-              </button>
-              <button onClick={bulkDelete} style={{ ...btnStyle("#DC2626"), padding: "8px 14px" }}>
-                <Trash2 size={14} /> Delete {selectedIds.size}
-              </button>
-            </>
-          )}
-          <button onClick={exportCSV} style={{ ...btnStyle("#64748B"), padding: "8px 14px" }}>
-            <Download size={14} /> Export CSV
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        category="Main"
+        title="Registrations"
+        description={`Manage team signups, payment verification screenshots, approval workflows and export data (${rows.length} total registrations).`}
+        actions={
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+            {selectedIds.size > 0 && (
+              <>
+                <button onClick={bulkApprove} style={{ ...btnStyle("#22C55E"), height: 42, padding: "0 16px", borderRadius: 14 }}>
+                  <Check size={16} /> Approve {selectedIds.size}
+                </button>
+                <button onClick={bulkDelete} style={{ ...btnStyle("#EF4444"), height: 42, padding: "0 16px", borderRadius: 14 }}>
+                  <Trash2 size={16} /> Delete {selectedIds.size}
+                </button>
+              </>
+            )}
+            <button onClick={exportCSV} style={{ ...btnStyle("#2563EB"), height: 42, padding: "0 18px", borderRadius: 14 }}>
+              <Download size={16} /> Export CSV
+            </button>
+          </div>
+        }
+      />
 
       {/* Filters */}
       <div style={{
-        background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0",
-        padding: 16, marginBottom: 16,
-        display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap",
+        background: "#fff", borderRadius: 24, border: "1px solid #E2E8F0",
+        padding: 18, marginBottom: 24, boxShadow: "0 2px 8px rgba(15, 23, 42, 0.03)",
+        display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap",
       }}>
-        <div style={{ position: "relative", flex: 1, minWidth: 200 }}>
-          <Search size={14} style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: "#94A3B8" }} />
+        <div style={{ position: "relative", flex: 1, minWidth: 240 }}>
+          <Search size={16} style={{ position: "absolute", left: 14, top: "50%", transform: "translateY(-50%)", color: "#94A3B8" }} />
           <input
             value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}
             placeholder="Search teams, captains, transaction IDs..."
             style={{
-              width: "100%", padding: "9px 12px 9px 36px", borderRadius: 10,
-              border: "1px solid #E2E8F0", fontSize: 13, color: "#0F172A",
-              background: "#F8FAFC", outline: "none",
+              width: "100%", padding: "10px 14px 10px 42px", borderRadius: 14,
+              border: "1px solid #E2E8F0", fontSize: 14, color: "#0F172A",
+              background: "#F8FAFC", outline: "none", fontFamily: "Inter, sans-serif",
             }}
           />
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
+        <div style={{ display: "flex", gap: 6 }}>
           {STATUS_TABS.map(t => (
             <button key={t.key} onClick={() => { setStatusFilter(t.key); setPage(0); }} style={{
-              padding: "7px 14px", borderRadius: 8, border: "1px solid",
-              borderColor: statusFilter === t.key ? "#EF4444" : "#E2E8F0",
-              background: statusFilter === t.key ? "#FEF2F2" : "#F8FAFC",
-              color: statusFilter === t.key ? "#EF4444" : "#64748B",
-              fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "Inter, sans-serif",
+              padding: "8px 16px", borderRadius: 12, border: "1px solid",
+              borderColor: statusFilter === t.key ? "#2563EB" : "#E2E8F0",
+              background: statusFilter === t.key ? "rgba(37, 99, 235, 0.08)" : "#F8FAFC",
+              color: statusFilter === t.key ? "#2563EB" : "#64748B",
+              fontSize: 13, fontWeight: statusFilter === t.key ? 700 : 600, cursor: "pointer", fontFamily: "Inter, sans-serif",
             }}>
-              {t.label} <span style={{ opacity: 0.6 }}>({counts[t.key]})</span>
+              {t.label} <span style={{ opacity: 0.7 }}>({counts[t.key]})</span>
             </button>
           ))}
         </div>

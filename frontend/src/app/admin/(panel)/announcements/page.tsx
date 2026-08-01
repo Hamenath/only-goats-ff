@@ -8,6 +8,8 @@ import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
 import toast from "react-hot-toast";
 
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
+
 export default function AnnouncementsPage() {
   const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -44,19 +46,38 @@ export default function AnnouncementsPage() {
     high: "#DC2626", normal: "#0369A1", low: "#64748B",
   };
 
-  const inp = { width: "100%", padding: "9px 12px", borderRadius: 8, border: "1px solid #E2E8F0", fontSize: 13, color: "#0F172A", outline: "none", fontFamily: "Inter, sans-serif" } as React.CSSProperties;
+  const inp = { width: "100%", padding: "10px 14px", borderRadius: 12, border: "1px solid #E2E8F0", fontSize: 14, color: "#0F172A", outline: "none", fontFamily: "Inter, sans-serif" } as React.CSSProperties;
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24, flexWrap: "wrap", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 22, fontWeight: 700, color: "#0F172A" }}>Announcements</h1>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>Publish notices visible on the public website</p>
-        </div>
-        <button onClick={() => setShowForm(!showForm)} style={{ display: "flex", alignItems: "center", gap: 6, padding: "9px 16px", background: "#EF4444", color: "#fff", border: "none", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
-          <Plus size={15} /> New Announcement
-        </button>
-      </div>
+    <div style={{ maxWidth: 1600, margin: "0 auto", fontFamily: "Inter, sans-serif" }}>
+      <AdminPageHeader
+        category="Operations"
+        title="Announcements"
+        description="Publish broadcast alerts, news, and official updates visible on the player website."
+        actions={
+          <button
+            onClick={() => setShowForm(!showForm)}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+              height: 46,
+              padding: "0 22px",
+              background: "#2563EB",
+              color: "#FFFFFF",
+              border: "none",
+              borderRadius: 16,
+              fontSize: 14,
+              fontWeight: 700,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
+              transition: "all 0.2s ease",
+            }}
+          >
+            <Plus size={18} strokeWidth={2.5} /> {showForm ? "Cancel Form" : "New Announcement"}
+          </button>
+        }
+      />
 
       {showForm && (
         <div style={{ background: "#fff", borderRadius: 16, border: "1px solid #E2E8F0", padding: 24, marginBottom: 20 }}>

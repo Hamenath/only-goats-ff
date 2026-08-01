@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { ConfirmModal } from "@/components/admin/ConfirmModal";
+import { AdminPageHeader } from "@/components/admin/AdminPageHeader";
 import { Tournament } from "@/types/tournament";
 import toast from "react-hot-toast";
 
@@ -475,46 +476,36 @@ export default function MatchesPage() {
   const csStageMatches = matches.filter((m) => m.stageType === "CS" || !m.round.includes("Qualifier"));
 
   return (
-    <div style={{ maxWidth: 1240, margin: "0 auto", fontFamily: "Inter, sans-serif", paddingBottom: 60 }}>
+    <div style={{ maxWidth: 1600, margin: "0 auto", fontFamily: "Inter, sans-serif", paddingBottom: 60 }}>
       {/* 1. ENTERPRISE HEADER */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 24, flexWrap: "wrap", gap: 16 }}>
-        <div>
-          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <h1 style={{ fontSize: 24, fontWeight: 900, color: "#0F172A", letterSpacing: "-0.02em" }}>
-              🏆 Stage-Based Tournament Management
-            </h1>
-            <span style={{ padding: "4px 10px", borderRadius: 8, background: "#FEF2F2", color: "#DC2626", fontSize: 12, fontWeight: 800 }}>
-              {activeTournament ? activeTournament.season : "Season 1"}
-            </span>
-          </div>
-          <p style={{ fontSize: 13, color: "#64748B", marginTop: 4 }}>
-            Active Tournament: <strong>{activeTournament?.title || "Only Goats Championship"}</strong> • Registered Teams: <strong>{teamCount} / {activeTournament?.maxTeams || 24}</strong>
-          </p>
-        </div>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          {/* Main Replacement Button: ➕ Create Stage */}
+      <AdminPageHeader
+        category="Operations"
+        title="Matches & Room Control"
+        description={`Active Tournament: ${activeTournament?.title || "Only Goats Championship"} (${activeTournament?.season || "Season 1"}) • Registered Teams: ${teamCount} / ${activeTournament?.maxTeams || 24}`}
+        actions={
           <button
             onClick={() => setShowStageModal(true)}
             style={{
               display: "flex",
               alignItems: "center",
               gap: 8,
-              padding: "10px 20px",
-              background: "#DC2626",
+              height: 46,
+              padding: "0 22px",
+              background: "#2563EB",
               color: "#FFFFFF",
               border: "none",
-              borderRadius: 10,
-              fontSize: 13,
-              fontWeight: 900,
+              borderRadius: 16,
+              fontSize: 14,
+              fontWeight: 700,
               cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(220, 38, 38, 0.25)",
+              boxShadow: "0 4px 14px rgba(37, 99, 235, 0.3)",
+              transition: "all 0.2s ease",
             }}
           >
-            <Plus size={16} /> ➕ Create Stage
+            <Plus size={18} strokeWidth={2.5} /> Create Tournament Stage
           </button>
-        </div>
-      </div>
+        }
+      />
 
       {/* 2. STAGE CREATION MODAL */}
       {showStageModal && (
