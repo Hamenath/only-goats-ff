@@ -85,12 +85,14 @@ export function AdminSidebar() {
 
   return (
     <>
-      {/* 1. MOBILE TOP BAR (< 768px) */}
+      {/* 1. MOBILE TOP BAR (< 768px) - Position Fixed Liquid Glass */}
       <header
         className="admin-mobile-topbar md:hidden"
         style={{
-          position: "sticky",
+          position: "fixed",
           top: 0,
+          left: 0,
+          right: 0,
           zIndex: 50,
           height: 64,
           background: "rgba(255, 255, 255, 0.85)",

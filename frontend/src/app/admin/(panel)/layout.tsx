@@ -9,6 +9,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     <AdminGuard>
       <div className="flex flex-col md:flex-row min-h-screen w-full max-w-full overflow-x-hidden bg-[#F8FAFC] font-sans">
         <AdminSidebar />
+        {/* Mobile Header Spacer */}
+        <div className="h-16 md:hidden flex-shrink-0 w-full" aria-hidden="true" />
         <div className="flex-1 flex flex-col min-w-0 w-full max-w-full overflow-x-hidden">
           <AdminTopNav />
           <main
